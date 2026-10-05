@@ -1,0 +1,81 @@
+{
+  "schema": "ac-tests-lock/4",
+  "feature": "collector-alerts",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "collector-alerts",
+    "spec_content_hash": "f34f0ce5224b604af5b5de95b9ed78ab1e72d6bb9ae3bc51070f9478c03e91c2"
+  },
+  "mapping": {
+    "path": "pharn/features/collector-alerts/AC-TESTS.md",
+    "sha256": "8bd6bcb96dbed35aea78de50abc2b51d5227d6cd7b600b1a932cf74ba8773826"
+  },
+  "files": [
+    {
+      "path": "src/collector/collector-alerts.ac1.test.ts",
+      "sha256": "09a967103e125a1faa9e5c8bd722d8749c788e89b7d4bd3092183b61c16c4e8b"
+    },
+    {
+      "path": "src/collector/collector-alerts.ac2.test.ts",
+      "sha256": "2b32baa69678269c7008be1750d013a28c421cf083735b648fc6a3697cdf7774"
+    },
+    {
+      "path": "src/collector/collector-alerts.ac3.test.ts",
+      "sha256": "0040d22b0aa06669130b3bbfb1c0a155fb621227de78902579cdf4ae37205c8d"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "145f78441430739cff8dd0f93be753f2bd82a30368094f31f8a3ce33623a072c",
+    "files_sha256": "954baab9f1095aee6170974e580c8a38b65ee051f8f3ea92bc7065aec3abf50c",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "37b97875f079ff907e102ab0344efba3c4cc167793958cc59ea06b1872660294"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/collector/collector-alerts.ac1.test.ts::collector alerts — AC-1 › AC-1: emits edge-triggered firing and resolved alerts in window then rule order, with integer fields"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/collector/collector-alerts.ac2.test.ts::collector alerts — AC-2 › AC-2: creating an evaluator or a collector with one invalid rule throws synchronously naming that rule id"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/collector/collector-alerts.ac3.test.ts::collector alerts — AC-3 › AC-3: a collector with an alert rule records windows and firing/resolved alerts, and rejects with a source error"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null
+  }
+}
