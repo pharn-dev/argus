@@ -5,7 +5,14 @@ export type CollectorPlaceholder = ArgusAgentPlaceholder;
 
 export { createWindowAggregator, type WindowAggregatorOptions } from './window-aggregator.js';
 export { createRingBuffer, type RingBuffer } from './ring-buffer.js';
-export { createCollector, type Collector, type CollectorOptions } from './collector.js';
+export {
+  createCollector,
+  type Collector,
+  type CollectorOptions,
+  type WindowPersistence,
+} from './collector.js';
+export { createWindowStore, type PersistOptions, type WindowStore } from './window-store.js';
+export { serializeWindow, parseWindowLine } from './window-codec.js';
 export type { AggregatedWindow } from './window.js';
 export { createAlertEvaluator, type Alert, type AlertState } from './alert-evaluator.js';
 export {
