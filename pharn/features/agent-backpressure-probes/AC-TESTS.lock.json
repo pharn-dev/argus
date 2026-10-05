@@ -1,0 +1,83 @@
+{
+  "schema": "ac-tests-lock/4",
+  "feature": "agent-backpressure-probes",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "agent-backpressure-probes",
+    "spec_content_hash": "063a575a3ae94498260e9cd7179435f94571a8577b8235252678cac1f309d6dd"
+  },
+  "mapping": {
+    "path": "pharn/features/agent-backpressure-probes/AC-TESTS.md",
+    "sha256": "a31d1281e7c595a10f4bb163dd5fcce68f25f4c805eda19fbfbb66bbaf343edf"
+  },
+  "files": [
+    {
+      "path": "src/agent/backpressure-probes.ac1.integration.test.ts",
+      "sha256": "030ae20e0b5c046a4c0e3f76eeecbf7c3adcc3b6135179f42fba66f80ab1e517"
+    },
+    {
+      "path": "src/agent/backpressure-probes.ac2.test.ts",
+      "sha256": "06c3a59cd3b3ae39c3c4d54192df304e6259c3f17d6ddb2728e889fd42778ad6"
+    },
+    {
+      "path": "src/agent/backpressure-probes.ac3.test.ts",
+      "sha256": "a328b4dbb637bccb56330c27766a8a0b9bd59bdcd7fee082a016eda0a9349680"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "57d49b7cb5a48cc397f9bd6fbc94481786b3331a5e1ee2dc30613f42c57d4f0e",
+    "files_sha256": "95c118c789915bac591cbbfb6a914ecc1d0d94e7d22e8258ea59780e30e4e2a3",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "ed70bcca24ceb68150941072af4ec4f0b0ac5e8c8d895bbb5d18abd5393f0d73"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/agent/backpressure-probes.ac1.integration.test.ts::agent backpressure probes — AC-1 › AC-1: an enabled probe reports the stalls of a slow Writable with integer totals, a test-file site hotspot, then resets"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/agent/backpressure-probes.ac2.test.ts::agent backpressure probes — AC-2 › AC-2: a stall on an NDJSON exporter's destination is never counted while the probe is enabled",
+          "src/agent/backpressure-probes.ac2.test.ts::agent backpressure probes — AC-2 › AC-2: enabling twice then disabling once restores the identical Writable.prototype.write and stops counting"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/agent/backpressure-probes.ac3.test.ts::agent backpressure probes — AC-3 › AC-3: the controller sample carries a backpressure part of non-negative integers, and stop() restores Writable.prototype.write"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration",
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null
+  }
+}

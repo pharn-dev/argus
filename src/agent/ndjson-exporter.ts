@@ -1,5 +1,6 @@
 import type { Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
+import { excludeFromBackpressure } from './backpressure-exclusion.js';
 import { createBoundedQueue } from './bounded-queue.js';
 import { encodeNdjsonLine } from './ndjson-encoder.js';
 
@@ -25,6 +26,7 @@ export function createNdjsonExporter(
   destination: Writable,
   options: NdjsonExporterOptions = {},
 ): NdjsonExporter {
+  excludeFromBackpressure(destination);
   const queueBound = options.queueBound ?? DEFAULT_QUEUE_BOUND;
   // createBoundedQueue validates the bound and throws RangeError.
   const queue = createBoundedQueue<string>(queueBound);

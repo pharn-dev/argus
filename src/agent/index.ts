@@ -7,6 +7,13 @@ export { createGcSampler } from './gc-sampler.js';
 export type { GcSample, GcSampler } from './gc-sampler.js';
 export { sampleMemory } from './memory-sampler.js';
 export type { MemorySample } from './memory-sampler.js';
+export { createBackpressureProbe } from './backpressure-probe.js';
+export type {
+  BackpressureHotspot,
+  BackpressureProbe,
+  BackpressureProbeOptions,
+  BackpressureSample,
+} from './backpressure-probe.js';
 export { createSamplerController } from './sampler-controller.js';
 export type { AgentSample, SamplerController } from './sampler-controller.js';
 export { encodeNdjsonLine } from './ndjson-encoder.js';

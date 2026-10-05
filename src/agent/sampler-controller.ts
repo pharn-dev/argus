@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import { createBackpressureProbe, type BackpressureSample } from './backpressure-probe.js';
 import { createEventLoopSampler, type EventLoopSample } from './event-loop-sampler.js';
 import { createGcSampler, type GcSample } from './gc-sampler.js';
 import { sampleMemory, type MemorySample } from './memory-sampler.js';
@@ -9,6 +10,7 @@ export type AgentSample = {
   eventLoop: EventLoopSample;
   memory: MemorySample;
   gc: GcSample;
+  backpressure: BackpressureSample;
 };
 
 export type SamplerController = {
@@ -21,6 +23,7 @@ export function createSamplerController(
 ): SamplerController {
   const eventLoop = createEventLoopSampler();
   const gc = createGcSampler();
+  const backpressure = createBackpressureProbe();
   let timer: NodeJS.Timeout | undefined;
 
   return {
@@ -35,12 +38,14 @@ export function createSamplerController(
       }
       eventLoop.enable();
       gc.enable();
+      backpressure.enable();
       timer = setInterval(() => {
         onSample({
           timestamp: Date.now(),
           eventLoop: eventLoop.sample(),
           memory: sampleMemory(),
           gc: gc.sample(),
+          backpressure: backpressure.sample(),
         });
       }, intervalMs);
       timer.unref();
@@ -53,6 +58,7 @@ export function createSamplerController(
       timer = undefined;
       eventLoop.disable();
       gc.disable();
+      backpressure.disable();
     },
   };
 }
