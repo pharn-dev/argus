@@ -1,0 +1,81 @@
+{
+  "schema": "ac-tests-lock/4",
+  "feature": "dashboard-sse-server",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "dashboard-sse-server",
+    "spec_content_hash": "dca6f9b42960a3e356d7c7a46890b97f0731c85ec4fcf2d8dbfd5e589c9e40b0"
+  },
+  "mapping": {
+    "path": "pharn/features/dashboard-sse-server/AC-TESTS.md",
+    "sha256": "66552054304fd288dac82789714e58f2281a2ac9fd3ff7ea5be3b7d238f8d0c9"
+  },
+  "files": [
+    {
+      "path": "src/dashboard/dashboard-sse-server.ac1.integration.test.ts",
+      "sha256": "5ea38cee9d4a45971866ba80fe6f3e6ea30c575671e68d2fb13b2270dce2fff3"
+    },
+    {
+      "path": "src/dashboard/dashboard-sse-server.ac2.integration.test.ts",
+      "sha256": "8be5ad1211f1da670c0fa3bdad16bd681b218397d307072edb5796391fe88978"
+    },
+    {
+      "path": "src/dashboard/dashboard-sse-server.ac3.integration.test.ts",
+      "sha256": "242916b71feac6aa85c266420f346f12c9a0405ebe3edfb632458cb20bb9e9de"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "d74a74a1c72eabc3e5017bfdf6282eeb721e6b539499e29e7559aa93011ea5c0",
+    "files_sha256": "2dd2f0e5a1e79f948af2375c9ff957570a8ab7b3a9580e0eaa66a64ed35911a7",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "6c1cd1dac98bdd56dc1e678f3e626af1e0e15795b60cb9392dd7d41bba61d31f"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/dashboard/dashboard-sse-server.ac1.integration.test.ts::dashboard SSE server — AC-1 › AC-1: GET /events replays the existing window and alert, then streams new ones, with heartbeat comments"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/dashboard/dashboard-sse-server.ac2.integration.test.ts::dashboard SSE server — AC-2 › AC-2: refuses a non-loopback host without a token, and gates /events behind the token"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/dashboard/dashboard-sse-server.ac3.integration.test.ts::dashboard SSE server — AC-3 › AC-3: a stalled client is bounded (dropped or disconnected) while a reading client gets every window, and close() ends everything"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null
+  }
+}

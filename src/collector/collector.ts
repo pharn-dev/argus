@@ -4,6 +4,7 @@ import type { AgentSample } from '../agent/index.js';
 import { createAlertEvaluator, type Alert } from './alert-evaluator.js';
 import { validateAlertRules, type AlertRule } from './alert-rules.js';
 import type { AlertSink, SinkErrorHandler } from './alert-sink.js';
+import { createSubscriberSet, type CollectorListener } from './collector-subscribers.js';
 import { createSinkDispatcher } from './sink-dispatcher.js';
 import { createSinks, type SinkInput } from './sink-config.js';
 import { createRingBuffer, type RingBuffer } from './ring-buffer.js';
@@ -34,6 +35,7 @@ export type Collector = {
   readonly alerts: RingBuffer<Alert>;
   readonly sinks: readonly AlertSink[];
   readonly persistence: WindowPersistence | undefined;
+  subscribe(listener: CollectorListener): () => void;
   consume(source: Readable | AsyncIterable<AgentSample>): Promise<void>;
   close(): Promise<void>;
 };
@@ -62,12 +64,16 @@ export function createCollector(options: CollectorOptions): Collector {
     });
     return restoring;
   };
+  const subscribers = createSubscriberSet();
 
   return {
     windows,
     alerts,
     sinks,
     persistence: store,
+    subscribe(listener: CollectorListener): () => void {
+      return subscribers.add(listener);
+    },
     async consume(source: Readable | AsyncIterable<AgentSample>): Promise<void> {
       const aggregator = createWindowAggregator({ windowMs });
       const recordWindows = new Transform({
@@ -75,6 +81,7 @@ export function createCollector(options: CollectorOptions): Collector {
         transform(window: AggregatedWindow, _encoding, callback): void {
           try {
             windows.push(window);
+            subscribers.emitWindow(window);
             callback(null, window);
           } catch (error) {
             callback(error as Error);
@@ -107,6 +114,7 @@ export function createCollector(options: CollectorOptions): Collector {
           async function (emitted: AsyncIterable<unknown>) {
             for await (const alert of emitted) {
               alerts.push(alert as Alert);
+              subscribers.emitAlert(alert as Alert);
               dispatcher.deliver(alert as Alert);
             }
           },
