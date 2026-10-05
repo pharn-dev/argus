@@ -78,7 +78,8 @@ See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the data flow and module boundari
   agent-on versus agent-off benchmark.
 - **The dashboard is token-gated by default** whenever it is not bound to localhost.
 - **Heap snapshots and traces can contain sensitive data.** Treat them accordingly; see
-  [`SECURITY.md`](./SECURITY.md).
+  [`SECURITY.md`](./SECURITY.md), [`docs/THREAT-MODEL.md`](./docs/THREAT-MODEL.md) and
+  [`docs/LIMITS.md`](./docs/LIMITS.md).
 
 Requires **Node.js 22 or newer** (see [`.nvmrc`](./.nvmrc)).
 

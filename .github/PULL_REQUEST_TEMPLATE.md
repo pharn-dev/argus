@@ -2,7 +2,7 @@
 Thanks for contributing to Argus! Please read CONTRIBUTING.md and CLAUDE.md first.
 Keep one logical change per PR. The PR title must be a Conventional Commit
 (feat: / fix: / docs: / chore: ...) — PRs are squash-merged and the title becomes the commit
-message that drives the changelog and version.
+message on main. User-visible changes also get a line under "Unreleased" in CHANGELOG.md.
 -->
 
 ## What this changes

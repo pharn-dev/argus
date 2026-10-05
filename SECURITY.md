@@ -27,6 +27,10 @@ surface is:
 - **Release integrity** — the supply chain of what you install. The agent (`src/agent`) has **zero**
   runtime dependencies by design, which also keeps its supply-chain exposure to Node core.
 
+The security design and its named residual risks are in
+[`docs/THREAT-MODEL.md`](./docs/THREAT-MODEL.md); what Argus does not guarantee is in
+[`docs/LIMITS.md`](./docs/LIMITS.md).
+
 ## Supported versions
 
 Until 1.0, only the **latest** release (and `main`) receives security fixes.

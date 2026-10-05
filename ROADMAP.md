@@ -16,7 +16,7 @@ Calendar is yours to set; the ordering is the point.
 - Skeleton of the 5 modules under `src/` with correct `exports` subpaths (dual
   CJS+ESM) and an import-boundary lint rule for the agent.
 - CI: GitHub Actions running build + typecheck + lint + test on PRs.
-- semantic-release wired (publishing comes online later, config lands now).
+- Release process in place (`docs/RELEASING.md`, `publish.yml`); publishing goes live at S8.
 - Outcome: a clean single package that builds with `npm run build`.
 
 ## S1 — Agent core: the one-liner
@@ -71,7 +71,7 @@ Calendar is yours to set; the ordering is the point.
 
 ## S8 — Launch
 
-- semantic-release publishing to npm goes live.
+- First npm release, through the manual process in `docs/RELEASING.md`.
 - `README` with a GIF/asciinema of one-liner → dashboard.
 - `CONTRIBUTING.md`, labeled `good-first-issue`s.
 - Technical blog post + "Show HN".

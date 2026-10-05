@@ -10,6 +10,14 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    ignore:
+      # Held on TypeScript 6.0.x: typescript-eslint supports only TypeScript <6.1, and
+      # tsconfig.cjs.json relies on moduleResolution Node10, which TypeScript 7 removes. Drop this
+      # once both are sorted out.
+      - dependency-name: typescript
+        update-types:
+          - version-update:semver-minor
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: '/'
