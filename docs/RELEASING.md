@@ -17,8 +17,9 @@ Publishing uses **npm Trusted Publishing (OIDC)**. No npm token or secret is sto
 - `build` refuses to continue unless the tag is a strict `vX.Y.Z`, equals `package.json`'s
   `version`, points at a commit on `main`, and `package.json` is not `private`.
 
-Create the `npm-publish` environment in the repository settings (Settings → Environments) and
-consider requiring a reviewer on it, so a release needs a second click before it reaches npm.
+The `npm-publish` environment (Settings → Environments) requires a reviewer, so a release needs a
+second click before it reaches npm. If you rename it, update `publish.yml` and the Trusted
+Publisher entry on npmjs.com to match.
 
 ## Cutting a release
 
@@ -31,7 +32,7 @@ consider requiring a reviewer on it, so a release needs a second click before it
 3. **Merge it** once CI is green. The tag must point at a commit on `main`.
 4. **Create the GitHub Release**: tag `vX.Y.Z` targeting `main`, release notes copied from the
    changelog section. Publishing the release starts `publish.yml`.
-5. **Approve the `publish` job** if the `npm-publish` environment requires a reviewer.
+5. **Approve the `publish` job** (the `npm-publish` environment requires a reviewer).
 
 ## Verify the release
 
