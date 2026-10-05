@@ -3,28 +3,94 @@
   "version": "0.0.1",
   "description": "All-seeing runtime diagnostics for Node.js. Event loop lag, memory, GC, stream backpressure and request tracing from a single require — zero dependencies, no collector service.",
   "keywords": [
-    "nodejs"
+    "nodejs",
+    "diagnostics",
+    "observability",
+    "event-loop",
+    "memory",
+    "gc",
+    "tracing",
+    "profiling",
+    "apm"
   ],
-  "homepage": "https://github.com/pharn-dev/pharn-oss#readme",
+  "homepage": "https://github.com/pharn-dev/argus#readme",
   "bugs": {
-    "url": "https://github.com/pharn-dev/pharn-oss/issues"
+    "url": "https://github.com/pharn-dev/argus/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/pharn-dev/pharn-oss.git"
+    "url": "git+https://github.com/pharn-dev/argus.git"
   },
   "license": "Apache-2.0",
   "author": "Przemek Galarowicz",
-  "type": "commonjs",
+  "type": "module",
   "private": true,
-  "workspaces": [
-    "packages/*"
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  },
+  "exports": {
+    "./agent": {
+      "import": {
+        "types": "./dist/esm/agent/index.d.ts",
+        "default": "./dist/esm/agent/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/agent/index.d.ts",
+        "default": "./dist/cjs/agent/index.js"
+      }
+    },
+    "./collector": {
+      "import": {
+        "types": "./dist/esm/collector/index.d.ts",
+        "default": "./dist/esm/collector/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/collector/index.d.ts",
+        "default": "./dist/cjs/collector/index.js"
+      }
+    },
+    "./analyzer": {
+      "import": {
+        "types": "./dist/esm/analyzer/index.d.ts",
+        "default": "./dist/esm/analyzer/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/analyzer/index.d.ts",
+        "default": "./dist/cjs/analyzer/index.js"
+      }
+    },
+    "./dashboard": {
+      "import": {
+        "types": "./dist/esm/dashboard/index.d.ts",
+        "default": "./dist/esm/dashboard/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/dashboard/index.d.ts",
+        "default": "./dist/cjs/dashboard/index.js"
+      }
+    },
+    "./plugin-runner": {
+      "import": {
+        "types": "./dist/esm/plugin-runner/index.d.ts",
+        "default": "./dist/esm/plugin-runner/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/plugin-runner/index.d.ts",
+        "default": "./dist/cjs/plugin-runner/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
   ],
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "build:packages": "tsc --build -p tsconfig.packages.json",
+    "build": "node scripts/build.mjs",
+    "check:exports": "node scripts/check-exports.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",

@@ -7,14 +7,12 @@ export default tseslint.config(
   {
     ignores: [
       'pharn/**',
-      'packages/**',
       'node_modules/**',
       '**/dist/**',
       'coverage/**',
       '.pharn/**',
       'runs/**',
       'package-lock.json',
-      'pnpm-lock.yaml',
       '*.tsbuildinfo',
       '.tsbuildinfo',
     ],
@@ -23,7 +21,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   {
-    files: ['**/*.{js,mjs,ts,tsx}'],
+    files: ['**/*.{js,mjs,ts,mts,tsx}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -48,6 +46,29 @@ export default tseslint.config(
   {
     files: ['**/*.{js,mjs,cjs}'],
     ...tseslint.configs.disableTypeChecked,
+  },
+  {
+    // The agent is the zero-dependency core: Node core and its own files only. Nothing else in the
+    // package may be imported from it, and nothing may be imported from node_modules.
+    files: ['src/agent/**/*.ts'],
+    ignores: ['src/agent/**/*.test.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^(?!node:|\\.)',
+              message: 'agent code may import only node: builtins and its own files.',
+            },
+            {
+              regex: '(^|/)(collector|analyzer|dashboard|plugin-runner)(/|$)',
+              message: 'The agent must not import from other modules of this package.',
+            },
+          ],
+        },
+      ],
+    },
   },
   {
     files: ['**/*.{test,spec}.ts'],
