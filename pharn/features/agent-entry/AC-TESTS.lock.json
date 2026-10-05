@@ -1,0 +1,86 @@
+{
+  "schema": "ac-tests-lock/4",
+  "feature": "agent-entry",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "agent-entry",
+    "spec_content_hash": "f9fb4eb821cf3236522db36cfc728ad3330b322e01616d51e01c36837931e91e"
+  },
+  "mapping": {
+    "path": "pharn/features/agent-entry/AC-TESTS.md",
+    "sha256": "f51b322a4d1bdf877a9d5226919f3ab88310a1e12d1b5bb8a4ae30de03468cf9"
+  },
+  "files": [
+    {
+      "path": "src/agent/agent-entry.ac1.integration.test.ts",
+      "sha256": "bd32d30f7808831dd58ff6e6bad2671f3a2485f668ae1468b4aa588157e9d22e"
+    },
+    {
+      "path": "src/agent/agent-entry.ac2.integration.test.ts",
+      "sha256": "f95bbe42500ba68f95cc7a7cf0d12ea5055fb3615cd63c42e4faaf618dc66f83"
+    },
+    {
+      "path": "src/agent/agent-entry.ac3.integration.test.ts",
+      "sha256": "cedca3e71d55316db73112bd4c0ad9df234381f8b870bbac8c61f0352025448d"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "f95f440427fe4756efddec2d68fa31d24c86574c3a24694dbea9d1a1221fbc50",
+    "files_sha256": "a43bdb1a1ed7848b04f08e9c3fe6ef0fc51ebbbc452a97abcc66186dbecb1c3c",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "afdccfc315f022c5adf9a1427b6a79692266e174bd04bbdea79830ec990727a3"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/agent/agent-entry.ac1.integration.test.ts::argus/agent entry — AC-1 › AC-1: node --import argus/agent streams NDJSON samples to the ARGUS_OUTPUT file and the app exits 0 on its own",
+          "src/agent/agent-entry.ac1.integration.test.ts::argus/agent entry — AC-1 › AC-1: node --require argus/agent streams NDJSON samples to the ARGUS_OUTPUT file and the app exits 0 on its own",
+          "src/agent/agent-entry.ac1.integration.test.ts::argus/agent entry — AC-1 › AC-1: node --require argus/agent with ARGUS_OUTPUT=stdout prints samples and still prints the app's last console.log after them"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/agent/agent-entry.ac2.integration.test.ts::argus/agent entry — AC-2 › AC-2: loading argus/agent by --require, twice by require() and once by import() exposes the library exports, runs a single agent, and ARGUS_ENABLED=0 turns it off"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/agent/agent-entry.ac3.integration.test.ts::argus/agent entry — AC-3 › AC-3: --import argus/agent with an invalid config (ARGUS_INTERVAL_MS=abc) reports one [argus] line and the app still runs and exits 0",
+          "src/agent/agent-entry.ac3.integration.test.ts::argus/agent entry — AC-3 › AC-3: --import argus/agent with an unusable output (a missing directory) reports one [argus] line and the app still runs and exits 0",
+          "src/agent/agent-entry.ac3.integration.test.ts::argus/agent entry — AC-3 › AC-3: --require argus/agent with an invalid config (ARGUS_INTERVAL_MS=abc) reports one [argus] line and the app still runs and exits 0",
+          "src/agent/agent-entry.ac3.integration.test.ts::argus/agent entry — AC-3 › AC-3: --require argus/agent with an unusable output (a missing directory) reports one [argus] line and the app still runs and exits 0"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null
+  }
+}
