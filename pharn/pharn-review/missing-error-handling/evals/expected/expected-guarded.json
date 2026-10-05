@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "every risky op is guarded — the awaited fetch, the inner awaited read, and the parse are inside the try/catch body, and the ping await carries a same-line .catch — so scan-code-missing-error-handling.mjs reports found:false; the lens emits NO finding and does not manufacture one. A clean scan is not proof the code is error-safe (the Layer-1 bound), only that no unguarded risky-op shape was detected."
+      }
+    ]
+  }
+}

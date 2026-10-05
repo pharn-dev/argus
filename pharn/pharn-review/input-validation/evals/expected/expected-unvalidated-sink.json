@@ -1,0 +1,17 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [
+      { "kind": "finding_count", "op": "==", "value": 1 },
+      { "kind": "field_equals", "field": "type", "value": "FINDING" },
+      { "kind": "field_equals", "field": "rule_id", "value": "P2" },
+      { "kind": "field_equals", "field": "severity", "value": "important" },
+      { "kind": "file_resolves", "value": "pharn/pharn-review/input-validation/evals/cases/case-unvalidated-sink.md:16" }
+    ],
+    "semantic": [
+      {
+        "judge": "the finding identifies that req.query.path flows into readFile with no validation (allow-list / path normalization / type check) between the source and the sink; whether it is actually exploitable, and whether validation happens elsewhere, is advisory and does NOT suppress the finding. No taint analysis is claimed — the lens surfaces the missing-validation judgment."
+      }
+    ]
+  }
+}

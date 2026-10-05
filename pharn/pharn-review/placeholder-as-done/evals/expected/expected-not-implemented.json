@@ -1,0 +1,17 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [
+      { "kind": "finding_count", "op": "==", "value": 1 },
+      { "kind": "field_equals", "field": "type", "value": "FINDING" },
+      { "kind": "field_equals", "field": "rule_id", "value": "P2" },
+      { "kind": "field_equals", "field": "severity", "value": "important" },
+      { "kind": "file_resolves", "value": "pharn/pharn-review/placeholder-as-done/evals/cases/case-not-implemented.md:14" }
+    ],
+    "semantic": [
+      {
+        "judge": "the placeholder throw on line 14 (a function whose whole body is `throw new Error(\"not implemented\")`) is detected deterministically by pharn/floor/scan-code-placeholder.mjs (Pass A, not-implemented) and reported as a FLOOR finding (rule_id P2, file = the throw line from the scanner); the lens may note in free-text whether it is a deliberate stub, but does NOT suppress the finding on that basis."
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [
+      { "kind": "finding_count", "op": "==", "value": 1 },
+      { "kind": "field_equals", "field": "type", "value": "FINDING" },
+      { "kind": "field_equals", "field": "rule_id", "value": "P2" },
+      { "kind": "field_equals", "field": "severity", "value": "important" },
+      { "kind": "file_resolves", "value": "pharn/pharn-review/missing-timeout/evals/cases/case-db-query-no-timeout.md:12" }
+    ],
+    "semantic": [
+      {
+        "judge": "the finding is justified by the scanner's no-timeout `db.query(...)` shape on line 12 (the db branch fires); the free-text notes that a pool/connection-level timeout, if any, is the advisory judgment the call-local scanner cannot see (the documented db false-positive)."
+      }
+    ]
+  }
+}

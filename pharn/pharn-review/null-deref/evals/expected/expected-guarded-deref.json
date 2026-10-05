@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "the value u from users.find(...) is guarded by `if (!u) return null;` before `u.email`, so the first subsequent use of u is the guard and pharn/floor/scan-code-null-deref.mjs reports found:false; the lens emits NO finding and does not manufacture one. A clean scan is not proof the code is null-safe (Layer-1 bound), only that no unchecked-deref shape was detected."
+      }
+    ]
+  }
+}

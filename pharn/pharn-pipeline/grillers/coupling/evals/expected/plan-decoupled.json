@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "the decoupled approach is recognized — timer returns its value and reporter receives it as an explicit argument, and the shared timing shape is routed through pharn-contracts (not shared mutable state, not leaf→leaf); no entanglement finding is raised, and any minor stylistic concern is advisory prose, never a P3 finding"
+      }
+    ]
+  }
+}

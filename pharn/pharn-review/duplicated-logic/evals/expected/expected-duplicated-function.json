@@ -1,0 +1,17 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [
+      { "kind": "finding_count", "op": "==", "value": 1 },
+      { "kind": "field_equals", "field": "type", "value": "FINDING" },
+      { "kind": "field_equals", "field": "rule_id", "value": "P2" },
+      { "kind": "field_equals", "field": "severity", "value": "minor" },
+      { "kind": "file_resolves", "value": "pharn/pharn-review/duplicated-logic/evals/cases/case-duplicated-function.md:14" }
+    ],
+    "semantic": [
+      {
+        "judge": "the byte-identical handler body (5 significant lines) duplicated at lines 14 and 21 is detected deterministically; the lens emits one FLOOR finding (rule_id P2, file = the first occurrence's line 14 from the scanner) and surfaces the extract-a-helper judgment as advisory free-text without suppressing the finding; evidence names both occurrences."
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "the parameterized query ($1 placeholder + values array) carries no concatenation or interpolation into the sink, so the scanner is clean and the lens emits NO finding; a clean scan is NOT asserted to prove the code is injection-free (the Layer 1 bound)."
+      }
+    ]
+  }
+}

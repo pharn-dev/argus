@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "the value u from users.find(...) is read via optional chaining `u?.email`, so the first subsequent use of u is `?.` (null-safe) and pharn/floor/scan-code-null-deref.mjs reports found:false; the lens emits NO finding. Optional chaining is the null-safe form the scanner recognizes as CLEAN; a clean scan is not proof of null-safety, only that no unchecked-deref shape was detected."
+      }
+    ]
+  }
+}

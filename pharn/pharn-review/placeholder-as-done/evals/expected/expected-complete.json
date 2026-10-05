@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "the function is fully implemented (no placeholder marker, a non-empty body doing real work), so pharn/floor/scan-code-placeholder.mjs reports found:false; the lens emits NO finding and does not manufacture one. A clean scan is not proof the code is complete (the scanner detects only the fixed marker set + empty-body shape), only that no placeholder marker or empty body was detected."
+      }
+    ]
+  }
+}

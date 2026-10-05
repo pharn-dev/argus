@@ -1,0 +1,27 @@
+{
+  "doc": "Explicit lens -> code-scanner map for the parallel /pharn-review scanner-prefilter. The orchestrator runs a lens's mapped scanner over the review target; files with a hit are that lens's scoped slice (its subagent reads only those). A null value = the lens is SCANNER-LESS: no deterministic prefilter exists, so its subagent falls back to the whole target (an honestly-labeled advisory bound). This map is the MACHINE-READABLE projection of the binding each lens also names in its Layer-1 prose; it is a convenience/consistency artifact for the advisory orchestrator, NOT a new source of truth for what a lens does (P4). It exists EXPLICITLY (not name-derived) because the lens->scanner names do not match by convention (insecure-crypto->scan-code-crypto, unsafe-deserialization->scan-code-deserialization, secrets-in-code->scan-code-secrets, placeholder-as-done->scan-code-placeholder) and 4 lenses name no usable scanner. lens-scanner-map.test.mjs enforces consistency with disk + count-lenses so prose/map drift is caught (P7 — a real, already-observed drift: two lenses' prose name scanners that do not exist).",
+  "scanners": {
+    "copy-paste-drift": "scan-code-copy-paste-drift.mjs",
+    "duplicated-logic": "scan-code-duplicated-logic.mjs",
+    "hallucinated-api": null,
+    "injection": "scan-code-injection.mjs",
+    "input-validation": null,
+    "insecure-crypto": "scan-code-crypto.mjs",
+    "magic-values": "scan-code-magic-values.mjs",
+    "missing-await": "scan-code-missing-await.mjs",
+    "missing-error-handling": "scan-code-missing-error-handling.mjs",
+    "missing-timeout": "scan-code-missing-timeout.mjs",
+    "n-plus-one": "scan-code-n-plus-one.mjs",
+    "null-deref": "scan-code-null-deref.mjs",
+    "off-by-one": "scan-code-off-by-one.mjs",
+    "path-traversal": "scan-code-path-traversal.mjs",
+    "placeholder-as-done": "scan-code-placeholder.mjs",
+    "race-condition": null,
+    "resource-leak": "scan-code-resource-leak.mjs",
+    "secrets-in-code": "scan-code-secrets.mjs",
+    "ssrf": "scan-code-ssrf.mjs",
+    "swallowed-exception": "scan-code-swallowed-exception.mjs",
+    "trust-fence": null,
+    "unsafe-deserialization": "scan-code-deserialization.mjs"
+  }
+}

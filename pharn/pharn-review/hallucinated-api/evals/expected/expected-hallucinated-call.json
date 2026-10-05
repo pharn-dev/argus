@@ -1,0 +1,17 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [
+      { "kind": "finding_count", "op": "==", "value": 1 },
+      { "kind": "field_equals", "field": "type", "value": "FINDING" },
+      { "kind": "field_equals", "field": "rule_id", "value": "P2" },
+      { "kind": "field_equals", "field": "severity", "value": "important" },
+      { "kind": "file_resolves", "value": "pharn/pharn-review/hallucinated-api/evals/cases/case-hallucinated-call.md:14" }
+    ],
+    "semantic": [
+      {
+        "judge": "the finding identifies that Object.fromPairs is called but is not a real method on the native Object (the correct API is Object.fromEntries); whether it is instead a real-but-obscure API, a local re-export, or a monkey-patch is advisory and does NOT suppress the finding. No taint analysis or external lookup is claimed — the lens surfaces the invented-API judgment from model knowledge of the library surface, and file points at the call line (14)."
+      }
+    ]
+  }
+}

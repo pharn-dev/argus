@@ -1,0 +1,17 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [
+      { "kind": "finding_count", "op": "==", "value": 1 },
+      { "kind": "field_equals", "field": "type", "value": "FINDING" },
+      { "kind": "field_equals", "field": "rule_id", "value": "P2" },
+      { "kind": "field_equals", "field": "severity", "value": "important" },
+      { "kind": "file_resolves", "value": "pharn/pharn-review/swallowed-exception/evals/cases/case-log-only-catch.md:16" }
+    ],
+    "semantic": [
+      {
+        "judge": "the log-only catch on line 16 (body is only console.error, no throw/return/reject/next) is detected deterministically by pharn/floor/scan-code-swallowed-exception.mjs and reported as a FLOOR finding (rule_id P2, file = the catch line); the lens may note in free-text whether a log-and-continue is acceptable here, but does NOT suppress the finding on that basis."
+      }
+    ]
+  }
+}

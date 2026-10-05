@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "no finding is emitted because Object.fromEntries is a real native Object method, used correctly. This clean verdict is ADVISORY model judgment, not a deterministic scanner result (this lens has no scanner), and a clean read is NOT proof the code is correct (rule_id P2 is still the axis; the count is simply 0)."
+      }
+    ]
+  }
+}

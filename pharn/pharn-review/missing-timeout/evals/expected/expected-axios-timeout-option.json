@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "the call passes an explicit `timeout` option in its own args, so pharn/floor/scan-code-missing-timeout.mjs reports found:false; the lens emits NO finding and does not manufacture one. A clean scan is not proof of reliable timeouts, only that this call passes an in-args indicator."
+      }
+    ]
+  }
+}

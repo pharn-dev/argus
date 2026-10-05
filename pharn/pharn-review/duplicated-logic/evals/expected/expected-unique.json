@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "the functions are wholly distinct and the only repeated lines are trivial closing braces (excluded by the significance filter), so pharn/floor/scan-code-duplicated-logic.mjs reports found:false; the lens emits NO finding and does not manufacture one. A clean scan is not proof the code is duplication-free (Layer-1 bound: near-identical logic, cross-file copies, and sub-threshold runs evade it), only that no exact duplicated block ≥4 significant lines was detected."
+      }
+    ]
+  }
+}

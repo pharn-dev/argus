@@ -1,0 +1,194 @@
+# The Floor
+
+This directory is the **deterministic floor** — the only part of this repo's build loop that
+actually _guarantees_ anything (`CONSTITUTION.md` P0). It is non-LLM, dependency-free (Node stdlib),
+and cannot be talked out of its verdict by prompt injection. Everything else — the commands, the
+review lenses — is **advisory orchestration** that _invokes_ the floor.
+
+**All three** of the floor primitives in `ARCHITECTURE.md §2` are files here or in `../../.claude/hooks/`.
+The table below names the ones this page documents in depth — it is a **reading guide, not an
+inventory**. For the live count of checkers in this directory, see the generated `## Current state`
+block in the root `README.md`: it is rendered from the tree and held to byte-equality by
+`npm run docs:check`, so it cannot go stale unnoticed. This page deliberately does **not** restate that
+number — a hand-maintained second copy is exactly what drifted here before (it read "three files" long
+after the directory passed forty).
+
+| file                                            | primitive                                | enforces                                                          |
+| ----------------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------- |
+| `validate.mjs`                                  | enum / regex / structural check          | P1, P3, P4; fixes #1, #5, #6                                      |
+| `check-structural.mjs`                          | enum / regex-substring / path-resolution | `structural[]` of an eval `expected` (P0, P1)                     |
+| `check-spec.mjs`                                | content-hash (+ enum / presence / regex) | the approved-intent pin, fix #4; the opt-in `spec-template` shape |
+| `../../.claude/hooks/protect-trusted-paths.cjs` | pre-write hook                           | P2; fix #2                                                        |
+| `../../.claude/hooks/enforce-writes-scope.cjs`  | pre-write hook                           | P2, P5; fix #7                                                    |
+
+**Content-hash is a file primitive too.** `check-spec.mjs` owns the product spec pin
+(`spec_content_hash`): `--hash` emits the digest `/pharn-spec` pins on approval, and the default mode
+re-verifies it, with `check-spec-approved.mjs` and `check-plan-spec-agree.mjs` shelling it rather than
+re-implementing the hash. The digest is taken over the SPEC **body** with line endings folded to LF, so
+a CRLF checkout does not read as drift — see `bodyHash()` for the exact bound. (The dev loop's own pin
+over `pharn/ARCHITECTURE.md` uses the same fold via `../../.dev/floor/hash-doc.mjs`, which ships to nobody.)
+
+**The SPEC template is opt-in.** For a SPEC whose frontmatter declares `spec_template`, `check-spec.mjs` also
+enforces, through `spec-template-core.mjs`, the shape defined in `../pharn-contracts/spec-template.md` (sections, the acceptance-criteria
+grammar, clarification markers). `--resolve-template-ref` prints the value `/pharn-spec` writes into that
+key: the project's own `pharn.spec-template.md` when it exists and validates, else the shipped default. Once a
+project template exists, every failure is a refusal (exit 1), never a fallback. `--template-path <id>` prints
+the file to fill, and `--template-ref <id>` names one template directly. Every template is validated before its
+reference is printed. A SPEC without the key gets none of the template rules; the pin's layout rule (a body may
+not open with a `spec_kind:` line, 6.20.7) applies to every SPEC. A valid acceptance-criteria grammar means the
+criteria are **phrased** testably, never that any test exists, runs, or passes. `--spec-kind <SPEC.md>` (6.25.0) prints
+the SPEC's kind (`feature` | `test-infra` | `quick`, an empty line if unusable, `feature` for a legacy SPEC) — the
+one reading its callers shell (among them `/pharn-ship`'s GATE-1 backstop, `/pharn-grill --quick`'s eligibility check
+and `/pharn-loop --quick`'s Step-3 kind read), never re-derived from frontmatter; `loop-mode-core.mjs` (6.28.0) calls
+the same function to pick `/pharn-loop`'s stop table and freshness column.
+
+## Run the validator
+
+```bash
+node pharn/floor/validate.mjs <pharn-repo-dir>     # default: current dir
+```
+
+Point it at the PHARN repo being built. It exits **non-zero on any RED finding**. It deliberately
+ignores this repo's own tooling (`.claude/commands/`, `.dev/`, `pharn/floor/`) — those are advisory, not built
+PHARN capabilities. `/pharn-dev-build` runs it automatically and halts on RED; you can also run it yourself.
+
+What it checks (all deterministic):
+
+1. capability frontmatter present + required fields, role/kind/coupling enums (`ARCHITECTURE §3.1–3.2`)
+2. every capability has non-empty `evals/cases` + `evals/expected` (P1)
+3. every `enforces` rule_id is produced by ≥1 eval fixture (P1, **fix #6** — semantic binding, not just namespace)
+4. finding templates separate enum-gated from free-text/untrusted fields (**fix #1**)
+5. no sibling reference in `reads:` across `pharn-stack-*` / `pharn-skills-*` modules (P3)
+6. the four archetype maps agree, _if_ `pharn/pharn-contracts/archetype-maps.json` exists (**fix #5**)
+7. `applies` is present and its values are archetype-enum members (`ARCHITECTURE §5`)
+8. no capability-canon file cites a **relocated** floor checker — a literal `.dev/floor/<x>` where `pharn/floor/<x>` exists, which would ENOENT and silently degrade that command's deterministic sub-check (P6)
+
+## Run the structural checker
+
+```bash
+node pharn/floor/check-structural.mjs <expected.json> <actual.json> [repoDir]
+```
+
+`check-structural.mjs` **executes** the `structural[]` reduction that `pharn/pharn-contracts/eval-format.md`
+documents. Given an eval's `expected` (normalized to JSON) and a skill's already-produced finding
+output (a JSON array of `finding-shape` objects), it evaluates the four structural kinds —
+`finding_count`, `field_equals`, `file_resolves`, `needle_absent_from_enum_gated` — plus the one
+`skill_kind` rule (`deterministic` forbids a non-empty `semantic[]`), and exits **non-zero on any
+RED**. Each kind reduces to a floor primitive (`ARCHITECTURE §2`): an enum/count check, an equality
+check, path resolution, or a substring scan over the **enum-gated** fields only (`type`, `rule_id`,
+`severity`, `file` — never `problem` / `evidence`, which are untrusted free-text DATA). It does **not**
+run the skill; it checks an output the skill already produced.
+
+**What this changes (P0).** Before, `eval-format.md` labeled `structural[]`
+**floor-reducible-but-not-yet-enforced** and named this checker as the backstop. With it landed,
+`structural[]` is **floor-executable and CI-tested**, and the invokers now exist at the verify/eval
+stages — `/pharn-verify` and `/pharn-dev-verify` run it per committed eval pair, and `/pharn-dev-eval`
+runs it over each live-emitted run via `.dev/floor/check-variance.mjs` (`/pharn-dev-build` still does
+**not** invoke it): when the checker is run, if a model laundered an untrusted needle (e.g. `skip
+authz`) into an enum-gated field, or routed a `deterministic` skill's judgment through `semantic[]`,
+that is a deterministic **RED**, not a hope — the enforcement moment is the verify/eval stage, never
+the write.
+
+**Honest scope (P0) — the boundary that keeps this from overselling.** The checker enforces
+`structural[]` **over a provided finding output**. It does **not** run the skill and does **not**
+guarantee the model _produces_ a clean, un-laundered output under injection — that is the named
+residual (`LIMITS §2`, `THREAT-MODEL §5`, attempt 0). The trip-wire moves onto the floor; the model's
+behavior under injection does not become guaranteed. `semantic[]` stays **advisory** — the checker
+never evaluates a `judge` string (no LLM).
+
+## Wire the write-guard hooks
+
+Two `PreToolUse` hooks are wired in `.claude/settings.json` (committed), both on
+`Write|Edit|MultiEdit|NotebookEdit`; a deny from **either** blocks. **Wire them with the command form that
+ships** — `node "${CLAUDE_PROJECT_DIR}"/.claude/hooks/<guard>.cjs`. Claude Code runs a hook in Claude's
+_current_ directory, so a relative `node .claude/hooks/…` stops starting after any `cd` into a
+subdirectory: node exits 1, which Claude Code treats as a non-blocking error, and both guards go silently
+off (measured; the shipped form until `6.1.0`). Each guard then judges the **git working tree that contains
+Claude's current directory** — a subdirectory keeps the repo root, a session inside a worktree is judged as
+that worktree — and `LIMITS.md §7` states the bounds that remain. **`protect-trusted-paths.cjs` (fix #2)**
+blocks any write to a protected path. Paths are matched **repo-relative and exact**, case-folded, against
+the guard's own location (plus the work tree Claude is in, when it belongs to the same repository) — never
+by bare basename, so a user's own `docs/ARCHITECTURE.md` stays writable. **Git metadata is denied too**: any
+`.git` path segment under a guarded root, because those entries decide which tree each guard judges and
+`.git/hooks` / `.git/config` run code on the next git command. Since 6.31.1 each write is judged twice: first
+exactly as before, then at the file the write actually reaches — on macOS and Linux a backslash is part of a
+file name there — so a symlink named `s\x` pointing at the project root no longer carries a write to a
+protected file past the guard; every verdict that second check changes is a denial.
+The default set is the four trusted spec docs (`pharn/CONSTITUTION.md`, `pharn/ARCHITECTURE.md`,
+`THREAT-MODEL.md`, `LIMITS.md`), `CODEOWNERS` at each of the three locations GitHub honors (root,
+`.github/`, `docs/`) — the GitHub-layer write-guard itself — and **the two pre-write guards' own control
+surface**: both settings files that can wire the hooks (`.claude/settings.json` and
+`.claude/settings.local.json`) plus the four hook scripts
+(`protect-trusted-paths.cjs`, `enforce-writes-scope.cjs`, `set-writes-scope.cjs`,
+`require-loop-record.cjs`). Each hook is re-read
+fresh on every tool call, so a write to one would disarm that guard on the very next write. It also names
+the project's own SPEC template, `pharn.spec-template.md`, denied whether or not the file exists: its
+guidance comments are instructions `/pharn-spec` follows, so a human edits it directly. Extend the
+set further with the `PHARN_PROTECTED` env var (comma-separated; an entry containing `/` is an exact
+repo-relative path, a bare name still matches that basename at any depth). Confirm it works:
+
+```bash
+echo '{"tool_name":"Edit","tool_input":{"file_path":"pharn/CONSTITUTION.md"}}' | node .claude/hooks/protect-trusted-paths.cjs   # → exit 2, denied
+echo '{"tool_name":"Write","tool_input":{"file_path":".claude/settings.json"}}' | node .claude/hooks/protect-trusted-paths.cjs  # → exit 2, denied
+echo '{"tool_name":"Write","tool_input":{"file_path":"docs/ARCHITECTURE.md"}}' | node .claude/hooks/protect-trusted-paths.cjs  # → exit 0, allowed (a user's OWN doc)
+```
+
+**`enforce-writes-scope.cjs` (fix #7)** is the runtime scope-enforcement hook: it denies any write
+outside the active scope in `.pharn/writes-scope.json`. With no scope set, the default depends on the
+tree (6.24.0): a dev checkout or an unsignalled tree stays fail-closed to the same default-safe-set as
+before, and every denial it made before carries the same message; the only verdict changes there are
+toward deny (a write through a symlink is also judged at the target the filesystem reaches, a path spelled
+differently from an existing directory is also judged at that directory's on-disk spelling, and a guard
+error denies). An **installed** project (`pharn.config.json` carries a non-empty `skillsVersion`) is
+fail-closed to the same default-safe-set **only while a `/pharn-ship`, `/pharn-loop` or `/pharn-review`
+run is open** (a marker under `.pharn/<command>/<name>/active.json`, written by `pharn/floor/run-marker.mjs`
+or, for the loop, `require-loop-record.cjs`); outside an open run it instead denies PHARN's own installed
+surface — `pharn/**` except `pharn/features/**`, `.claude/**` and `pharn.config.json`, matched case-folded
+— plus `.pharn/writes-scope.json` and any path containing a backslash, and allows every other path inside
+the project, including your ordinary source. Outside the project it then allows only this project's
+auto-memory folder (`<claude-config-dir>/projects/<key>/memory/**`, for the key of the folder holding the
+session's transcript and the key Claude Code derives from the repository's main checkout — a mirror of an
+undocumented derivation that fails closed if it drifts), this session's own scratchpad, and an ordinary temp
+path (under the OS temp directory or `/tmp`, never inside a `claude-<uid>` folder, never inside the Claude
+config directory, and not inside the home directory when that sits in a temp root) — never a path inside another git
+tree, and never another spelling of the project's own path (a different letter case or Unicode form reaches
+the project's own files on a case-insensitive volume, so it is denied as the project's own); every other
+out-of-project path, another project's memory folder included, stays denied — where a project is its key, so
+two paths that differ only in characters outside `[A-Za-z0-9]` share one folder, as they do in Claude Code
+(`LIMITS.md §7`). A malformed
+`.pharn/writes-scope.json` denies EVERY write in an installed project rather than falling back to either
+default. Confirm it works:
+
+```bash
+echo '{"tool_name":"Write","tool_input":{"file_path":"pharn/floor/x.mjs"}}' | node .claude/hooks/enforce-writes-scope.cjs  # → exit 2, denied (no scope; fail-closed dev-repo default)
+echo '{"tool_name":"Write","tool_input":{"file_path":"README.md"}}' | node .claude/hooks/enforce-writes-scope.cjs  # → exit 2, denied (root file outside default-safe-set)
+# In an INSTALLED project (pharn.config.json has skillsVersion) with NO scope and NO run open, the SAME
+# root file is instead ALLOWED — the new permissive default (6.24.0) does not deny an ordinary project file:
+echo '{"tool_name":"Write","tool_input":{"file_path":"README.md"}}' | node .claude/hooks/enforce-writes-scope.cjs  # → exit 0 there, not exit 2 as above
+```
+
+**`pharn/floor/run-marker.mjs`** writes and removes the `/pharn-ship` / `/pharn-review` run markers the
+guard above reads (`--open <pharn-ship|pharn-review> <name>` / `--close <pharn-ship|pharn-review> <name>`);
+`/pharn-loop` keeps its own marker, written by `require-loop-record.cjs`. Presence and age only (24 h,
+symmetric) — the guard never parses a marker's contents.
+
+The **setter** (`set-writes-scope.cjs`) is separate from both hooks: it refuses to _authorize_ those
+same control-surface paths at scope-set time — exits non-zero and writes nothing if the parsed scope names
+one, unless the operator passes `--allow-claude-dir`. That early refusal is not runtime enforcement;
+**`enforce-writes-scope.cjs`** enforces whatever scope was emitted on every write. `.claude/commands/**`
+and the hooks' own `*.test.cjs` are deliberately in neither protected set nor the refusal set.
+**Bounded, and stated (P0):** the two `PreToolUse` hooks cover the `Write|Edit|MultiEdit|NotebookEdit` surface
+only — Bash-tool writes bypass them entirely, for these paths exactly as for the trusted docs. Such a write is
+**detected, not prevented**: `/pharn-build` anchors a content-hash baseline and `/pharn-verify` runs
+`check-bash-reconcile.mjs`, which fails verify when a changed path is one the live guards would have denied —
+for a non-adversarial writer only, since the baseline is unauthenticated state a Bash write can also reach
+(`../pharn-contracts/reconciliation-record.md`, `LIMITS.md §6`).
+
+## Honest scope (P0, P7)
+
+Checks **4 and 5 are best-effort.** Markdown has no `import` statement to lint, so they reduce a
+class of mistakes — they do not eliminate it (`ARCHITECTURE §4` caveat; `LIMITS`). The floor
+guarantees the _structural_ invariants it can compute deterministically; it does **not** guarantee
+content is correct — that is `/pharn-dev-review`'s advisory job. A GREEN floor means "the shape is sound,"
+never "the architecture is right." Claiming otherwise would be the exact disease P0 exists to
+prevent.

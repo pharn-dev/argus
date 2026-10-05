@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "the call binds an AbortSignal timeout via the `signal` option, a recognized in-args timeout mechanism, so pharn/floor/scan-code-missing-timeout.mjs reports found:false; the lens emits NO finding. This is the precision bound proving the scan does not naively flag every fetch."
+      }
+    ]
+  }
+}

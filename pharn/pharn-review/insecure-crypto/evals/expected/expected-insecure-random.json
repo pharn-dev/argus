@@ -1,0 +1,17 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [
+      { "kind": "finding_count", "op": "==", "value": 1 },
+      { "kind": "field_equals", "field": "type", "value": "FINDING" },
+      { "kind": "field_equals", "field": "rule_id", "value": "P2" },
+      { "kind": "field_equals", "field": "severity", "value": "important" },
+      { "kind": "file_resolves", "value": "pharn/pharn-review/insecure-crypto/evals/cases/case-insecure-random.md:17" }
+    ],
+    "semantic": [
+      {
+        "judge": "the non-crypto RNG on line 17 feeds a variable named sessionToken — security material — and is detected deterministically by pharn/floor/scan-code-crypto.mjs (kind insecure-random), so it is emitted as a FLOOR finding whose file line comes from the scanner, not from the lens's reading. The RNG call on line 22 must produce NO finding: its only security-looking token is the local `keys`, which contains `key` as a substring but not as an identifier segment, and context-scoping that call out is Layer-1 behavior the lens must not second-guess in either direction — it may neither add a finding for line 22 on its own judgment nor suppress line 17's."
+      }
+    ]
+  }
+}

@@ -1,0 +1,217 @@
+{
+  "pharnVersion": "0.7.0",
+  "skillsVersion": "6.35.0",
+  "repo": "pharn-dev/pharn-oss",
+  "commit": "ea0234b4f57fd9d525b99a2de769a411c542264f",
+  "modules": [],
+  "installedAt": "2026-10-05T08:41:22.937Z",
+  "models": {
+    "stages": {
+      "default": {
+        "model": "sonnet",
+        "effort": "high"
+      },
+      "spec": {
+        "model": "opus",
+        "effort": "high"
+      },
+      "plan": {
+        "model": "opus",
+        "effort": "high"
+      },
+      "grill": {
+        "model": "opus",
+        "effort": "high"
+      },
+      "build": {
+        "model": "sonnet",
+        "effort": "high"
+      },
+      "regress": {
+        "model": "sonnet",
+        "effort": "high"
+      },
+      "verify": {
+        "model": "sonnet",
+        "effort": "high"
+      },
+      "ship": {
+        "model": "sonnet",
+        "effort": "high"
+      },
+      "loop": {
+        "model": "sonnet",
+        "effort": "high"
+      },
+      "review": {
+        "model": "opus",
+        "effort": "high"
+      },
+      "memory-promote": {
+        "model": "opus",
+        "effort": "high"
+      },
+      "ac-test": {
+        "model": "opus",
+        "effort": "high"
+      }
+    }
+  },
+  "seam": {
+    "resolutionOrder": [
+      "official-skill",
+      "pinned-docs",
+      "model",
+      "fetch",
+      "ask"
+    ],
+    "modelConfidenceThreshold": "high",
+    "haltOnUnknown": true
+  },
+  "archetypes": [
+    "lib"
+  ],
+  "capabilities": [
+    {
+      "name": "architecture",
+      "role": "griller",
+      "source": "auto"
+    },
+    {
+      "name": "comprehension",
+      "role": "griller",
+      "source": "auto"
+    },
+    {
+      "name": "coupling",
+      "role": "griller",
+      "source": "auto"
+    },
+    {
+      "name": "documentation",
+      "role": "griller",
+      "source": "auto"
+    },
+    {
+      "name": "error-handling",
+      "role": "griller",
+      "source": "auto"
+    },
+    {
+      "name": "observability",
+      "role": "griller",
+      "source": "auto"
+    },
+    {
+      "name": "performance",
+      "role": "griller",
+      "source": "auto"
+    },
+    {
+      "name": "privacy",
+      "role": "griller",
+      "source": "auto"
+    },
+    {
+      "name": "security",
+      "role": "griller",
+      "source": "auto"
+    },
+    {
+      "name": "testability",
+      "role": "griller",
+      "source": "auto"
+    },
+    {
+      "name": "copy-paste-drift",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "duplicated-logic",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "hallucinated-api",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "injection",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "input-validation",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "insecure-crypto",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "magic-values",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "missing-await",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "missing-error-handling",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "missing-timeout",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "null-deref",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "off-by-one",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "placeholder-as-done",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "race-condition",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "resource-leak",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "secrets-in-code",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "swallowed-exception",
+      "role": "lens",
+      "source": "auto"
+    },
+    {
+      "name": "trust-fence",
+      "role": "lens",
+      "source": "auto"
+    }
+  ],
+  "layout": "pharn"
+}

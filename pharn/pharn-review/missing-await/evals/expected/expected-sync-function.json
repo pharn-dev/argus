@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "the floating statement call `logAccess(req.id);` is to a plain synchronous function not declared `async`, so the scanner's same-file async roster is empty and pharn/floor/scan-code-missing-await.mjs reports found:false; the lens emits NO finding and does not manufacture one. This is the roster-precision bound — the scanner flags only a floating call to a known-async callee, not every floating statement call. A clean scan is not proof the code is async-correct (Layer-1 bound)."
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "`app.get(...)` is an Express route registration (a bare verb on a non-net receiver), not an HTTP-client call; the scanner's call set is anchored on library/receiver tokens and does not match it, so pharn/floor/scan-code-missing-timeout.mjs reports found:false and the lens emits NO finding. This is the over-match bound (no app.get/router.post false-positive)."
+      }
+    ]
+  }
+}

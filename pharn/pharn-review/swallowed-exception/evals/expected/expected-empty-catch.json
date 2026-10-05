@@ -1,0 +1,17 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [
+      { "kind": "finding_count", "op": "==", "value": 1 },
+      { "kind": "field_equals", "field": "type", "value": "FINDING" },
+      { "kind": "field_equals", "field": "rule_id", "value": "P2" },
+      { "kind": "field_equals", "field": "severity", "value": "important" },
+      { "kind": "file_resolves", "value": "pharn/pharn-review/swallowed-exception/evals/cases/case-empty-catch.md:16" }
+    ],
+    "semantic": [
+      {
+        "judge": "the empty catch on line 16 is detected deterministically by pharn/floor/scan-code-swallowed-exception.mjs and reported as a FLOOR finding (rule_id P2, file = the catch line from the scanner); the lens may note in free-text whether the swallow looks intentional/best-effort, but does NOT suppress the finding on that basis."
+      }
+    ]
+  }
+}

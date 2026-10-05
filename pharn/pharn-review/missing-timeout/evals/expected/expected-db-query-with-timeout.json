@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "the db call passes a `timeout` token in its own args, so pharn/floor/scan-code-missing-timeout.mjs reports found:false; the lens emits NO finding. The exact API shape is illustrative — the point tested is that an in-args indicator suppresses the db-branch hit."
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "the handle is acquired with a `using` declaration (explicit resource management / RAII), so pharn/floor/scan-code-resource-leak.mjs reports found:false (a `using` binding auto-disposes at scope exit, classified CLEAN deterministically); the lens emits NO finding and does not manufacture one. A clean scan is not proof the code is leak-free, only that no unclosed-binding shape was detected."
+      }
+    ]
+  }
+}

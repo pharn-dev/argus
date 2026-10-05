@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "the literals 5 and \"guest\" appear only as an assignment RHS (named-constant definitions) and every comparison operand is a NAME or an enum member, so pharn/floor/scan-code-magic-values.mjs reports found:false and the lens emits no finding — the precision bound proving the scanner does not flag named constants (the fix for magic values) nor mistake the assignment that defines them for a comparison."
+      }
+    ]
+  }
+}

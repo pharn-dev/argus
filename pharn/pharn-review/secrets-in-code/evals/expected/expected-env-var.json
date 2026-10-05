@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "the scanner is clean (no secret-shaped literal) because the credential is read from process.env; the lens emits zero findings and does not manufacture one, while NOT claiming the code is secret-free (a clean scan bounds only the fixed regex set)."
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [{ "kind": "finding_count", "op": "==", "value": 0 }],
+    "semantic": [
+      {
+        "judge": "the scanner is clean (no known-weak primitive named — bcrypt is used); the lens emits zero findings and does not manufacture one, while NOT claiming the code is cryptographically correct (a clean scan bounds only the fixed weak-primitive set)."
+      }
+    ]
+  }
+}

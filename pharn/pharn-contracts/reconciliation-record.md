@@ -1,0 +1,269 @@
+---
+file: "pharn/pharn-contracts/reconciliation-record.md"
+kind: pharn-owned
+trust: trusted
+layer: pharn-contracts
+coupling: agnostic
+purpose: "The shape of the reconciliation baseline and the reconciliation verdict — the artifacts pharn/floor/reconcile-baseline.mjs writes and pharn/floor/check-bash-reconcile.mjs emits. Schema only, zero behavior."
+reads: []
+writes: []
+---
+
+# Contract — reconciliation record
+
+`pharn-contracts` is the layer-tree root: schemas only, zero behavior (P3). This file defines two
+shapes and one enum. It defines no procedure — the procedure lives in the two floor scripts, and their
+honesty travels in their own headers (lessons-learned L2: the PLAN is ephemeral, the artifact is
+durable).
+
+## Why this exists
+
+Both `PreToolUse` write guards match `Write|Edit|MultiEdit|NotebookEdit`. A write issued through
+**`Bash`** reaches every path in the repository, is not denied, and — with no `PostToolUse` hook wired —
+leaves no record. `LIMITS.md §6` states that bound; this contract is the shape of the mechanism that
+makes such a write **detectable after the fact**.
+
+## The claim these artifacts support — and the seven it does not
+
+**Supported, literally:** _a **non-adversarial** write to a path the active writes-scope would have
+DENIED is detected, and fails the stage._
+
+**"Non-adversarial" is load-bearing.** The baseline is unauthenticated state inside the writable tree, so
+a writer who edits a denied file **and** rewrites that file's baseline entry gets a silent `CLEAN`. This
+is an **accounting tool against tooling that escapes its scope** — a formatter, a generator, a script, a
+mistake, which is the entire population of the `L19`/`L20` failures it was built for — and it is **not a
+control against an attacker**. Only the always-reconciled control surface resists that actor, because
+only it is anchored in committed git objects rather than in the baseline.
+
+**Struck (P0), each for a stated reason:**
+
+| Struck claim                                  | Why                                                                                                                                                                                                                                                             |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Bash writes are prevented"                   | Detection is strictly weaker than prevention. The only true prevention is OS-level sandboxing of the `Bash` process, which PHARN does not implement and cannot — harness-layer, environment-dependent, not expressible in markdown methodology (`LIMITS.md §6`) |
+| "all Bash writes are detected"                | Only those to **denied** paths, inside the reconciled set, between two anchors, in one worktree                                                                                                                                                                 |
+| "a `CLEAN` verdict means no escape occurred"  | It means none was **detected**                                                                                                                                                                                                                                  |
+| "the detector cannot be disabled"             | Its state is reachable by the channel it monitors. **Deleting** it is loud (`--require-baseline` ⇒ `INCONCLUSIVE`), and the control surface is anchored in committed blob ids — but **forging** an ordinary path's baseline entry is silent                     |
+| "the detector cannot be disabled **quietly**" | True for the control surface **only**. For ordinary paths a forged baseline entry yields `CLEAN` with no warning. Closing this needs authenticated state outside the worktree — the same harness-layer category as the OS sandbox, and just as absent           |
+| "the checker vouches for its own integrity"   | It cannot. `/pharn-*verify` runs the **worktree** copy through Bash. `pharn/floor/` is always-reconciled, so a modified checker is caught **by itself** — circular, and not a guarantee                                                                         |
+| "skipping the anchor fails the run"           | Only in a tree that has **never** anchored. Otherwise `--require-baseline` is satisfied by whatever earlier epoch is on disk, and the reconciliation silently ranges over the wrong window. The anchor is a Bash call (`L19`), so nothing forces it             |
+
+## 1. The baseline record — `.pharn/reconcile/baseline.json`
+
+Written by `pharn/floor/reconcile-baseline.mjs --anchor`. Gitignored (it lives under `.pharn/`), and
+**disposable**: absent means "no epoch has been opened", which is the honest normal state of a fresh
+clone.
+
+**Since 6.24.0, `--anchor` REFUSES to open an epoch with no usable scope to snapshot (D6).** When
+`snapshotScope()` returns `null` — an absent or unusable `.pharn/writes-scope.json` — the command exits 2
+and writes nothing, with a message naming the remedy (run the stage's own scope-setter first). An
+explicit `{"scope": []}` **is** a scope (an authorization to write nothing) and anchors normally. Both
+shipped callers (`/pharn-build`, `/pharn-dev-build`) already run their own Step-0 setter immediately
+before this call, so the refusal reaches only a caller that anchors out of order.
+
+```json
+{
+  "version": 1,
+  "epoch": "2026-09-10T11:33:19.704Z",
+  "anchored_by": "pharn-build",
+  "scope_snapshot": { "scope": ["src/app.ts"], "set_by": "pharn/features/x/PLAN.md", "set_at": "…" },
+  "scope_amendments": [
+    { "scope": ["memory-bank/lessons-learned.md"], "set_by": ".claude/commands/pharn-memory-promote.md", "set_at": "…" }
+  ],
+  "entry_count": 1759,
+  "entries": { "<repo-relative path>": "<sha256 hex>" }
+}
+```
+
+| Field              | Type             | Meaning                                                                                                                                                                                                   |
+| ------------------ | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `version`          | integer          | Schema version. A **newer** version than the reader is `INCONCLUSIVE`; an **older** one is tolerated at read and reported in `warnings[]`                                                                 |
+| `epoch`            | ISO-8601         | When this epoch opened                                                                                                                                                                                    |
+| `anchored_by`      | string           | A label passed as `--by`. **Advisory** — it is argv, so it is a description, never an authorization                                                                                                       |
+| `scope_snapshot`   | object \| `null` | A verbatim copy of `.pharn/writes-scope.json` at anchor time. An object; `null` only in a baseline anchored before 6.24.0 — since then `--anchor` REFUSES rather than write a `null` snapshot (D6, above) |
+| `scope_amendments` | array            | Further scopes that came into force **during** the epoch, in call order. Empty on a fresh anchor; absent on a pre-5.1.0 record, read as `[]`                                                              |
+| `entry_count`      | integer          | `Object.keys(entries).length` at write time                                                                                                                                                               |
+| `entries`          | object           | Repo-relative path → SHA-256 of its bytes. A symlink → SHA-256 of `symlink\0` + its raw link text, whatever its target (6.17.1 for a non-file target, 6.20.8 for every link; see "Symlinks" below)        |
+
+**Why the scope is snapshotted rather than read live.** By reconciliation time
+`.pharn/writes-scope.json` holds a **later** stage's scope — it is one mutable record, global to the
+worktree, that every stage's Step 0 overwrites (lessons-learned **L38**; `check-regress.mjs` documents
+the same trap from the other side). Reading it live would judge the build's writes against verify's
+scope.
+
+**Why ONE snapshot was not enough — `scope_amendments` (5.1.0).** An epoch spans build → ship, and a run
+legitimately writes under **several** scopes inside it. Judging every candidate against the opening
+snapshot alone reported the later stages' **hook-approved** writes as escapes. The measured case:
+`/pharn-*ship`'s lesson-extract invokes `/pharn-*memory-promote` **after** the build anchor, so a canon
+write that passed **both** live `PreToolUse` guards and an explicit human accept was reported as _"a
+write reached it outside the guarded tool surface"_ — false for that write. Canon is `never_exempt` by
+deliberate design and, per lessons-learned **L7**, a build or ship scope may never **name** canon, so no
+`## Files` declaration could fix it from the plan side. Left alone, **every** promoting ship run ended
+RED: lessons-learned **L17**'s failure mode — a changed-since-anchor test reported as a
+wrote-outside-scope test, blocking on the correct designed workflow, which is exactly what trains an
+operator to wave through the one finding that must never be waved through.
+
+`reconcile-baseline.mjs --amend-scope` appends the live scope to this list. **Ordering is load-bearing,
+exactly as `--anchor`'s is (L38): call it AFTER the stage's own Step-0 setter**, never before, or it
+records the previous stage's scope and authorizes the wrong paths. It **fails closed** on every unusable
+input — no baseline, unreadable record, or no live scope all write nothing and exit 2. A missing live
+scope is deliberately **not** recorded as an empty amendment: `{"scope": []}` reads as "this stage was
+authorized to write nothing", a different claim from "no amendment was made".
+
+**What this does NOT change, stated because the distinction IS the guarantee.** An amendment makes a
+write **accounted for**, never **exempt**. `never_exempt` is untouched: canon stays in the candidate set
+every epoch, and the verdict on an _unaccounted_ canon write is still `ESCAPE`. Nor does an amendment
+override a guard — a path is cleared only if the guard **itself**, re-executed with that scope
+materialized, permits it, so an amendment whose `set_by` is a `PLAN.md` cannot launder a canon write past
+the origin check. And the detector's non-adversarial bound is **unchanged**: `--amend-scope` is a Bash
+call, so anything holding Bash can append a scope authorizing anything — but the same actor could
+already rewrite this record outright. Still an accounting tool, still not a control against an attacker.
+
+**Why the baseline is not `git status`.** `git status` answers _changed since the base commit_, a
+different question: it misses a `Bash` write that restores HEAD bytes, and it counts every legitimate
+Write-tool edit as a change with no way to separate the two. `check-regress.mjs scope` already makes
+exactly that conflation, and lessons-learned **L17** is the record of it. The baseline is therefore
+_content-hash vs the last anchor_.
+
+**Symlinks (6.17.1, 6.20.8).** `hashFile` used to open every path, and a plain open FOLLOWS a link. Before 6.17.1, a link to a
+directory, or a dangling link, therefore hashed as `null`. The anchor never recorded it, and the
+reconcile read it as unreadable, treated as changed (§3). Any repo that tracks such a link got a false
+`ESCAPE` on every run with zero writes. The measured case: a downstream project's 20 tracked
+`.claude/skills/*` directory links, which ended each of its `/pharn-loop` runs `STOP_TERMINAL`. Such a link
+was then hashed by its **link text**, which is what git stores for a mode-120000 entry, so an unchanged
+link reconciles `CLEAN` and a **re-pointed** one is still a candidate.
+
+**Every link, 6.20.8.** 6.17.1 left one kind on the old rule: a link to a **regular file** was still
+opened, the open followed it, and the **target's** bytes were recorded under the **link's** path. The
+explicit-scope match (§2) judges that path as text, while the live guard `realpath`s a Write's target
+first — so with a tracked `CLAUDE.md -> AGENTS.md` and a scope of `[AGENTS.md]`, an edit of `AGENTS.md`
+that the guard **allows** was reported as an `ESCAPE` on `CLAUDE.md`, "writes-scope (snapshot)". Now every
+link is hashed by its text and **nothing follows a link**: `hashFile` opens with `O_NOFOLLOW` first (a
+regular file is hashed through that one descriptor), and only when that open fails asks `readlink`, the
+call that answers for the name itself. A link's entry therefore changes only when the **link** changes;
+a write **through** it changes the target's own entry and is judged under the target's own path — the
+path the guard judges. The rule, as implemented and tested:
+
+| The path                                                                   | Its `entries` value                    |
+| -------------------------------------------------------------------------- | -------------------------------------- |
+| a regular file                                                             | SHA-256 of its bytes                   |
+| a symlink — to a file, a directory, a FIFO, an unreadable file, or nothing | SHA-256 of `symlink\0` + raw link text |
+| an unreadable regular file (`EACCES`)                                      | absent, so it is a candidate           |
+| a plain directory, a gitlink, a special file, a vanished path              | absent, so it is a candidate           |
+
+- **Where the unreadable-is-changed rule (§3) now lives.** Up to 6.20.7 a link to an unreadable file stayed
+  absent, so "make the target unreadable" could not hide a change behind the link. The link is never
+  opened now, so that protection sits on the **target's own entry**: an unreadable target is absent, and so
+  a candidate, under its own path.
+- **What it newly sees, and what it no longer does.** A link re-pointed between two files with identical
+  bytes is now a candidate (it was not, when the entry was the bytes). A change to a file **outside** the
+  repo, or git-ignored, reached through a tracked link is no longer read as a change to the link's path:
+  such a target is outside the reconciled set exactly as any other path there is.
+- **A re-pointed link is judged under its own path**, so the scope must name the link path itself. The
+  guards cannot see a re-point at all (a Write writes **through** a link), so for a link re-pointed to an
+  in-scope target the finding's uniform "would have DENIED" sentence describes the scope match, not a
+  decision a guard made. Stated, not reworded: no run has hit it (P7).
+- **The text is hashed as raw bytes, never as a decoded string.** Two targets that differ only in invalid
+  UTF-8 would decode to the same string, and re-pointing one to the other would go unseen. For a
+  valid-UTF-8 target the digest equals SHA-256 of `"symlink\0" + text`.
+- **No-follow means the FINAL component.** `O_NOFOLLOW` governs the last path component only; an ancestor
+  directory swapped for a link after enumeration is still followed, as before. Where the platform has no
+  `O_NOFOLLOW` (Windows), the open follows a link and a link to a regular file hashes by its target's bytes
+  — the pre-6.20.8 rule. A **link to a FIFO**, the hazard 6.17.1 recorded as not handled, is never opened
+  now, and a FIFO swapped in for a path after enumeration opens `O_NONBLOCK` and fails the regular-file test.
+- **Not seen through the link:** the files inside a linked directory. They are reconciled under their own
+  tracked paths, and a target outside the repo is not descended.
+- **Not collision-free against a forger.** A regular file whose bytes are exactly `symlink\0<text>`
+  hashes equal to that link. That takes deliberate forgery, which is outside the non-adversarial claim
+  this record supports.
+- **The first reconcile after an upgrade is NOT clean — flagged, never passed.** A baseline anchored by
+  pre-6.17.1 code has no entry for a directory or dangling link, and one anchored by code before 6.20.8
+  holds a link to a regular file under its **target's** digest. Either way the first reconcile of that
+  epoch reports the link as changed: a candidate, and an `ESCAPE` when no recorded scope names it
+  (pinned by a test). The next anchor (the next `/pharn-*build`) records the text. `version` stays `1`,
+  because the record's keys and shape did not change. What changed is one kind of `entries` value.
+
+## 2. The verdict — `pharn/floor/check-bash-reconcile.mjs` stdout
+
+```json
+{
+  "verdict": "CLEAN",
+  "epoch": "…",
+  "anchored_by": "pharn-build",
+  "reconciled": 0,
+  "escapes": [],
+  "exempted": [],
+  "warnings": []
+}
+```
+
+`escapes[]` entries carry `{ file, denied_by, scope_set_by? }`. When non-empty the record additionally
+carries `findings[]` in `finding-shape.md`'s enum-gated/free-text split — `type`, `rule_id`, `severity`,
+`file` are floor-verifiable; `problem` is free text and MUST be rendered as quoted DATA downstream.
+
+### The verdict enum — closed
+
+| Verdict        | Exit | Meaning                                                                                                                                                                                                                                                          |
+| -------------- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLEAN`        | 0    | Reconciled against a baseline; no candidate was one the guards would deny                                                                                                                                                                                        |
+| `ESCAPE`       | 1    | ≥1 changed path the guards would have denied. `escapes[]` names each                                                                                                                                                                                             |
+| `NO_BASELINE`  | 0    | No epoch has been opened. **GREEN by design** — a fresh clone or CI checkout has never anchored, and REDding there makes every first run a false alarm (the posture `check-lessons-index.mjs` takes for `COLD`). Only reachable **without** `--require-baseline` |
+| `INCONCLUSIVE` | 2    | Fail-closed: a malformed or future-schema baseline, an absent guard, a failed enumeration, or `--require-baseline` with no baseline                                                                                                                              |
+
+Callers branch on **set membership over this enum, or on the exit code** — never on prose (P5).
+
+## 3. `WARN` vs `RED`
+
+**RED** (`ESCAPE` / `INCONCLUSIVE`): a denied candidate; a control-surface path changed with no
+authorizing scope; any statusless or unresolvable input. _Statusless = RED at write._
+
+**Unreadable during reconcile is a CANDIDATE, not only a warning.** A path the reconciler cannot hash
+(`hashFile` returns `null`) is treated as **changed**. It is judged like any other candidate, so it goes
+RED when the guards would deny it, and a `warnings[]` line names it either way. That is fail-closed on
+purpose: if it were only a warning, making a file unreadable would hide a denied change. (Before 6.17.1
+this section listed it under WARN; the checker had already been treating it as changed, and the row was
+corrected in 6.17.1.)
+
+**WARN** (`warnings[]`, verdict unaffected): a path present at anchor and absent now — a deletion is not
+a write; a baseline written by an **older** schema version — _legacy records tolerated at read._
+
+## 4. The ignore/exempt data — `pharn/floor/reconcile-ignore.json`
+
+One file, iterated by the rules **and** by the tests (lessons-learned **L29**: when a remedy is
+quantified over a set, the enumeration is the deliverable). Five keys:
+
+| Key                  | What it holds                                                                                                                                                                                                                                                                                        |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `derived_ignore`     | git's own ignore rules — **never re-listed** here (**L35**: retire the second copy). The reconciled set is `tracked ∪ untracked-not-ignored`, so `node_modules/`, `.pharn/`, `runs/` cost nothing                                                                                                    |
+| `always_reconciled`  | Never exemptible; falls back to committed blob ids when no baseline exists. A **copy** of the guards' own control-surface sets, pinned set-equal by test                                                                                                                                             |
+| `pipeline_artifacts` | A stage's **own** output (`pharn/features/<slug>/PLAN.md`, `VERIFY.md`, `lenses/<lens>/findings.json`, …) — **exact** enum membership, never a `**` glob, so a stray file under the same directory is still reported. A copy of `check-regress.mjs`'s `PIPELINE_ARTIFACTS`, pinned set-equal by test |
+| `exempt`             | Tracked paths a **named** command legitimately rewrites through Bash. Deliberately tiny; each entry carries its `writer`                                                                                                                                                                             |
+| `never_exempt`       | A refusal set — memory-bank canon, the four trusted docs, `CODEOWNERS`. Enforced at **run time**, not only under test                                                                                                                                                                                |
+
+**Why `pipeline_artifacts` exists, and it is lessons-learned L17 verbatim.** A stage's own artifact
+changes _after_ the build's anchor — `/pharn-verify` writes `VERIFY.md`, `/pharn-review` writes
+`findings.json`, and the `PLAN.md` that **sourced** the scope is not a **member** of it. Without this
+key, every one of those reads as an escape: a _changed-since-anchor_ fact reported as a
+_wrote-outside-scope_ claim, producing a **blocking** finding on the correct, designed workflow — which
+is precisely how an operator is trained to wave through the one finding that must never be waved
+through. This defect was found by running the checker against its own increment, not by reasoning about
+it.
+
+## 5. Guarantee audit (P0)
+
+- **"a denied path that changed is reported"** → **FLOOR**: content-hash (`ARCHITECTURE §2` primitive
+  #2) composed with path/enum membership (primitive #3). No model judgment.
+- **"denied is decided by the real guards"** → **FLOOR, by delegation**: the checker **executes**
+  `protect-trusted-paths.cjs`, and for the no-scope default it executes `enforce-writes-scope.cjs` in a
+  probe sandbox reproducing THREE runtime signals (6.24.0, up from two): a `pharn.config.json`
+  `skillsVersion`, `.dev/floor/` presence, and a FRESH run marker (written by `run-marker.mjs`'s own
+  `openRun()`), so the probe always answers with the STRICT, in-run default rather than the newer
+  install-posture permissive one — the only defensible answer for a probe with no write history to
+  consult (§8's L42 bound, unchanged). The default set is never copied.
+- **"the explicit-scope match agrees with the hook"** → **ADVISORY-BOUNDED**: that one matcher is a
+  faithful copy, pinned by an example-based parity test — not a proof of equivalence. The two must be
+  updated together.
+- **"no Bash escape occurred"** → **STRUCK.** Four bounds: the reconciled set excludes git-ignored
+  paths; the window is anchor→reconcile; the model is one worktree per session; no attribution.
+- **"a shell command was analysed"** → **STRUCK, and structurally impossible here.** No Bash command
+  string is ever read. Shell parsing is undecidable and a verb denylist is a heuristic, which P0 forbids
+  labelling a guarantee.

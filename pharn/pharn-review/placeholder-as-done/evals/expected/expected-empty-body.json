@@ -1,0 +1,17 @@
+{
+  "skill_kind": "llm",
+  "assertions": {
+    "structural": [
+      { "kind": "finding_count", "op": "==", "value": 1 },
+      { "kind": "field_equals", "field": "type", "value": "FINDING" },
+      { "kind": "field_equals", "field": "rule_id", "value": "P2" },
+      { "kind": "field_equals", "field": "severity", "value": "important" },
+      { "kind": "file_resolves", "value": "pharn/pharn-review/placeholder-as-done/evals/cases/case-empty-body.md:13" }
+    ],
+    "semantic": [
+      {
+        "judge": "the empty function body on line 13 (`export function applyTax(order, region) {}`) is detected deterministically by pharn/floor/scan-code-placeholder.mjs (Pass B: mask comments/strings, brace-match the body, body is whitespace-only) and reported as a FLOOR finding (rule_id P2, file = the function-head line from the scanner); the lens may note in free-text whether the empty body is a deliberate no-op, but does NOT suppress the finding on that basis."
+      }
+    ]
+  }
+}
