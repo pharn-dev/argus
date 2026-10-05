@@ -1,0 +1,81 @@
+{
+  "schema": "ac-tests-lock/4",
+  "feature": "collector-windows",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "collector-windows",
+    "spec_content_hash": "9342a6f9e40a234724bf174a29e016a29738b05d7ab059d80b29afed60d69bec"
+  },
+  "mapping": {
+    "path": "pharn/features/collector-windows/AC-TESTS.md",
+    "sha256": "0f6c4a80ad7c460e6d36491f57e5d0ee90dd214cc9658f853de71eeb511deae9"
+  },
+  "files": [
+    {
+      "path": "src/collector/collector-windows.ac1.test.ts",
+      "sha256": "68266969606301f4b4c32464b37a58cc86caaa485e715c6167564f8e68ce2e26"
+    },
+    {
+      "path": "src/collector/collector-windows.ac2.test.ts",
+      "sha256": "70ce7d6d7576ddf9611e7f0c3b9c0ca41d9db0290558381e9f086e78982ed05a"
+    },
+    {
+      "path": "src/collector/collector-windows.ac3.test.ts",
+      "sha256": "deaf7e8795cd0be505c55eac4ccbbfa3a8c99d624489990acd6f49d0f662ae95"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "317a18eb59083e54cbb92f73ca78d3ba3346f17e9fe5c0256446706142caad25",
+    "files_sha256": "516521aeb8fa89367c15163dcfa4e2f49a097e0c6726f3482dd9f6b25cd2f219",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "a49f77ec7a04ac1a652c949e450f75fc7e02fa866658481c9fde4bc8cc2ac4b1"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/collector/collector-windows.ac1.test.ts::collector windows — AC-1 › AC-1: groups three samples into the aligned 1000 window, emits it on the 2500 sample, and emits the 2000 window on end, all integers"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/collector/collector-windows.ac2.test.ts::collector windows — AC-2 › AC-2: late samples are counted on the open window and dropped; a closed window is never re-opened or re-emitted"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/collector/collector-windows.ac3.test.ts::collector windows — AC-3 › AC-3: a collector with capacity 2 keeps the two newest windows, resolves on source end, and rejects with a source error"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null
+  }
+}
