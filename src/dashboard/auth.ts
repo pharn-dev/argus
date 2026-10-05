@@ -21,10 +21,11 @@ export function tokensMatch(presented: string, expected: string): boolean {
 /** The Bearer token if present, else the `token` query parameter. */
 export function presentedToken(req: IncomingMessage, url: URL): string | undefined {
   const header = req.headers.authorization;
-  if (header !== undefined) {
-    const match = /^bearer\s+(.+)$/i.exec(header);
-    if (match?.[1] !== undefined) {
-      return match[1].trim();
+  // Parsed without a regex: `/^bearer\s+(.+)$/` backtracks polynomially on long runs of spaces.
+  if (header !== undefined && header.slice(0, 7).toLowerCase() === 'bearer ') {
+    const token = header.slice(7).trim();
+    if (token !== '') {
+      return token;
     }
   }
   return url.searchParams.get('token') ?? undefined;
