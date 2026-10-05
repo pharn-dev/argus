@@ -14,3 +14,8 @@ export {
   type AlertMetric,
   type AlertRule,
 } from './alert-rules.js';
+export type { AlertSink, SinkErrorHandler } from './alert-sink.js';
+export { createStdoutSink, type StdoutSinkOptions } from './stdout-sink.js';
+export { createFileSink, type FileSinkOptions } from './file-sink.js';
+export { createWebhookSink, type WebhookSinkOptions } from './webhook-sink.js';
+export { createSinks, type SinkConfig, type SinkInput } from './sink-config.js';

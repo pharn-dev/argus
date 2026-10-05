@@ -1,0 +1,81 @@
+{
+  "schema": "ac-tests-lock/4",
+  "feature": "collector-alert-sinks",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "collector-alert-sinks",
+    "spec_content_hash": "c6e745deefa7ef7adeb513f36a09c5df48210af2238c02ae670502fb85c83899"
+  },
+  "mapping": {
+    "path": "pharn/features/collector-alert-sinks/AC-TESTS.md",
+    "sha256": "14161d702b63f56a92629b41999c106cd4df21da18a52bafdd43ac72fe2005c7"
+  },
+  "files": [
+    {
+      "path": "src/collector/collector-alert-sinks.ac1.integration.test.ts",
+      "sha256": "18a2034e26693f7937fec6c70c1dd47c903cd66be8d0c91cb195fa05eb565288"
+    },
+    {
+      "path": "src/collector/collector-alert-sinks.ac2.integration.test.ts",
+      "sha256": "9e2106e2bcb7e36d1afa8f804c61006aedf7bfd97228015891c871b864ea8f30"
+    },
+    {
+      "path": "src/collector/collector-alert-sinks.ac3.integration.test.ts",
+      "sha256": "ef8ebe43f66592c583bb33c933c5d81487c59a4acef3c92324ab44de8ae833bf"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "5642104fec9d5f0a624ddfb9ca62726454d959df3d4505742387fb778df30b7f",
+    "files_sha256": "3f9beca59374812ef750e0246a5bfcd91e86582fd4deb1eada736d81a17d4203",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "78a138390641d9a959c3399568734eda1c5a962505ec7eccf953ece055722b8a"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/collector/collector-alert-sinks.ac1.integration.test.ts::collector alert sinks — AC-1 › AC-1: stdout and file sinks write one NDJSON line per alert in order, without ending the stream or truncating the file"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/collector/collector-alert-sinks.ac2.integration.test.ts::collector alert sinks — AC-2 › AC-2: the webhook sink POSTs JSON, retries a 5xx, counts a timeout as one failure, and drops past its in-flight bound"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/collector/collector-alert-sinks.ac3.integration.test.ts::collector alert sinks — AC-3 › AC-3: a collector delivers every alert to every sink, isolates a failing sink, and rejects bad sink config at creation"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null
+  }
+}
