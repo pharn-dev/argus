@@ -1,0 +1,86 @@
+{
+  "feature": "collector-alert-sinks",
+  "gates": {
+    "build": 0,
+    "format:check": 0,
+    "lint": 0,
+    "reconcile": 0,
+    "test": 0,
+    "typecheck": 0
+  },
+  "verdict": "PASS",
+  "failing_gates": [],
+  "gate_run": {
+    "stamp_sha256": "d2a00ebfca4a673854f57f38df6effed7f929be90cd7066d424caa40d902f785",
+    "source": "discover",
+    "fingerprint": {
+      "algo": "worktree-fingerprint/2+sha256",
+      "final": "e05d1c6d33d97889f966fb04c53b5f73276b46d1bdf700e4d19c2397463f7f1e"
+    }
+  },
+  "ac_gate": {
+    "mode": "test-first",
+    "verdict": "PASS",
+    "reason": null,
+    "evidence": [],
+    "acs": [
+      {
+        "id": "AC-1",
+        "level": "integration",
+        "tests": [
+          "src/collector/collector-alert-sinks.ac1.integration.test.ts::collector alert sinks — AC-1 › AC-1: stdout and file sinks write one NDJSON line per alert in order, without ending the stream or truncating the file"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-2",
+        "level": "integration",
+        "tests": [
+          "src/collector/collector-alert-sinks.ac2.integration.test.ts::collector alert sinks — AC-2 › AC-2: the webhook sink POSTs JSON, retries a 5xx, counts a timeout as one failure, and drops past its in-flight bound"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-3",
+        "level": "integration",
+        "tests": [
+          "src/collector/collector-alert-sinks.ac3.integration.test.ts::collector alert sinks — AC-3 › AC-3: a collector delivers every alert to every sink, isolates a failing sink, and rejects bad sink config at creation"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      }
+    ],
+    "unmapped_anomalies": [],
+    "note": "an AC is delivered = a locked, once-red test titled AC-<n>:, in a file mapped to AC-<n>, passed on this head run. PHARN does not judge whether that test fully captures the AC's intent."
+  },
+  "completeness": {
+    "plan": "pharn/features/collector-alert-sinks/PLAN.md",
+    "repoDir": ".",
+    "declared": [
+      "src/collector/alert-sink.ts",
+      "src/collector/stdout-sink.ts",
+      "src/collector/file-sink.ts",
+      "src/collector/webhook-sink.ts",
+      "src/collector/sink-config.ts",
+      "src/collector/sink-dispatcher.ts",
+      "src/collector/collector.ts",
+      "src/collector/index.ts"
+    ],
+    "skipped": [],
+    "missing": [],
+    "complete": true,
+    "verdict": "complete"
+  },
+  "verifiers": {
+    "registered": 0,
+    "findings": []
+  },
+  "gate_reuse": {
+    "reused": []
+  }
+}
