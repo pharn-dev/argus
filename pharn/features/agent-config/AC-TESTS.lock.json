@@ -1,0 +1,81 @@
+{
+  "schema": "ac-tests-lock/4",
+  "feature": "agent-config",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "agent-config",
+    "spec_content_hash": "b62ddaedd1c83680c9c5120e7e8bd791a84cda3c03683263df20f589383bbdbb"
+  },
+  "mapping": {
+    "path": "pharn/features/agent-config/AC-TESTS.md",
+    "sha256": "c2d2adb000f9dc490da697e8e23d905949928e360905ff9174c4468d0b4bda0b"
+  },
+  "files": [
+    {
+      "path": "src/agent/config.ac1.integration.test.ts",
+      "sha256": "cba59de31f37a2e34d9bf824e894c095f3a83fb1867f6071a477da81092d3864"
+    },
+    {
+      "path": "src/agent/config.ac2.integration.test.ts",
+      "sha256": "7c04b4b3be1a69ca3f05bdf837e511974db405e11d4797d0170af845fc63f9b5"
+    },
+    {
+      "path": "src/agent/config.ac3.integration.test.ts",
+      "sha256": "84eec232ecb51cde99ac7d920dceb1768fe4accb285273a5f3fe8b63749f540b"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "6271955a7d66c6307ee426f6ffe0b613f618222f873f7cc601ae5a0970c92b27",
+    "files_sha256": "ee8251eee6c39a8ed8dd7eaa852d66b9d07c783c4ce9bc25b2fdf62bf7ca8f20",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "e0d478792a599c6eb5440520ea52d5b04ccd30cab29b51cabe94432d38faef14"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/agent/config.ac1.integration.test.ts::agent config — AC-1 › AC-1: env overrides the JSON file interval, the file output is kept, ARGUS_ENABLED \"0\" disables, queue bound is the default, and the config is frozen"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/agent/config.ac2.integration.test.ts::agent config — AC-2 › AC-2: a CommonJS argus.config.js (module.exports) and an ESM argus.config.js (export default) each supply their interval, queue bound and output"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/agent/config.ac3.integration.test.ts::agent config — AC-3 › AC-3: every invalid source fails with an error naming the source and the key, and two config files fail naming both"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null
+  }
+}
