@@ -1,5 +1,5 @@
 ---
-description: "Part of /pharn-loop: the --quick deltas it reads at entry. Not run on its own; use /pharn-loop --quick."
+description: 'Part of /pharn-loop: the --quick deltas it reads at entry. Not run on its own; use /pharn-loop --quick.'
 disable-model-invocation: true
 user-invocable: false
 kind: pharn-owned

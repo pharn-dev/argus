@@ -1,5 +1,5 @@
 ---
-description: "Run the pipeline unattended, only when the user asks: the model approves its own SPEC, iterates build, regress and verify to a checker-decided stop, commits a green result to a new local branch, and reports. `--quick` for a small change."
+description: 'Run the pipeline unattended, only when the user asks: the model approves its own SPEC, iterates build, regress and verify to a checker-decided stop, commits a green result to a new local branch, and reports. `--quick` for a small change.'
 kind: pharn-owned
 trust: trusted
 model_tier: sonnet
@@ -7,46 +7,46 @@ model: sonnet
 effort: high
 reads:
   [
-    "pharn/CONSTITUTION.md",
-    "pharn/ARCHITECTURE.md",
-    "pharn/features/<name>/SPEC.md",
-    "pharn/features/<name>/PLAN.md",
-    "pharn/features/<name>/GRILL.md",
-    "pharn/features/<name>/AC-TESTS.md",
-    "pharn/features/<name>/BUILD.md",
-    "pharn/features/<name>/REGRESSION.md",
-    "pharn/features/<name>/VERIFY.md",
-    "pharn/features/<name>/regression-report.json",
-    "pharn/features/<name>/verify-report.json",
-    "pharn/features/<name>/LOOP.md",
-    "pharn/pharn-contracts/loop-record.md",
-    "pharn/pharn-contracts/verify-report.md",
-    "pharn/pharn-contracts/cost-ledger.md",
-    "pharn/floor/mark-phase.mjs",
-    "pharn/floor/stage-agent.mjs",
-    "pharn/floor/stage-agent-core.mjs",
-    "pharn/floor/render-cost-ledger.mjs",
-    "pharn/floor/check-cost-ledger.mjs",
-    "pharn/floor/render-run-report.mjs",
-    "pharn/floor/check-spec.mjs",
-    "pharn/floor/check-spec-approved.mjs",
-    "pharn/floor/check-plan-spec-agree.mjs",
-    "pharn/floor/check-loop.mjs",
-    "pharn/floor/check-loop-record.mjs",
-    "pharn/floor/check-loop-decision.mjs",
-    "pharn/floor/check-loop-fresh.mjs",
-    "pharn/floor/loop-fresh-core.mjs",
-    "pharn/floor/check-test-stage.mjs",
-    "pharn/floor/check-red-run.mjs",
-    "pharn/floor/check-quick-scope.mjs",
-    "pharn/floor/quick-scope-core.mjs",
-    "pharn/floor/feature-name.mjs",
-    "pharn/pharn-contracts/gate-run-record.md",
-    "pharn/floor/validate.mjs",
+    'pharn/CONSTITUTION.md',
+    'pharn/ARCHITECTURE.md',
+    'pharn/features/<name>/SPEC.md',
+    'pharn/features/<name>/PLAN.md',
+    'pharn/features/<name>/GRILL.md',
+    'pharn/features/<name>/AC-TESTS.md',
+    'pharn/features/<name>/BUILD.md',
+    'pharn/features/<name>/REGRESSION.md',
+    'pharn/features/<name>/VERIFY.md',
+    'pharn/features/<name>/regression-report.json',
+    'pharn/features/<name>/verify-report.json',
+    'pharn/features/<name>/LOOP.md',
+    'pharn/pharn-contracts/loop-record.md',
+    'pharn/pharn-contracts/verify-report.md',
+    'pharn/pharn-contracts/cost-ledger.md',
+    'pharn/floor/mark-phase.mjs',
+    'pharn/floor/stage-agent.mjs',
+    'pharn/floor/stage-agent-core.mjs',
+    'pharn/floor/render-cost-ledger.mjs',
+    'pharn/floor/check-cost-ledger.mjs',
+    'pharn/floor/render-run-report.mjs',
+    'pharn/floor/check-spec.mjs',
+    'pharn/floor/check-spec-approved.mjs',
+    'pharn/floor/check-plan-spec-agree.mjs',
+    'pharn/floor/check-loop.mjs',
+    'pharn/floor/check-loop-record.mjs',
+    'pharn/floor/check-loop-decision.mjs',
+    'pharn/floor/check-loop-fresh.mjs',
+    'pharn/floor/loop-fresh-core.mjs',
+    'pharn/floor/check-test-stage.mjs',
+    'pharn/floor/check-red-run.mjs',
+    'pharn/floor/check-quick-scope.mjs',
+    'pharn/floor/quick-scope-core.mjs',
+    'pharn/floor/feature-name.mjs',
+    'pharn/pharn-contracts/gate-run-record.md',
+    'pharn/floor/validate.mjs',
   ]
-writes: ["pharn/features/<name>/SPEC.md", "pharn/features/<name>/LOOP.md"]
-constitution_refs: ["P0", "P2", "P3", "P5", "P6", "P7"]
-version: "0.11.1"
+writes: ['pharn/features/<name>/SPEC.md', 'pharn/features/<name>/LOOP.md']
+constitution_refs: ['P0', 'P2', 'P3', 'P5', 'P6', 'P7']
+version: '0.11.1'
 ---
 
 # /pharn-loop — run the product pipeline unattended to a floor-grade stop, then report what was done

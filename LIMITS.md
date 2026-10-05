@@ -1,8 +1,8 @@
 ---
-file: "LIMITS.md"
+file: 'LIMITS.md'
 trust: trusted
-editable_by: "human only"
-purpose: "What PHARN does NOT guarantee. Labels the irreducible limits, the residual, and the token cost model honestly. Required by P0 and P7: a limit sold as a guarantee is the disease this whole repo exists to prevent."
+editable_by: 'human only'
+purpose: 'What PHARN does NOT guarantee. Labels the irreducible limits, the residual, and the token cost model honestly. Required by P0 and P7: a limit sold as a guarantee is the disease this whole repo exists to prevent.'
 ---
 
 # PHARN — Limits (what we do not guarantee)
@@ -251,8 +251,8 @@ either hook. Probed rather than read off the wiring — §1d's quantifier is pre
   bounds, all in `pharn/pharn-contracts/reconciliation-record.md`: ignored paths are outside the
   reconciled set; the window is anchor-to-verify; the model is **one worktree per session** (two sessions
   sharing a tree share `.pharn/`, so a second session's writes can surface as this one's escape —
-  [[L38]], which this inherits and cannot fix); and there is **no attribution** — it reports *what*,
-  never *who*.
+  [[L38]], which this inherits and cannot fix); and there is **no attribution** — it reports _what_,
+  never _who_.
 - **DELETING it is loud; FORGING it is silent — and that bounds the whole claim.** The baseline lives
   under `.pharn/`, which `Bash` reaches, and nothing authenticates it. Deleting it does not yield a quiet
   green: `/pharn-*verify` passes `--require-baseline`, which makes an absent baseline `INCONCLUSIVE`, and
@@ -449,7 +449,7 @@ What either certifies is narrower than the config's presence suggests.
 - **Struck claim:** "PHARN runs each stage on its configured model" — or any reading of a green
   `check-model-config`, or of an `agent:<alias>` route on a marker, as evidence that `/pharn-plan` ran on
   Opus. The checker's own stdout carries the disclaimer: `NOTE (P0): this is config↔frontmatter EQUALITY —
-  never proof a stage RAN under that model.`
+never proof a stage RAN under that model.`
 - **True statement:** for a routed stage PHARN REQUESTS the configured model, and the stage's marker records
   that request; `cost.json` records the model each request was SERVED — evidence from a transcript format the
   platform does not document, not a floor primitive. Model and effort are applied by the Claude Code

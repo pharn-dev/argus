@@ -91,8 +91,8 @@ argus/
 
 ### Dependency boundaries
 
-- `@argus/agent` imports **Node core only**: no third-party deps *and no workspace
-  deps*. Everything else depends on the agent, never the other way round.
+- `@argus/agent` imports **Node core only**: no third-party deps _and no workspace
+  deps_. Everything else depends on the agent, never the other way round.
 - `@argus/collector` consumes agent output. `@argus/dashboard` reads collector
   output. `@argus/plugin-runner` reads aggregated data only.
 - `@argus/analyzer` is pure CPU work in Worker Threads with no app coupling.

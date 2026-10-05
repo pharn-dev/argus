@@ -1,5 +1,5 @@
 ---
-description: "Turn an Approved, unchanged SPEC.md into PLAN.md with its declared files and applied_lessons declaration (plus AC-TESTS.md for a templated SPEC). Run after the SPEC is approved, before /pharn-grill."
+description: 'Turn an Approved, unchanged SPEC.md into PLAN.md with its declared files and applied_lessons declaration (plus AC-TESTS.md for a templated SPEC). Run after the SPEC is approved, before /pharn-grill.'
 kind: pharn-owned
 trust: trusted
 model_tier: sonnet
@@ -7,21 +7,21 @@ model: opus
 effort: high
 reads:
   [
-    "pharn/CONSTITUTION.md",
-    "pharn/ARCHITECTURE.md",
-    "pharn/features/<name>/SPEC.md",
-    "memory-bank/lessons-learned.md",
-    ".pharn/lessons-index.md",
-    "pharn/floor/check-spec-approved.mjs",
-    "pharn/floor/check-spec.mjs",
-    "pharn/floor/check-plan-lessons.mjs",
-    "pharn/floor/check-lessons-index.mjs",
-    "pharn/floor/check-ac-tests.mjs",
-    "pharn/pharn-contracts/ac-tests.md",
+    'pharn/CONSTITUTION.md',
+    'pharn/ARCHITECTURE.md',
+    'pharn/features/<name>/SPEC.md',
+    'memory-bank/lessons-learned.md',
+    '.pharn/lessons-index.md',
+    'pharn/floor/check-spec-approved.mjs',
+    'pharn/floor/check-spec.mjs',
+    'pharn/floor/check-plan-lessons.mjs',
+    'pharn/floor/check-lessons-index.mjs',
+    'pharn/floor/check-ac-tests.mjs',
+    'pharn/pharn-contracts/ac-tests.md',
   ]
-writes: ["pharn/features/<name>/PLAN.md", "pharn/features/<name>/AC-TESTS.md"]
-constitution_refs: ["P0", "P2", "P4", "P5", "P6", "P7"]
-version: "0.5.2"
+writes: ['pharn/features/<name>/PLAN.md', 'pharn/features/<name>/AC-TESTS.md']
+constitution_refs: ['P0', 'P2', 'P4', 'P5', 'P6', 'P7']
+version: '0.5.2'
 ---
 
 # /pharn-plan — plan from Approved, un-drifted intent

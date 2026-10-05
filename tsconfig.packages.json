@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/agent" },
+    { "path": "./packages/collector" },
+    { "path": "./packages/analyzer" },
+    { "path": "./packages/dashboard" },
+    { "path": "./packages/plugin-runner" }
+  ]
+}

@@ -7,18 +7,22 @@ model: sonnet
 effort: high
 reads:
   [
-    "pharn/CONSTITUTION.md",
-    "pharn/ARCHITECTURE.md",
-    "pharn/features/<name>/PLAN.md",
-    "pharn/floor/check-plan-spec-agree.mjs",
-    "pharn/floor/check-test-stage.mjs",
-    ".claude/hooks/set-writes-scope.cjs",
-    ".claude/hooks/enforce-writes-scope.cjs",
+    'pharn/CONSTITUTION.md',
+    'pharn/ARCHITECTURE.md',
+    'pharn/features/<name>/PLAN.md',
+    'pharn/floor/check-plan-spec-agree.mjs',
+    'pharn/floor/check-test-stage.mjs',
+    '.claude/hooks/set-writes-scope.cjs',
+    '.claude/hooks/enforce-writes-scope.cjs',
     "<the user's target repo>",
   ]
-writes: ["<user-code files named in the plan's ## Files (Phase-1, via --from-plan — not from this list)>", "pharn/features/<name>/BUILD.md"]
-constitution_refs: ["P0", "P2", "P3", "P4", "P5", "P6", "P7"]
-version: "0.2.2"
+writes:
+  [
+    "<user-code files named in the plan's ## Files (Phase-1, via --from-plan — not from this list)>",
+    'pharn/features/<name>/BUILD.md',
+  ]
+constitution_refs: ['P0', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7']
+version: '0.2.2'
 ---
 
 # /pharn-build — build the user's code from an Approved, un-drifted plan, within the plan's scope

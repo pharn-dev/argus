@@ -1,5 +1,5 @@
 ---
-description: "Run the whole pipeline for one feature when the user asks to ship it (spec, plan, grill, test, build, regress, verify), stopping at two human gates: SPEC approval and the merge/fix/abandon decision. `--quick` for a small change."
+description: 'Run the whole pipeline for one feature when the user asks to ship it (spec, plan, grill, test, build, regress, verify), stopping at two human gates: SPEC approval and the merge/fix/abandon decision. `--quick` for a small change.'
 kind: pharn-owned
 trust: trusted
 model_tier: sonnet
@@ -7,44 +7,49 @@ model: sonnet
 effort: high
 reads:
   [
-    "pharn/CONSTITUTION.md",
-    "pharn/ARCHITECTURE.md",
-    "pharn/features/<name>/SPEC.md",
-    "pharn/features/<name>/PLAN.md",
-    "pharn/features/<name>/GRILL.md",
-    "pharn/features/<name>/BUILD.md",
-    "pharn/features/<name>/REGRESSION.md",
-    "pharn/features/<name>/VERIFY.md",
-    "pharn/features/<name>/regression-report.json",
-    "pharn/features/<name>/verify-report.json",
-    "memory-bank/lessons-learned.md",
-    "pharn/floor/check-spec-approved.mjs",
-    "pharn/floor/check-spec.mjs",
-    "pharn/floor/check-plan-spec-agree.mjs",
-    "pharn/floor/check-plan-lessons.mjs",
-    "pharn/floor/check-test-stage.mjs",
-    "pharn/floor/check-quick-scope.mjs",
-    "pharn/floor/quick-scope-core.mjs",
-    "pharn/floor/feature-name.mjs",
-    "pharn/floor/validate.mjs",
-    "pharn/floor/check-attestation.mjs",
-    "pharn/floor/render-cost-record.mjs",
-    "pharn/floor/mark-phase.mjs",
-    "pharn/floor/stage-agent.mjs",
-    "pharn/floor/stage-agent-core.mjs",
-    "pharn/floor/render-cost-ledger.mjs",
-    "pharn/floor/check-cost-ledger.mjs",
-    "pharn/floor/render-run-report.mjs",
-    "pharn/pharn-contracts/cost-ledger.md",
-    "pharn/floor/render-ship-briefing.mjs",
-    "pharn/floor/check-ship-briefing.mjs",
-    "pharn/pharn-contracts/ship-record.md",
-    "pharn/pharn-contracts/ship-briefing.md",
-    "pharn.config.json",
+    'pharn/CONSTITUTION.md',
+    'pharn/ARCHITECTURE.md',
+    'pharn/features/<name>/SPEC.md',
+    'pharn/features/<name>/PLAN.md',
+    'pharn/features/<name>/GRILL.md',
+    'pharn/features/<name>/BUILD.md',
+    'pharn/features/<name>/REGRESSION.md',
+    'pharn/features/<name>/VERIFY.md',
+    'pharn/features/<name>/regression-report.json',
+    'pharn/features/<name>/verify-report.json',
+    'memory-bank/lessons-learned.md',
+    'pharn/floor/check-spec-approved.mjs',
+    'pharn/floor/check-spec.mjs',
+    'pharn/floor/check-plan-spec-agree.mjs',
+    'pharn/floor/check-plan-lessons.mjs',
+    'pharn/floor/check-test-stage.mjs',
+    'pharn/floor/check-quick-scope.mjs',
+    'pharn/floor/quick-scope-core.mjs',
+    'pharn/floor/feature-name.mjs',
+    'pharn/floor/validate.mjs',
+    'pharn/floor/check-attestation.mjs',
+    'pharn/floor/render-cost-record.mjs',
+    'pharn/floor/mark-phase.mjs',
+    'pharn/floor/stage-agent.mjs',
+    'pharn/floor/stage-agent-core.mjs',
+    'pharn/floor/render-cost-ledger.mjs',
+    'pharn/floor/check-cost-ledger.mjs',
+    'pharn/floor/render-run-report.mjs',
+    'pharn/pharn-contracts/cost-ledger.md',
+    'pharn/floor/render-ship-briefing.mjs',
+    'pharn/floor/check-ship-briefing.mjs',
+    'pharn/pharn-contracts/ship-record.md',
+    'pharn/pharn-contracts/ship-briefing.md',
+    'pharn.config.json',
   ]
-writes: ["pharn/features/<name>/SHIP.md", "pharn/features/<name>/ship-record.json", "pharn/features/<name>/BRIEFING.md"]
-constitution_refs: ["P0", "P2", "P5", "P6", "P7"]
-version: "0.11.1"
+writes:
+  [
+    'pharn/features/<name>/SHIP.md',
+    'pharn/features/<name>/ship-record.json',
+    'pharn/features/<name>/BRIEFING.md',
+  ]
+constitution_refs: ['P0', 'P2', 'P5', 'P6', 'P7']
+version: '0.11.1'
 ---
 
 # /pharn-ship — run the product pipeline, end at a human gate

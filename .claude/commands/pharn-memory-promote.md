@@ -1,5 +1,5 @@
 ---
-description: "Promote one lesson or pattern into memory-bank/ when the user asks to keep it, with checked provenance; nothing is written until the user accepts the rendered entry."
+description: 'Promote one lesson or pattern into memory-bank/ when the user asks to keep it, with checked provenance; nothing is written until the user accepts the rendered entry.'
 kind: pharn-owned
 trust: trusted
 model_tier: sonnet
@@ -7,18 +7,18 @@ model: opus
 effort: high
 reads:
   [
-    "pharn/CONSTITUTION.md",
-    "pharn/ARCHITECTURE.md",
-    "THREAT-MODEL.md",
-    "memory-bank/lessons-learned.md",
-    "memory-bank/pattern-library.md",
-    "pharn/features/<name>/REVIEW.md",
-    "pharn/features/<name>/findings.json",
-    "pharn/floor/check-provenance.mjs",
+    'pharn/CONSTITUTION.md',
+    'pharn/ARCHITECTURE.md',
+    'THREAT-MODEL.md',
+    'memory-bank/lessons-learned.md',
+    'memory-bank/pattern-library.md',
+    'pharn/features/<name>/REVIEW.md',
+    'pharn/features/<name>/findings.json',
+    'pharn/floor/check-provenance.mjs',
   ]
-writes: ["memory-bank/<canon-file>"]
-constitution_refs: ["P0", "P2", "P4", "P5", "P6", "P7"]
-version: "0.2.1"
+writes: ['memory-bank/<canon-file>']
+constitution_refs: ['P0', 'P2', 'P4', 'P5', 'P6', 'P7']
+version: '0.2.1'
 ---
 
 # /pharn-memory-promote — prepare and GATE a promotion to your memory-bank

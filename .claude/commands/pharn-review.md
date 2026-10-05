@@ -7,14 +7,14 @@ model: opus
 effort: high
 reads:
   [
-    "pharn/CONSTITUTION.md",
-    "pharn/pharn-contracts/finding-shape.md",
-    "pharn/floor/lens-scanner-map.json",
-    "<review target: untrusted code>",
+    'pharn/CONSTITUTION.md',
+    'pharn/pharn-contracts/finding-shape.md',
+    'pharn/floor/lens-scanner-map.json',
+    '<review target: untrusted code>',
   ]
-writes: ["pharn/features/**"]
-constitution_refs: ["P0", "P2", "P4", "P5", "P7"]
-version: "0.1.1"
+writes: ['pharn/features/**']
+constitution_refs: ['P0', 'P2', 'P4', 'P5', 'P7']
+version: '0.1.1'
 ---
 
 # /pharn-review — run the code-review lenses in parallel, merge deterministically

@@ -1,5 +1,5 @@
 ---
-description: "Part of /pharn-ship: the --quick deltas it reads at entry. Not run on its own; use /pharn-ship --quick."
+description: 'Part of /pharn-ship: the --quick deltas it reads at entry. Not run on its own; use /pharn-ship --quick.'
 disable-model-invocation: true
 user-invocable: false
 kind: pharn-owned

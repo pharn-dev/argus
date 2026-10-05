@@ -1,5 +1,5 @@
 ---
-description: "Part of /pharn-loop: the stop procedure it reads when a run stops. Not run on its own; use /pharn-loop."
+description: 'Part of /pharn-loop: the stop procedure it reads when a run stops. Not run on its own; use /pharn-loop.'
 disable-model-invocation: true
 user-invocable: false
 kind: pharn-owned

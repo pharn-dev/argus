@@ -1,5 +1,5 @@
 ---
-description: "Part of /pharn-ship: the GATE-2 and STOP procedure it reads when a run ends. Not run on its own; use /pharn-ship."
+description: 'Part of /pharn-ship: the GATE-2 and STOP procedure it reads when a run ends. Not run on its own; use /pharn-ship.'
 disable-model-invocation: true
 user-invocable: false
 kind: pharn-owned

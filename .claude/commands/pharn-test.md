@@ -7,22 +7,26 @@ model: opus
 effort: high
 reads:
   [
-    "pharn/CONSTITUTION.md",
-    "pharn/ARCHITECTURE.md",
-    "pharn/pharn-contracts/ac-tests.md",
-    "pharn/features/<name>/SPEC.md",
-    "pharn/features/<name>/PLAN.md",
-    "pharn/features/<name>/AC-TESTS.md",
-    "pharn/floor/check-spec-approved.mjs",
-    "pharn/floor/check-plan-spec-agree.mjs",
-    "pharn/floor/check-ac-tests.mjs",
-    "pharn/floor/ac-tests-lock.mjs",
-    "pharn/floor/check-red-run.mjs",
-    "pharn/floor/run-gates.mjs",
+    'pharn/CONSTITUTION.md',
+    'pharn/ARCHITECTURE.md',
+    'pharn/pharn-contracts/ac-tests.md',
+    'pharn/features/<name>/SPEC.md',
+    'pharn/features/<name>/PLAN.md',
+    'pharn/features/<name>/AC-TESTS.md',
+    'pharn/floor/check-spec-approved.mjs',
+    'pharn/floor/check-plan-spec-agree.mjs',
+    'pharn/floor/check-ac-tests.mjs',
+    'pharn/floor/ac-tests-lock.mjs',
+    'pharn/floor/check-red-run.mjs',
+    'pharn/floor/run-gates.mjs',
   ]
-writes: ["<AC test files: AC-TESTS.md ## Files, via --from-plan>", "pharn/features/<name>/AC-TESTS.lock.json"]
-constitution_refs: ["P0", "P1", "P2", "P3", "P5", "P6", "P7"]
-version: "0.4.2"
+writes:
+  [
+    '<AC test files: AC-TESTS.md ## Files, via --from-plan>',
+    'pharn/features/<name>/AC-TESTS.lock.json',
+  ]
+constitution_refs: ['P0', 'P1', 'P2', 'P3', 'P5', 'P6', 'P7']
+version: '0.4.2'
 ---
 
 # /pharn-test — write the Acceptance Criteria's tests before the build, and show they fail

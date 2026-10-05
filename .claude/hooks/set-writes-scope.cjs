@@ -58,13 +58,13 @@
 // protect-trusted-paths.cjs realpaths and denies these four paths outright regardless of any scope. This
 // refusal buys a clear early failure — it is not the last line of defense.
 
-"use strict";
+'use strict';
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
 function fail(msg) {
-  process.stderr.write("set-writes-scope: " + msg + "\n");
+  process.stderr.write('set-writes-scope: ' + msg + '\n');
   process.exit(1);
 }
 
@@ -77,15 +77,15 @@ function parseArgs(argv) {
   let clear = false;
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
-    if (a === "--target") {
-      if (!args[i + 1]) fail("--target requires a path");
+    if (a === '--target') {
+      if (!args[i + 1]) fail('--target requires a path');
       target = args[++i];
-    } else if (a === "--clear") {
+    } else if (a === '--clear') {
       // Its OWN branch, ahead of the positional fallbacks — for the same reason --allow-claude-dir
       // needs one: otherwise the flag is swallowed as the positional `mode` and `--clear` silently
       // becomes an unknown-mode usage error instead of a clear.
       clear = true;
-    } else if (a === "--allow-claude-dir") {
+    } else if (a === '--allow-claude-dir') {
       // Its OWN branch, ahead of the positional fallbacks — otherwise the flag is consumed as the
       // positional `mode` or `file` and silently breaks --from-plan / --from-frontmatter parsing.
       allowClaudeDir = true;
@@ -107,77 +107,85 @@ function parseArgs(argv) {
 // to authorize them. `.claude/commands/**` and `.claude/hooks/*.test.cjs` are deliberately absent: an
 // increment that edits a command, or a hook's own tests, must not need an opt-in flag.
 const CONTROL_SURFACE = [
-  ".claude/settings.json",
+  '.claude/settings.json',
   // settings.local.json is a real, loaded settings file that can wire or override the same hooks, so
   // guarding only settings.json left the control surface half-open.
-  ".claude/settings.local.json",
-  ".claude/hooks/protect-trusted-paths.cjs",
-  ".claude/hooks/enforce-writes-scope.cjs",
-  ".claude/hooks/set-writes-scope.cjs",
-  ".claude/hooks/require-loop-record.cjs",
+  '.claude/settings.local.json',
+  '.claude/hooks/protect-trusted-paths.cjs',
+  '.claude/hooks/enforce-writes-scope.cjs',
+  '.claude/hooks/set-writes-scope.cjs',
+  '.claude/hooks/require-loop-record.cjs',
 ];
 
 // Lexical normalization for the MEMBERSHIP TEST ONLY — the emitted scope value is never rewritten. Folds
 // `./`, `a/../` and backslashes so a trivial re-spelling (`./.claude/settings.json`) cannot walk past the
 // exact-membership test below. NOT a realpath; see the header's HONEST BOUND.
 function normalizeForTest(entry) {
-  return path.posix.normalize(String(entry).replace(/\\/g, "/"));
+  return path.posix.normalize(String(entry).replace(/\\/g, '/'));
 }
 
 // Strip a trailing " (annotation)" (e.g. " (gated)") and surrounding whitespace.
 function clean(entry) {
   return String(entry)
-    .replace(/\s+\([^)]*\)\s*$/, "")
+    .replace(/\s+\([^)]*\)\s*$/, '')
     .trim();
 }
 
 // Emit only literal repo-relative paths — no placeholders, globs, or empties.
 function isConcrete(entry) {
-  return entry.length > 0 && !entry.includes("<") && !entry.includes(">") && !entry.includes("*") && !entry.includes("?");
+  return (
+    entry.length > 0 &&
+    !entry.includes('<') &&
+    !entry.includes('>') &&
+    !entry.includes('*') &&
+    !entry.includes('?')
+  );
 }
 
 function normalizeRel(p) {
-  const rel = path.relative(process.cwd(), path.resolve(process.cwd(), String(p))).replace(/\\/g, "/");
-  if (rel === "" || rel === ".." || rel.startsWith("../")) fail(`--target escapes repo root: ${p}`);
+  const rel = path
+    .relative(process.cwd(), path.resolve(process.cwd(), String(p)))
+    .replace(/\\/g, '/');
+  if (rel === '' || rel === '..' || rel.startsWith('../')) fail(`--target escapes repo root: ${p}`);
   return rel;
 }
 
 function globToRegExp(glob) {
-  let re = "";
+  let re = '';
   for (let i = 0; i < glob.length; i++) {
     const c = glob[i];
-    if (c === "*") {
-      if (glob[i + 1] === "*") {
-        re += ".*";
+    if (c === '*') {
+      if (glob[i + 1] === '*') {
+        re += '.*';
         i++;
       } else {
-        re += "[^/]*";
+        re += '[^/]*';
       }
-    } else if ("\\^$.|?+()[]{}".includes(c)) {
-      re += "\\" + c;
+    } else if ('\\^$.|?+()[]{}'.includes(c)) {
+      re += '\\' + c;
     } else {
       re += c;
     }
   }
-  return new RegExp("^" + re + "$");
+  return new RegExp('^' + re + '$');
 }
 
 function placeholderToRegExp(entry) {
-  let re = "";
+  let re = '';
   for (let i = 0; i < entry.length; i++) {
     const c = entry[i];
-    if (c === "<") {
-      const end = entry.indexOf(">", i);
+    if (c === '<') {
+      const end = entry.indexOf('>', i);
       if (end === -1) return null;
-      re += "[^/]+";
+      re += '[^/]+';
       i = end;
-    } else if ("\\^$.|?+()[]{}*".includes(c)) {
-      re += "\\" + c;
+    } else if ('\\^$.|?+()[]{}*'.includes(c)) {
+      re += '\\' + c;
     } else {
       re += c;
     }
   }
-  return new RegExp("^" + re + "$");
+  return new RegExp('^' + re + '$');
 }
 
 // Resolve a declared writes entry to one concrete path. Literals pass through; placeholders/globs need
@@ -187,11 +195,11 @@ function resolveEntry(entry, target) {
   if (isConcrete(e)) return e;
   if (!target) return null;
   const t = normalizeRel(target);
-  if (e.includes("<") || e.includes(">")) {
+  if (e.includes('<') || e.includes('>')) {
     const re = placeholderToRegExp(e);
     return re && re.test(t) ? t : null;
   }
-  if (e.includes("*") || e.includes("?")) {
+  if (e.includes('*') || e.includes('?')) {
     return globToRegExp(e).test(t) ? t : null;
   }
   return null;
@@ -199,25 +207,25 @@ function resolveEntry(entry, target) {
 
 // --- Mode A: read the `writes:` array from a markdown file's YAML frontmatter. ---
 function writesFromFrontmatter(file) {
-  const fm = fs.readFileSync(file, "utf8").match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  const fm = fs.readFileSync(file, 'utf8').match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!fm) fail(`no YAML frontmatter in ${file}`);
   const lines = fm[1].split(/\r?\n/);
   const idx = lines.findIndex((l) => /^writes:/.test(l));
   if (idx === -1) fail(`no \`writes:\` key in the frontmatter of ${file}`);
-  const head = lines[idx].replace(/^writes:[ \t]*/, "").trim();
+  const head = lines[idx].replace(/^writes:[ \t]*/, '').trim();
   const items = [];
-  if (head.startsWith("[")) {
+  if (head.startsWith('[')) {
     // Inline flow array: writes: ["a", "b"]. Prefer quoted strings; else comma-split.
     const quoted = head.match(/"([^"]*)"|'([^']*)'/g);
     if (quoted) for (const q of quoted) items.push(q.slice(1, -1));
-    else for (const p of head.replace(/^\[|\]$/g, "").split(",")) items.push(p.trim());
+    else for (const p of head.replace(/^\[|\]$/g, '').split(',')) items.push(p.trim());
   } else {
     // Block list:  writes:\n  - "a"\n  - b
-    if (head) items.push(head.replace(/^["']|["']$/g, ""));
+    if (head) items.push(head.replace(/^["']|["']$/g, ''));
     for (let i = idx + 1; i < lines.length; i++) {
       const li = lines[i].match(/^[ \t]+-[ \t]+(.*)$/);
       if (!li) break;
-      items.push(li[1].trim().replace(/^["']|["']$/g, ""));
+      items.push(li[1].trim().replace(/^["']|["']$/g, ''));
     }
   }
   return items;
@@ -230,7 +238,7 @@ function writesFromFrontmatter(file) {
 // inline-marked item (`- `path` — not touched`) IS a path-item, so it is NOT detected — see the plan's
 // "Known residuals". ---
 function pathsFromPlanFiles(file) {
-  const lines = fs.readFileSync(file, "utf8").split(/\r?\n/);
+  const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
   const start = lines.findIndex((l) => /^##\s+Files\b/.test(l));
   if (start === -1) fail(`no \`## Files\` heading in ${file}`);
   const out = [];
@@ -278,7 +286,9 @@ function pathsFromPlanFiles(file) {
       !isPathItem &&
       !isBlockquote &&
       !isWrappedContinuation &&
-      /\bnot\W*(touch|writ|modif|edit|chang)|\bexplicitly\W*excluded|\bout\W*of\W*scope|\boff\W*limits/i.test(line)
+      /\bnot\W*(touch|writ|modif|edit|chang)|\bexplicitly\W*excluded|\bout\W*of\W*scope|\boff\W*limits/i.test(
+        line,
+      )
     ) {
       break;
     }
@@ -295,15 +305,15 @@ function main() {
   if (clear) {
     if (mode || file || target) {
       fail(
-        "--clear takes no other arguments (got: " +
-          [mode, file, target ? `--target ${target}` : null].filter(Boolean).join(" ") +
-          ")\n" +
-          "  Why: clearing and setting a scope in one call is always a mistake. Run the set and the\n" +
+        '--clear takes no other arguments (got: ' +
+          [mode, file, target ? `--target ${target}` : null].filter(Boolean).join(' ') +
+          ')\n' +
+          '  Why: clearing and setting a scope in one call is always a mistake. Run the set and the\n' +
           "       clear as separate calls — the set at a command's FIRST step, the clear at its LAST.\n" +
-          "  Nothing was written; .pharn/writes-scope.json is unchanged."
+          '  Nothing was written; .pharn/writes-scope.json is unchanged.',
       );
     }
-    const scopePath = path.resolve(process.cwd(), ".pharn", "writes-scope.json");
+    const scopePath = path.resolve(process.cwd(), '.pharn', 'writes-scope.json');
     // Idempotent: an absent file is the SAME end state, not an error — a command's last step must be
     // safe to run twice, and safe to run after an early abort that never set a scope.
     let existed = false;
@@ -311,33 +321,34 @@ function main() {
       fs.unlinkSync(scopePath);
       existed = true;
     } catch (e) {
-      if (e && e.code !== "ENOENT") fail(`could not clear .pharn/writes-scope.json: ${e.message}`);
+      if (e && e.code !== 'ENOENT') fail(`could not clear .pharn/writes-scope.json: ${e.message}`);
     }
     process.stdout.write(
       existed
         ? 'writes-scope cleared: .pharn/writes-scope.json removed -> the guard\'s default now applies (fail-closed, except in an installed project outside an open PHARN run — CLAUDE.md, "Writes-scope")\n'
-        : 'writes-scope cleared: no active scope (already absent) -> the guard\'s default applies (fail-closed, except in an installed project outside an open PHARN run — CLAUDE.md, "Writes-scope")\n'
+        : 'writes-scope cleared: no active scope (already absent) -> the guard\'s default applies (fail-closed, except in an installed project outside an open PHARN run — CLAUDE.md, "Writes-scope")\n',
     );
     process.exit(0);
   }
 
-  if (!mode || !file || (mode !== "--from-frontmatter" && mode !== "--from-plan")) {
+  if (!mode || !file || (mode !== '--from-frontmatter' && mode !== '--from-plan')) {
     fail(
-      "usage: set-writes-scope.cjs (--from-frontmatter <file.md> [--target <path>] | --from-plan <PLAN.md>) [--allow-claude-dir]\n" +
-        "       set-writes-scope.cjs --clear"
+      'usage: set-writes-scope.cjs (--from-frontmatter <file.md> [--target <path>] | --from-plan <PLAN.md>) [--allow-claude-dir]\n' +
+        '       set-writes-scope.cjs --clear',
     );
   }
   if (!fs.existsSync(file)) fail(`file not found: ${file}`);
 
-  const raw = mode === "--from-frontmatter" ? writesFromFrontmatter(file) : pathsFromPlanFiles(file);
+  const raw =
+    mode === '--from-frontmatter' ? writesFromFrontmatter(file) : pathsFromPlanFiles(file);
   const scope = raw
     .map((entry) => resolveEntry(entry, target))
     .filter((p) => p !== null)
     .filter(isConcrete);
   if (scope.length === 0) {
-    if (mode === "--from-frontmatter") {
+    if (mode === '--from-frontmatter') {
       fail(
-        `no concrete \`writes:\` paths in ${file} (only placeholders/empties${target ? "" : " — pass --target for placeholder/glob entries"}) — use --from-plan`
+        `no concrete \`writes:\` paths in ${file} (only placeholders/empties${target ? '' : ' — pass --target for placeholder/glob entries'}) — use --from-plan`,
       );
     }
     fail(`no back-tick paths under \`## Files\` in ${file}`);
@@ -350,20 +361,22 @@ function main() {
     const offenders = scope.filter((p) => CONTROL_SURFACE.includes(normalizeForTest(p)));
     if (offenders.length) {
       fail(
-        `refusing to scope the write-guards' own control surface: ${offenders.join(", ")}\n` +
+        `refusing to scope the write-guards' own control surface: ${offenders.join(', ')}\n` +
           `  Declared in : ${file}\n` +
           `  Why         : these files wire and implement the two pre-write guards; a scope over them lets a write disarm a guard on the next tool call (CONSTITUTION P2 — a declared file is untrusted input).\n` +
           `  If this increment genuinely edits a guard, re-run with --allow-claude-dir (an operator flag; no declared file can set it).\n` +
-          `  Nothing was written; .pharn/writes-scope.json is unchanged.`
+          `  Nothing was written; .pharn/writes-scope.json is unchanged.`,
       );
     }
   }
 
   const record = { scope, set_by: file, set_at: new Date().toISOString() };
-  const dir = path.resolve(process.cwd(), ".pharn");
+  const dir = path.resolve(process.cwd(), '.pharn');
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, "writes-scope.json"), JSON.stringify(record, null, 2) + "\n");
-  process.stdout.write(`writes-scope set: ${scope.length} path(s) from ${file} -> .pharn/writes-scope.json\n`);
+  fs.writeFileSync(path.join(dir, 'writes-scope.json'), JSON.stringify(record, null, 2) + '\n');
+  process.stdout.write(
+    `writes-scope set: ${scope.length} path(s) from ${file} -> .pharn/writes-scope.json\n`,
+  );
   process.exit(0);
 }
 

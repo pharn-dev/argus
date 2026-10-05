@@ -2,7 +2,7 @@
 
 **Everything in this document is in scope.** We build the full version — nothing
 is deferred to "later." The only marker that remains is for items where the
-*what* is committed but the *how* has an open design fork that must be answered
+_what_ is committed but the _how_ has an open design fork that must be answered
 before that part is built.
 
 Status legend:
@@ -91,7 +91,7 @@ Status legend:
 
 ## Out of scope — by identity, not by timeline
 
-These stay out even in the full build, because they contradict what Argus *is*
+These stay out even in the full build, because they contradict what Argus _is_
 (lightweight, dependency-free, local-first). Cutting them is not deferral:
 
 - A hosted/SaaS backend or a required external collector service.

@@ -58,19 +58,11 @@
     }
   },
   "seam": {
-    "resolutionOrder": [
-      "official-skill",
-      "pinned-docs",
-      "model",
-      "fetch",
-      "ask"
-    ],
+    "resolutionOrder": ["official-skill", "pinned-docs", "model", "fetch", "ask"],
     "modelConfidenceThreshold": "high",
     "haltOnUnknown": true
   },
-  "archetypes": [
-    "lib"
-  ],
+  "archetypes": ["lib"],
   "capabilities": [
     {
       "name": "architecture",

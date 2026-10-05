@@ -7,16 +7,16 @@ model: sonnet
 effort: high
 reads:
   [
-    "pharn/CONSTITUTION.md",
-    "pharn/ARCHITECTURE.md",
-    "pharn/features/<name>/PLAN.md",
-    "pharn/floor/stage-regress.mjs",
-    "pharn/pharn-contracts/stage-exit.md",
+    'pharn/CONSTITUTION.md',
+    'pharn/ARCHITECTURE.md',
+    'pharn/features/<name>/PLAN.md',
+    'pharn/floor/stage-regress.mjs',
+    'pharn/pharn-contracts/stage-exit.md',
     "<the user's target repo>",
   ]
-writes: [".pharn/pharn-regress/stage.json"]
-constitution_refs: ["P0", "P2", "P3", "P4", "P5", "P6", "P7"]
-version: "0.5.1"
+writes: ['.pharn/pharn-regress/stage.json']
+constitution_refs: ['P0', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7']
+version: '0.5.1'
 ---
 
 # /pharn-regress — detect regressions OUTSIDE the feature, in the user's codebase

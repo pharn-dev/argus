@@ -1,6 +1,6 @@
 # Contributing to Argus
 
-Thanks for your interest in Argus — *all-seeing runtime diagnostics for Node.js.*
+Thanks for your interest in Argus — _all-seeing runtime diagnostics for Node.js._
 
 ## Project shape
 
@@ -11,10 +11,27 @@ See `ARCHITECTURE.md` for how they fit together and `CLAUDE.md` for the hard rul
 ## Getting set up
 
 ```bash
+npm install
+npm run typecheck  # TypeScript on repo sources (excludes packages/)
+npm test
+npm run lint
+npm run format:check
+
+# After S0 (pnpm workspace scaffold):
 pnpm install
 pnpm -w build      # tsc --build across the workspace
 pnpm -w test
 pnpm -w lint
+pnpm -w format:check
+```
+
+Before committing (root still uses npm until the workspace lands):
+
+```bash
+npm run typecheck
+npm test
+npm run lint
+npm run format        # or format:check in CI
 ```
 
 ## The rules that PRs are checked against

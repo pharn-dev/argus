@@ -1,5 +1,5 @@
 ---
-description: "Turn a feature idea into SPEC.md: surface gaps, fill the SPEC template, stop for human approval (or, with --model-approve for /pharn-loop, the model approves), then pin it. The first pipeline stage; `--quick` writes a 1–3 criterion mini-SPEC."
+description: 'Turn a feature idea into SPEC.md: surface gaps, fill the SPEC template, stop for human approval (or, with --model-approve for /pharn-loop, the model approves), then pin it. The first pipeline stage; `--quick` writes a 1–3 criterion mini-SPEC.'
 kind: pharn-owned
 trust: trusted
 model_tier: sonnet
@@ -7,19 +7,19 @@ model: opus
 effort: high
 reads:
   [
-    "pharn/CONSTITUTION.md",
-    "pharn/ARCHITECTURE.md",
-    "pharn/pharn-contracts/spec-template.md",
-    "pharn/pharn-contracts/templates/spec-template.md",
-    "pharn.spec-template.md",
-    "pharn/features/<name>/SPEC.md",
-    "pharn/floor/check-spec.mjs",
-    "pharn/floor/feature-name.mjs",
-    "package.json",
+    'pharn/CONSTITUTION.md',
+    'pharn/ARCHITECTURE.md',
+    'pharn/pharn-contracts/spec-template.md',
+    'pharn/pharn-contracts/templates/spec-template.md',
+    'pharn.spec-template.md',
+    'pharn/features/<name>/SPEC.md',
+    'pharn/floor/check-spec.mjs',
+    'pharn/floor/feature-name.mjs',
+    'package.json',
   ]
-writes: ["pharn/features/<name>/SPEC.md"]
-constitution_refs: ["P0", "P2", "P4", "P5", "P6", "P7"]
-version: "0.7.1"
+writes: ['pharn/features/<name>/SPEC.md']
+constitution_refs: ['P0', 'P2', 'P4', 'P5', 'P6', 'P7']
+version: '0.7.1'
 ---
 
 # /pharn-spec — capture intent as a human-approved SPEC.md
