@@ -3,6 +3,8 @@ export type ArgusAgentPlaceholder = void;
 
 export { createEventLoopSampler } from './event-loop-sampler.js';
 export type { EventLoopSample, EventLoopSampler } from './event-loop-sampler.js';
+export { createGcSampler } from './gc-sampler.js';
+export type { GcSample, GcSampler } from './gc-sampler.js';
 export { sampleMemory } from './memory-sampler.js';
 export type { MemorySample } from './memory-sampler.js';
 export { createSamplerController } from './sampler-controller.js';

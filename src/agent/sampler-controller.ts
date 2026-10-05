@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import { createEventLoopSampler, type EventLoopSample } from './event-loop-sampler.js';
+import { createGcSampler, type GcSample } from './gc-sampler.js';
 import { sampleMemory, type MemorySample } from './memory-sampler.js';
 
 export type AgentSample = {
@@ -7,6 +8,7 @@ export type AgentSample = {
   timestamp: number;
   eventLoop: EventLoopSample;
   memory: MemorySample;
+  gc: GcSample;
 };
 
 export type SamplerController = {
@@ -18,6 +20,7 @@ export function createSamplerController(
   onSample: (sample: AgentSample) => void,
 ): SamplerController {
   const eventLoop = createEventLoopSampler();
+  const gc = createGcSampler();
   let timer: NodeJS.Timeout | undefined;
 
   return {
@@ -31,8 +34,14 @@ export function createSamplerController(
         return;
       }
       eventLoop.enable();
+      gc.enable();
       timer = setInterval(() => {
-        onSample({ timestamp: Date.now(), eventLoop: eventLoop.sample(), memory: sampleMemory() });
+        onSample({
+          timestamp: Date.now(),
+          eventLoop: eventLoop.sample(),
+          memory: sampleMemory(),
+          gc: gc.sample(),
+        });
       }, intervalMs);
       timer.unref();
     },
@@ -43,6 +52,7 @@ export function createSamplerController(
       clearInterval(timer);
       timer = undefined;
       eventLoop.disable();
+      gc.disable();
     },
   };
 }

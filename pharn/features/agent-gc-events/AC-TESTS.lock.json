@@ -1,0 +1,82 @@
+{
+  "schema": "ac-tests-lock/4",
+  "feature": "agent-gc-events",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "agent-gc-events",
+    "spec_content_hash": "484b89051d0f701c553ec2645afb6d3e52fbfa6d425e7e2802f0b8e9a4228220"
+  },
+  "mapping": {
+    "path": "pharn/features/agent-gc-events/AC-TESTS.md",
+    "sha256": "cd8a359ef776bd2bf0d0be6d41fc261ac4692e979459473b5da32df946dfde00"
+  },
+  "files": [
+    {
+      "path": "src/agent/gc-events.ac1.integration.test.ts",
+      "sha256": "6b0a45816db9aab762b77e7e9d538c915c8d8f807773747eb8856e8a52bd6153"
+    },
+    {
+      "path": "src/agent/gc-events.ac2.test.ts",
+      "sha256": "8f10758801271f8cf2d4f2a479baee331f5fd5ab9d2526491b5014600647ff8e"
+    },
+    {
+      "path": "src/agent/gc-events.ac3.integration.test.ts",
+      "sha256": "69444bff2fc3d0a729ddbad2480709ed633e2a209d48547244390ee4e4267ab7"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "31296ba3f6a879a7a5df8bd47a30eb815ad194538f76b64d655f75adbd088ff0",
+    "files_sha256": "3d9d78fe718f82bf4c92b82f022ff7bcda759db8cb1e5d246d1e8f4f2ec211b0",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "750c20423857ab507abca03e1329e92a3f4f980251143ac42ae3294022b261cd"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/agent/gc-events.ac1.integration.test.ts::agent GC events — AC-1 › AC-1: a GC sampler reads zeros, then counts a forced GC with integer pauses and kinds, then reads zeros again"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/agent/gc-events.ac2.test.ts::agent GC events — AC-2 › AC-2: the controller sample carries a gc part of non-negative integers alongside eventLoop and memory"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/agent/gc-events.ac3.integration.test.ts::agent GC events — AC-3 › AC-3: a process that starts the controller with its GC sampler, allocates and stops exits 0 on its own with no sample after stop"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration",
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null
+  }
+}
