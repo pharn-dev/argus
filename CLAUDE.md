@@ -23,9 +23,10 @@ npm run lint
 npm run format:check
 ```
 
-Run one module's tests with `npx vitest run src/<module>`.
+Run one module's tests with `npx vitest run src/<module>`, or one file with `npx vitest run <path>`.
 
-No test runner is chosen yet, so there's no single-test command. Add one here when one is picked.
+**Every file you write must pass `npm run format:check`.** Run `npx prettier --write <file>` on each
+source or test file you create or edit, before running any gate. CI fails on unformatted files.
 
 ## Companion docs
 
