@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -21,14 +21,17 @@ function expectSnapshotFile(result: unknown, dir: string): string {
   const filePath = path as string;
   expect(resolve(dirname(filePath)), 'path is inside the directory').toBe(resolve(dir));
   expect(filePath.endsWith('.heapsnapshot'), `${filePath} ends in .heapsnapshot`).toBe(true);
-  expect(existsSync(filePath), `${filePath} exists`).toBe(true);
 
   expect(typeof bytes, 'bytes is a number').toBe('number');
   expect(Number.isInteger(bytes), 'bytes is an integer').toBe(true);
   expect(bytes as number, 'bytes > 0').toBeGreaterThan(0);
-  expect(statSync(filePath).size, 'file size equals bytes').toBe(bytes);
 
-  const parsed = JSON.parse(readFileSync(filePath, 'utf8')) as Record<string, unknown>;
+  // Read once (throws if the file is missing) so existence, size and content are checked on
+  // the same bytes — no check-then-use race on the path.
+  const content = readFileSync(filePath);
+  expect(content.length, 'file size equals bytes').toBe(bytes);
+
+  const parsed = JSON.parse(content.toString('utf8')) as Record<string, unknown>;
   expect(parsed, 'top-level snapshot key').toHaveProperty('snapshot');
   const snapshot = parsed['snapshot'] as Record<string, unknown>;
   expect(typeof snapshot['meta'], 'snapshot.meta is an object').toBe('object');
