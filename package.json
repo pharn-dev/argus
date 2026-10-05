@@ -32,12 +32,12 @@
   "exports": {
     "./agent": {
       "import": {
-        "types": "./dist/esm/agent/index.d.ts",
-        "default": "./dist/esm/agent/index.js"
+        "types": "./dist/esm/agent/auto.d.ts",
+        "default": "./dist/esm/agent/auto.js"
       },
       "require": {
-        "types": "./dist/cjs/agent/index.d.ts",
-        "default": "./dist/cjs/agent/index.js"
+        "types": "./dist/cjs/agent/auto.d.ts",
+        "default": "./dist/cjs/agent/auto.js"
       }
     },
     "./collector": {
