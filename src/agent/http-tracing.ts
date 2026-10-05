@@ -1,5 +1,7 @@
 import { subscribe, unsubscribe } from 'node:diagnostics_channel';
-import { enterTrace } from './context.js';
+import { Server as HttpServer } from 'node:http';
+import { Server as HttpsServer } from 'node:https';
+import { runInTrace } from './context.js';
 import { createSpanBuffer } from './span-buffer.js';
 import type { SpanBuffer, SpanDrain } from './span-buffer.js';
 import { newTraceId, parseTraceparent } from './trace-id.js';
@@ -52,7 +54,6 @@ function onStart(message: unknown): void {
       startTimeMs: Date.now(),
       startNs: process.hrtime.bigint(),
     });
-    enterTrace(traceId);
   } catch (error) {
     warn(error);
   }
@@ -85,6 +86,47 @@ function onFinish(message: unknown): void {
   }
 }
 
+type Emit = (this: unknown, event: string | symbol, ...args: unknown[]) => boolean;
+type EmitPatch = { proto: object; own: PropertyDescriptor | undefined };
+
+const emitPatches: EmitPatch[] = [];
+
+/**
+ * Run each server's 'request' listeners inside the trace the start channel assigned to that
+ * request. The start channel publishes synchronously right before `emit('request', …)`, so the
+ * request is already in `inflight` here. `runInTrace` scopes the context to the listeners and
+ * their async continuations only — nothing created earlier (a keep-alive socket) inherits it.
+ */
+function patchEmit(proto: object): void {
+  const own = Object.getOwnPropertyDescriptor(proto, 'emit');
+  const original = (proto as { emit: Emit }).emit;
+  const wrapped: Emit = function (this: unknown, event, ...args) {
+    const request = args[0];
+    const entry = event === 'request' && isObject(request) ? inflight.get(request) : undefined;
+    if (entry === undefined) {
+      return original.call(this, event, ...args);
+    }
+    return runInTrace(entry.traceId, () => original.call(this, event, ...args));
+  };
+  Object.defineProperty(proto, 'emit', {
+    value: wrapped,
+    writable: true,
+    configurable: true,
+    enumerable: false,
+  });
+  emitPatches.push({ proto, own });
+}
+
+function restoreEmits(): void {
+  for (const { proto, own } of emitPatches.splice(0)) {
+    if (own === undefined) {
+      delete (proto as { emit?: Emit }).emit;
+    } else {
+      Object.defineProperty(proto, 'emit', own);
+    }
+  }
+}
+
 /** Start tracing inbound HTTP requests. Idempotent: a second call while enabled is a no-op. */
 export function enable(options: HttpTracingOptions = {}): void {
   if (enabled) {
@@ -94,6 +136,8 @@ export function enable(options: HttpTracingOptions = {}): void {
   if (spanBufferSize !== undefined && spanBufferSize !== buffer.capacity) {
     buffer = createSpanBuffer(spanBufferSize);
   }
+  patchEmit(HttpServer.prototype);
+  patchEmit(HttpsServer.prototype);
   subscribe(START_CHANNEL, onStart);
   subscribe(FINISH_CHANNEL, onFinish);
   enabled = true;
@@ -106,6 +150,7 @@ export function disable(): void {
   }
   unsubscribe(START_CHANNEL, onStart);
   unsubscribe(FINISH_CHANNEL, onFinish);
+  restoreEmits();
   enabled = false;
 }
 

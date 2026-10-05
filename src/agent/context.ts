@@ -16,7 +16,11 @@ export function runWithTrace<T>(fn: () => T): T {
   return storage.run({ traceId: newTraceId() }, fn);
 }
 
-/** Internal: enter a trace for the rest of the current async execution (HTTP tracer only). */
-export function enterTrace(traceId: string): void {
-  storage.enterWith({ traceId });
+/**
+ * Internal: run `fn` inside the trace `traceId` (HTTP tracer only). Scoped with `run`, never
+ * `enterWith`: an entered context leaks into async resources that outlive the request (a
+ * keep-alive socket's parser on Node 22), so a later request would inherit a stale trace.
+ */
+export function runInTrace<T>(traceId: string, fn: () => T): T {
+  return storage.run({ traceId }, fn);
 }
