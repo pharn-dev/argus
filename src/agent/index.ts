@@ -22,3 +22,7 @@ export type { NdjsonExporter, NdjsonExporterOptions } from './ndjson-exporter.js
 export { loadAgentConfig } from './config.js';
 export { defaultAgentConfig, ArgusConfigError } from './config-schema.js';
 export type { AgentConfig } from './config-schema.js';
+export { currentTraceId, runWithTrace } from './context.js';
+export { enable, disable, drainSpans, DEFAULT_SPAN_BUFFER_SIZE } from './http-tracing.js';
+export type { HttpTracingOptions } from './http-tracing.js';
+export type { TraceSpan, SpanDrain } from './span-buffer.js';
