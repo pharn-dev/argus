@@ -34,6 +34,31 @@ npm run lint
 npm run format        # or format:check in CI
 ```
 
+## What CI checks
+
+Every PR runs these as separate jobs, and all of them are required status checks on `main`:
+
+| Job          | Command                                             |
+| ------------ | --------------------------------------------------- |
+| Format check | `npm run format:check`                              |
+| Lint         | `npm run lint`                                      |
+| Typecheck    | `npm run typecheck`                                 |
+| Test         | `npm test`                                          |
+| Build        | `npm run build` then `npm run check:exports`        |
+| Action pins  | `npm run check:pins` (every Action pinned to a SHA) |
+
+CodeQL (`Analyze (javascript-typescript)`) and `gitleaks` run as well. A separate, non-required
+`node-latest` workflow smoke-tests the newest Node. The job names are a contract with the branch
+ruleset: renaming one means updating the ruleset too.
+
+## Threat model and limits
+
+Argus's own security design is in [`docs/THREAT-MODEL.md`](./docs/THREAT-MODEL.md) and its
+limits in [`docs/LIMITS.md`](./docs/LIMITS.md). A change that adds a network listener, a place data
+is written or sent, or parsing of untrusted input needs a row in the threat model in the same PR.
+(The `THREAT-MODEL.md` and `LIMITS.md` at the repo root belong to the PHARN development tooling,
+not to Argus.)
+
 ## The rules that PRs are checked against
 
 - **`src/agent` has zero external dependencies** and imports nothing from the other
@@ -51,8 +76,11 @@ npm run format        # or format:check in CI
 
 ## Commits & releases
 
-- **Conventional Commits** (`feat:`, `fix:`, `chore:`, …). Releases are automated
-  via `semantic-release`, so commit messages drive the changelog and version.
+- **Conventional Commits** (`feat:`, `fix:`, `chore:`, …). PRs are squash-merged, so the PR title
+  becomes the commit message on `main` — write it in that style.
+- Add a line under **Unreleased** in `CHANGELOG.md` for any user-visible change.
+- Releases are cut by a maintainer by hand (version bump, GitHub Release, npm publish through CI):
+  see [`docs/RELEASING.md`](./docs/RELEASING.md).
 - Keep PRs focused; one logical change per PR.
 
 ## Good first issues
