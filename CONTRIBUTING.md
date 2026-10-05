@@ -4,28 +4,28 @@ Thanks for your interest in Argus — _all-seeing runtime diagnostics for Node.j
 
 ## Project shape
 
-Monorepo on **pnpm workspaces**. Packages live under `packages/` (`@argus/agent`,
-`@argus/collector`, `@argus/analyzer`, `@argus/dashboard`, `@argus/plugin-runner`).
-See `ARCHITECTURE.md` for how they fit together and `CLAUDE.md` for the hard rules.
+Argus is a single npm package. Its five modules live under `src/` (`agent`, `collector`,
+`analyzer`, `dashboard`, `plugin-runner`) and are exposed as subpath exports such as
+`argus/agent`. See `ARCHITECTURE.md` for how they fit together and `CLAUDE.md` for the hard rules.
 
 ## Getting set up
 
+Argus uses **npm**. Use the Node version in `.nvmrc`.
+
 ```bash
 npm install
-npm run typecheck  # TypeScript on repo sources (excludes packages/)
+npm run build           # dual build into dist/: ESM (dist/esm) + CJS (dist/cjs)
+npm run check:exports   # after build: every `exports` subpath loads via import and require
+npm run typecheck       # tsc --noEmit over src/ and the repo's own scripts and configs
 npm test
 npm run lint
 npm run format:check
-
-# After S0 (pnpm workspace scaffold):
-pnpm install
-pnpm -w build      # tsc --build across the workspace
-pnpm -w test
-pnpm -w lint
-pnpm -w format:check
 ```
 
-Before committing (root still uses npm until the workspace lands):
+Run one module's tests with `npx vitest run src/<module>`. Commit
+`package-lock.json` changes together with the `package.json` change that caused them.
+
+Before committing:
 
 ```bash
 npm run typecheck
@@ -36,12 +36,13 @@ npm run format        # or format:check in CI
 
 ## The rules that PRs are checked against
 
-- **`@argus/agent` has zero external dependencies.** A PR adding a third-party
+- **`src/agent` has zero external dependencies** and imports nothing from the other
+  modules (an ESLint rule enforces both). A PR adding a third-party
   dependency to the agent will not be merged. Use Node core.
 - TypeScript strict mode. No `any` without a comment explaining why.
 - Streams use `stream/promises` `pipeline()`, never `.pipe()`.
 - Worker Thread files live in `*/src/workers/`; no inline `eval`-based workers.
-- `async_hooks` is imported only in `@argus/agent/src/context.ts`.
+- `async_hooks` is imported only in `src/agent/context.ts`.
 - Every stream / worker / plugin execution has explicit error handling. No silent
   failures.
 - Counter aggregation uses integer math.
@@ -62,3 +63,13 @@ open an issue first so we can align on approach before you write code.
 ## Tests
 
 New behavior needs tests. Bug fixes should include a regression test.
+
+## Conduct and security
+
+- This project follows the [Code of Conduct](./CODE_OF_CONDUCT.md). By participating you are
+  expected to uphold it.
+- Found a vulnerability? **Do not open a public issue or PR.** Follow the private disclosure process
+  in [`SECURITY.md`](./SECURITY.md).
+
+By contributing, you agree your contributions are licensed under the repository's
+[Apache 2.0 license](./LICENSE).

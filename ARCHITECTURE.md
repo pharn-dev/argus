@@ -18,24 +18,24 @@ browser.
 │  user app code                                                               │
 │       │  (no instrumentation required)                                       │
 │       ▼                                                                       │
-│  @argus/agent                                                                │
+│  argus/agent                                                                 │
 │   ├─ async_hooks + AsyncLocalStorage  → traceId per async context            │
 │   ├─ event loop lag / memory / GC hooks                                      │
 │   ├─ stream backpressure probes                                             │
 │   └─ v8 stats, heap snapshot trigger, --trace-deopt parse                    │
 │       │  raw signals                                                          │
 │       ▼                                                                       │
-│  @argus/collector                                                            │
+│  argus/collector                                                             │
 │   └─ stream pipeline: raw → aggregated windows → alerts (Transform streams)  │
 │       │                          │                                            │
 │       │ heavy work               │ NDJSON stream (backpressured)             │
 │       ▼                          ▼                                            │
-│  @argus/analyzer            @argus/dashboard (server side)                    │
+│  argus/analyzer            argus/dashboard (server side)                      │
 │   └─ Worker Thread pool:     └─ serves UI + SSE endpoint                      │
 │      heap analysis,                                                          │
 │      stack symbolization                                                     │
 │                                                                              │
-│  @argus/plugin-runner (optional)                                             │
+│  argus/plugin-runner (optional)                                              │
 │   └─ user rules in isolated-vm (mem limit + timeout)                         │
 └──────────────────────────────────────────────────────────────────────────────┘
                                     │ SSE
@@ -69,15 +69,16 @@ browser.
 
 ---
 
-## Package boundaries (who may import what)
+## Module boundaries (who may import what)
 
-- `@argus/agent` — Node core only. **No workspace deps, no third-party deps.**
-- `@argus/collector` — consumes agent output; owns the stream pipeline.
-- `@argus/analyzer` — Worker Threads only; pure CPU work, no app coupling.
-- `@argus/dashboard` — SSE server + static UI; reads from collector output.
-- `@argus/plugin-runner` — isolated-vm sandbox; reads aggregated data only.
+- `src/agent` (`argus/agent`) — Node core only. **No imports from other modules, no
+  third-party deps** (an ESLint rule enforces this).
+- `src/collector` — consumes agent output; owns the stream pipeline.
+- `src/analyzer` — Worker Threads only; pure CPU work, no app coupling.
+- `src/dashboard` — SSE server + static UI; reads from collector output.
+- `src/plugin-runner` — isolated-vm sandbox; reads aggregated data only.
 
-`async_hooks` is imported in exactly one file: `@argus/agent/src/context.ts`.
+`async_hooks` is imported in exactly one file: `src/agent/context.ts`.
 
 ---
 
@@ -93,7 +94,9 @@ browser.
 
 ## Build & module setup
 
-- pnpm workspaces monorepo.
-- `tsconfig.base.json` (strict) + TypeScript project references; `tsc --build`.
-- Every package ships dual ESM + CJS with a correct `exports` field; internal
-  aliases use the `imports` field.
+- One npm package (`argus`); the five modules live under `src/` and are exposed as
+  subpath exports (`argus/agent`, `argus/collector`, …).
+- `tsconfig.base.json` (strict) shared by two builds: `tsconfig.esm.json` →
+  `dist/esm`, `tsconfig.cjs.json` → `dist/cjs` (`npm run build`).
+- Every module ships dual ESM + CJS with a correct `exports` entry (separate types
+  per format); internal aliases use the `imports` field.

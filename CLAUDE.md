@@ -8,19 +8,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repo state & commands
 
-**Pre-scaffold.** Only design docs exist; no `packages/` yet. The root
-`package.json` (`"type": "commonjs"`, placeholder `test` script) and
-`package-lock.json` are `npm init` leftovers. Replace them with the pnpm
-workspace root during scaffolding and delete `package-lock.json`. Don't use npm here.
+**Package manager: npm.** Argus is one normal npm package (a single root `package.json`).
+Use npm only; don't add another package manager or its lockfile. Commit `package-lock.json`.
 
-Intended workspace commands (from `CONTRIBUTING.md`; they don't exist until S0 lands):
+Commands (run from the repo root):
 
 ```bash
-pnpm install
-pnpm -w build   # tsc --build across all project references
-pnpm -w test
-pnpm -w lint
+npm install
+npm run build           # dual build into dist/: ESM (dist/esm) + CJS (dist/cjs)
+npm run check:exports   # after build: every `exports` subpath loads via import and require
+npm run typecheck       # tsc --noEmit over src/ and the repo's own scripts and configs
+npm test
+npm run lint
+npm run format:check
 ```
+
+Run one module's tests with `npx vitest run src/<module>`.
 
 No test runner is chosen yet, so there's no single-test command. Add one here when one is picked.
 
@@ -58,26 +61,28 @@ the agent" constraint is the killer adoption feature — never compromise it.**
 
 ## Architecture
 
-Monorepo, **pnpm workspaces**. Five packages under `@argus/*`:
+One npm package (`argus`) with five modules under `src/`, each exposed as a subpath
+export (`argus/agent`, `argus/collector`, …):
 
 ```
 argus/
-├── packages/
-│   ├── agent/          # @argus/agent — core, injected into the monitored process
-│   ├── collector/      # @argus/collector — metric aggregation, stream pipeline
-│   ├── analyzer/       # @argus/analyzer — Worker Threads, heap analysis
-│   ├── dashboard/      # @argus/dashboard — lightweight UI (SSE + vanilla JS)
-│   └── plugin-runner/  # @argus/plugin-runner — isolated-vm sandbox for user rules
+├── src/
+│   ├── agent/          # argus/agent — core, injected into the monitored process
+│   ├── collector/      # argus/collector — metric aggregation, stream pipeline
+│   ├── analyzer/       # argus/analyzer — Worker Threads, heap analysis
+│   ├── dashboard/      # argus/dashboard — lightweight UI (SSE + vanilla JS)
+│   └── plugin-runner/  # argus/plugin-runner — isolated-vm sandbox for user rules
+├── scripts/            # build (dual ESM + CJS) and exports smoke test
 ├── examples/
 │   ├── express-app/    # example with full instrumentation
 │   └── worker-pool/    # example with Worker Threads
 ```
 
-### Package responsibilities
+### Module responsibilities
 
 - **agent** — runs inside the monitored process. Collects raw signals (event loop
   lag, memory, GC, stream backpressure, traces). Must stay dependency-free and add
-  near-zero overhead. This is the package users install.
+  near-zero overhead. This is the module users install.
 - **collector** — aggregates raw metrics. Owns the stream pipeline: raw metrics →
   aggregated time windows → alerts (Transform streams).
 - **analyzer** — CPU-heavy work (heap snapshot analysis, stack-trace
@@ -91,11 +96,14 @@ argus/
 
 ### Dependency boundaries
 
-- `@argus/agent` imports **Node core only**: no third-party deps _and no workspace
-  deps_. Everything else depends on the agent, never the other way round.
-- `@argus/collector` consumes agent output. `@argus/dashboard` reads collector
-  output. `@argus/plugin-runner` reads aggregated data only.
-- `@argus/analyzer` is pure CPU work in Worker Threads with no app coupling.
+- `src/agent` imports **Node core only** (`node:` builtins) and its own files: no
+  third-party deps _and no imports from the other modules_ (an ESLint rule enforces
+  this). Everything else depends on the agent, never the other way round. The root
+  `package.json` keeps no runtime `dependencies`; heavier deps (e.g. `isolated-vm`)
+  are optional peer dependencies used only by the module that needs them.
+- `src/collector` consumes agent output. `src/dashboard` reads collector
+  output. `src/plugin-runner` reads aggregated data only.
+- `src/analyzer` is pure CPU work in Worker Threads with no app coupling.
 - OTel export lives in an opt-in adapter outside the agent core.
 
 ---
@@ -125,9 +133,10 @@ These aren't bolted on — each is load-bearing in the design:
 
 ## Technical constraints (hard rules)
 
-- **Zero external dependencies in `@argus/agent`.** This is the product's whole
+- **Zero external dependencies in `src/agent`.** This is the product's whole
   point. Anything the agent needs comes from Node core. No exceptions.
-- **Dual package: ESM + CJS.** Correct `exports` field in every package.
+- **Dual package: ESM + CJS.** Every module has a correct `exports` subpath with
+  `import` and `require` conditions, each with its own types.
 - Use the `imports` field for internal aliases.
 - **TypeScript strict mode throughout.** No `any` without an explicit comment
   explaining why.
@@ -139,7 +148,7 @@ These aren't bolted on — each is load-bearing in the design:
 
 ## Coding conventions
 
-- `async_hooks` usage is isolated to `@argus/agent/src/context.ts`. **Nowhere else
+- `async_hooks` usage is isolated to `src/agent/context.ts`. **Nowhere else
   imports from `async_hooks` directly.**
 - All Worker Thread files live in a `*/src/workers/` subdirectory. Never inline,
   `eval`-based workers.
@@ -166,13 +175,12 @@ These aren't bolted on — each is load-bearing in the design:
 
 ## First task for a fresh repo
 
-> We are building Argus from scratch. Start by scaffolding the monorepo: pnpm
-> workspaces root, `tsconfig.base.json` with strict mode, a shared eslint config,
-> and the skeleton of all 5 packages (`agent`, `collector`, `analyzer`,
-> `dashboard`, `plugin-runner`) with correct `package.json` `exports` fields
-> (dual CJS+ESM), correct inter-package dependencies, and TypeScript project
-> references. **No implementation yet — just the structure that compiles cleanly
-> with `tsc --build`.**
+> We are building Argus from scratch. Start by scaffolding the package: a single
+> npm `package.json`, `tsconfig.base.json` with strict mode, a shared eslint
+> config, and the skeleton of the 5 modules (`agent`, `collector`, `analyzer`,
+> `dashboard`, `plugin-runner`) under `src/` with correct `package.json`
+> `exports` subpaths (dual CJS+ESM). **No implementation yet — just the structure
+> that compiles cleanly with `npm run build`.**
 
 ---
 
@@ -192,4 +200,5 @@ deliberately, but don't leave them implicit.
 - **Dashboard exposure in production: token-gated by default.** The SSE endpoint
   and UI require a token when not bound to localhost; never exposed unauthenticated
   in prod.
-- **Pin the toolchain:** `packageManager` field + `.nvmrc` matching the Node floor.
+- **Pin the toolchain:** `.nvmrc` matching the Node floor, plus `engines` (`node` and `npm`) in the
+  root `package.json`. CI uses `npm ci` against the committed `package-lock.json`.

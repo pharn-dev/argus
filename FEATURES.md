@@ -96,4 +96,4 @@ These stay out even in the full build, because they contradict what Argus _is_
 
 - A hosted/SaaS backend or a required external collector service.
 - A heavy framework-based dashboard or a build step for the UI.
-- Pulling any third-party APM/agent SDK into `@argus/agent`.
+- Pulling any third-party APM/agent SDK into the agent (`src/agent`).

@@ -1,11 +1,9 @@
 pharn/**
-packages/**
 node_modules/
 dist/
 coverage/
 .pharn/
 runs/
 package-lock.json
-pnpm-lock.yaml
 *.tsbuildinfo
 .tsbuildinfo

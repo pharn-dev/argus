@@ -12,12 +12,12 @@ Calendar is yours to set; the ordering is the point.
 
 ## S0 — Scaffold
 
-- pnpm workspaces, `tsconfig.base.json` (strict), shared eslint config.
-- Skeleton of all 5 packages with correct `exports` (dual CJS+ESM), inter-package
-  deps, and TS project references.
-- CI: GitHub Actions running `tsc --build` + lint on PRs.
+- Single npm package, `tsconfig.base.json` (strict), shared eslint config.
+- Skeleton of the 5 modules under `src/` with correct `exports` subpaths (dual
+  CJS+ESM) and an import-boundary lint rule for the agent.
+- CI: GitHub Actions running build + typecheck + lint + test on PRs.
 - semantic-release wired (publishing comes online later, config lands now).
-- Outcome: clean monorepo that compiles with `tsc --build`.
+- Outcome: a clean single package that builds with `npm run build`.
 
 ## S1 — Agent core: the one-liner
 
@@ -81,7 +81,7 @@ Calendar is yours to set; the ordering is the point.
 
 ## Guardrails while building
 
-- The zero-dependency rule for `@argus/agent` is never broken to move faster.
+- The zero-dependency rule for `src/agent` is never broken to move faster.
 - Every step ends in a compiling, runnable state — no long-lived broken main.
 - The architecture forks in `CLAUDE.md` (min Node version, dashboard auth in
   prod, disk persistence) are decided up front, since we're building the full
