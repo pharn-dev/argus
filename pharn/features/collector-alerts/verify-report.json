@@ -1,0 +1,82 @@
+{
+  "feature": "collector-alerts",
+  "gates": {
+    "build": 0,
+    "format:check": 0,
+    "lint": 0,
+    "reconcile": 0,
+    "test": 0,
+    "typecheck": 0
+  },
+  "verdict": "PASS",
+  "failing_gates": [],
+  "gate_run": {
+    "stamp_sha256": "ce11505ef674a4cb80ff40f6cd8ce76107c7d79f8b00e59232a380f44033ebc3",
+    "source": "discover",
+    "fingerprint": {
+      "algo": "worktree-fingerprint/2+sha256",
+      "final": "e2fa24a0a7fa82608ebb708cf97a7a1e51217010ce1b3aaf867f9194b38fb9c2"
+    }
+  },
+  "ac_gate": {
+    "mode": "test-first",
+    "verdict": "PASS",
+    "reason": null,
+    "evidence": [],
+    "acs": [
+      {
+        "id": "AC-1",
+        "level": "unit",
+        "tests": [
+          "src/collector/collector-alerts.ac1.test.ts::collector alerts — AC-1 › AC-1: emits edge-triggered firing and resolved alerts in window then rule order, with integer fields"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-2",
+        "level": "unit",
+        "tests": [
+          "src/collector/collector-alerts.ac2.test.ts::collector alerts — AC-2 › AC-2: creating an evaluator or a collector with one invalid rule throws synchronously naming that rule id"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-3",
+        "level": "unit",
+        "tests": [
+          "src/collector/collector-alerts.ac3.test.ts::collector alerts — AC-3 › AC-3: a collector with an alert rule records windows and firing/resolved alerts, and rejects with a source error"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      }
+    ],
+    "unmapped_anomalies": [],
+    "note": "an AC is delivered = a locked, once-red test titled AC-<n>:, in a file mapped to AC-<n>, passed on this head run. PHARN does not judge whether that test fully captures the AC's intent."
+  },
+  "completeness": {
+    "plan": "pharn/features/collector-alerts/PLAN.md",
+    "repoDir": ".",
+    "declared": [
+      "src/collector/alert-rules.ts",
+      "src/collector/alert-evaluator.ts",
+      "src/collector/collector.ts",
+      "src/collector/index.ts"
+    ],
+    "skipped": [],
+    "missing": [],
+    "complete": true,
+    "verdict": "complete"
+  },
+  "verifiers": {
+    "registered": 0,
+    "findings": []
+  },
+  "gate_reuse": {
+    "reused": []
+  }
+}

@@ -7,3 +7,10 @@ export { createWindowAggregator, type WindowAggregatorOptions } from './window-a
 export { createRingBuffer, type RingBuffer } from './ring-buffer.js';
 export { createCollector, type Collector, type CollectorOptions } from './collector.js';
 export type { AggregatedWindow } from './window.js';
+export { createAlertEvaluator, type Alert, type AlertState } from './alert-evaluator.js';
+export {
+  validateAlertRules,
+  type AlertComparison,
+  type AlertMetric,
+  type AlertRule,
+} from './alert-rules.js';
