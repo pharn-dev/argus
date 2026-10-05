@@ -88,7 +88,7 @@ describe('agent backpressure probes — AC-1', () => {
       `a hotspot naming this test file; got ${JSON.stringify(first.hotspots)}`,
     ).toBeDefined();
     if (entry === undefined) return;
-    expect(entry.site).not.toMatch(/^node:|internal\//);
+    expect(entry.site).not.toMatch(/(?:^node:)|(?:internal\/)/);
     expect(entry.site).not.toMatch(/backpressure-probe\.ts|stack-site\.ts/);
     expect(entry.events).toBe(STALLS);
     expectNonNegativeInt(entry.totalStall, 'hotspot.totalStall');
