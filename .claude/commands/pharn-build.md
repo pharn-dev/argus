@@ -16,11 +16,7 @@ reads:
     '.claude/hooks/enforce-writes-scope.cjs',
     "<the user's target repo>",
   ]
-writes:
-  [
-    "<user-code files named in the plan's ## Files (Phase-1, via --from-plan — not from this list)>",
-    'pharn/features/<name>/BUILD.md',
-  ]
+writes: ["<user-code files named in the plan's ## Files (Phase-1, via --from-plan — not from this list)>", 'pharn/features/<name>/BUILD.md']
 constitution_refs: ['P0', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7']
 version: '0.2.2'
 ---

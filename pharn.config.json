@@ -205,5 +205,8 @@
       "source": "auto"
     }
   ],
-  "layout": "pharn"
+  "layout": "pharn",
+  "testResults": {
+    "test": "vitest-json"
+  }
 }
