@@ -1,0 +1,81 @@
+{
+  "schema": "ac-tests-lock/4",
+  "feature": "collector-persistence",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "collector-persistence",
+    "spec_content_hash": "aef97b4dab00e2f56a841bb6563e872e960151d45a44755be5f2dfc4d71914a0"
+  },
+  "mapping": {
+    "path": "pharn/features/collector-persistence/AC-TESTS.md",
+    "sha256": "f56a8d268fd4a5a8708ffb2b5e5aedd13f837eab19867012e9779fc213b2f6b7"
+  },
+  "files": [
+    {
+      "path": "src/collector/collector-persistence.ac1.integration.test.ts",
+      "sha256": "594a603fe0087d044f3e90f7fc451f6a8d75790a40026f6202110567a582f404"
+    },
+    {
+      "path": "src/collector/collector-persistence.ac2.integration.test.ts",
+      "sha256": "56596462624df810b0539fbf3e3f882b92e474049b405b5aaf7999dcaf359842"
+    },
+    {
+      "path": "src/collector/collector-persistence.ac3.integration.test.ts",
+      "sha256": "6950070e8408f631afcdba530d24d87048456770e96b4c8e3d3f2598dc3e53f7"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "042a6679e80898a20ec649f5e45d3fbe1c8088ddcb19d0f8a6ac69f92549fad1",
+    "files_sha256": "f765d883a578782977a54725d6911d2cd7658eab5dbe159c272640f63f9cef38",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "11d40efa5b93f0fab88a76e1b6a8dfb4e144422bd6b5268827fdfa8d8b62b635"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/collector/collector-persistence.ac1.integration.test.ts::collector persistence — AC-1 › AC-1: a persisting collector appends each closed window as one NDJSON line in ring order, and a collector without persist touches no file"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/collector/collector-persistence.ac2.integration.test.ts::collector persistence — AC-2 › AC-2: restores the most recent valid windows, skips a corrupt line and a truncated last line, then appends new windows after them"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/collector/collector-persistence.ac3.integration.test.ts::collector persistence — AC-3 › AC-3: compacts the file to a contiguous tail of windows past maxBytes, surfaces append errors, and validates path and maxBytes"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null
+  }
+}
