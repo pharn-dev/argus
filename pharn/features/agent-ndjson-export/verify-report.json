@@ -1,0 +1,82 @@
+{
+  "feature": "agent-ndjson-export",
+  "gates": {
+    "build": 0,
+    "format:check": 0,
+    "lint": 0,
+    "reconcile": 0,
+    "test": 0,
+    "typecheck": 0
+  },
+  "verdict": "PASS",
+  "failing_gates": [],
+  "gate_run": {
+    "stamp_sha256": "b993ef16c9fa0d1bf31db9cbdea629cba7e0dc38626c97fa62e9f55c56931be9",
+    "source": "discover",
+    "fingerprint": {
+      "algo": "worktree-fingerprint/2+sha256",
+      "final": "c08e1e7037aab253a029b490d4119ac8bf01fe84f176464cb1f46d03974ad3ed"
+    }
+  },
+  "ac_gate": {
+    "mode": "test-first",
+    "verdict": "PASS",
+    "reason": null,
+    "evidence": [],
+    "acs": [
+      {
+        "id": "AC-1",
+        "level": "unit",
+        "tests": [
+          "src/agent/ndjson-export.ac1.test.ts::agent NDJSON export — AC-1 › AC-1: three exported objects arrive as exactly three newline-terminated JSON lines, in order"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-2",
+        "level": "unit",
+        "tests": [
+          "src/agent/ndjson-export.ac2.test.ts::agent NDJSON export — AC-2 › AC-2: a stalled destination drops the oldest records beyond the bound, counts them, and later receives the newest N in order"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-3",
+        "level": "integration",
+        "tests": [
+          "src/agent/ndjson-export.ac3.integration.test.ts::agent NDJSON export — AC-3 › AC-3: controller samples reach the destination as NDJSON until it errors; done rejects with that error and nothing is written afterwards"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      }
+    ],
+    "unmapped_anomalies": [],
+    "note": "an AC is delivered = a locked, once-red test titled AC-<n>:, in a file mapped to AC-<n>, passed on this head run. PHARN does not judge whether that test fully captures the AC's intent."
+  },
+  "completeness": {
+    "plan": "pharn/features/agent-ndjson-export/PLAN.md",
+    "repoDir": ".",
+    "declared": [
+      "src/agent/ndjson-encoder.ts",
+      "src/agent/bounded-queue.ts",
+      "src/agent/ndjson-exporter.ts",
+      "src/agent/index.ts"
+    ],
+    "skipped": [],
+    "missing": [],
+    "complete": true,
+    "verdict": "complete"
+  },
+  "verifiers": {
+    "registered": 0,
+    "findings": []
+  },
+  "gate_reuse": {
+    "reused": []
+  }
+}

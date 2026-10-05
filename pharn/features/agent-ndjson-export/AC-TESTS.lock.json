@@ -1,0 +1,82 @@
+{
+  "schema": "ac-tests-lock/4",
+  "feature": "agent-ndjson-export",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "agent-ndjson-export",
+    "spec_content_hash": "5924933b8cce442b0f1706027cc9d337dce8ed864b486fc8ea88096ca054f38a"
+  },
+  "mapping": {
+    "path": "pharn/features/agent-ndjson-export/AC-TESTS.md",
+    "sha256": "b6473d23ffc249863f9702692533c2b958e7cf67697c17909a3b926e29ef665d"
+  },
+  "files": [
+    {
+      "path": "src/agent/ndjson-export.ac1.test.ts",
+      "sha256": "e838f322eccd08a1f7a5178cfac1f9ff8fabc1fee2290ed64ee0a861e451ea39"
+    },
+    {
+      "path": "src/agent/ndjson-export.ac2.test.ts",
+      "sha256": "a22c03383622f9f54077a2685c85e32bdde5afe04bde71555b870083814b557b"
+    },
+    {
+      "path": "src/agent/ndjson-export.ac3.integration.test.ts",
+      "sha256": "22c033e50c25ad981c340f4efdfe2e3b1644b61518dff91fc58a41be25ca033b"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "2891605931e9b158b1729e850b8bc49b271088d0640b5e877fdb591ccc71f589",
+    "files_sha256": "423f36ded437992498899a5de5138850ddf6743f43b801a21d2db87f20714646",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "f351df37d7e2fe05b6bf60f94cc4f5936157f0c785436153680ddc2ea9af2cbc"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/agent/ndjson-export.ac1.test.ts::agent NDJSON export — AC-1 › AC-1: three exported objects arrive as exactly three newline-terminated JSON lines, in order"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/agent/ndjson-export.ac2.test.ts::agent NDJSON export — AC-2 › AC-2: a stalled destination drops the oldest records beyond the bound, counts them, and later receives the newest N in order"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/agent/ndjson-export.ac3.integration.test.ts::agent NDJSON export — AC-3 › AC-3: controller samples reach the destination as NDJSON until it errors; done rejects with that error and nothing is written afterwards"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration",
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null
+  }
+}

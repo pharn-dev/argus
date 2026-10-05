@@ -7,3 +7,6 @@ export { sampleMemory } from './memory-sampler.js';
 export type { MemorySample } from './memory-sampler.js';
 export { createSamplerController } from './sampler-controller.js';
 export type { AgentSample, SamplerController } from './sampler-controller.js';
+export { encodeNdjsonLine } from './ndjson-encoder.js';
+export { createNdjsonExporter } from './ndjson-exporter.js';
+export type { NdjsonExporter, NdjsonExporterOptions } from './ndjson-exporter.js';
