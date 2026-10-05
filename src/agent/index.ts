@@ -7,6 +7,10 @@ export { createGcSampler } from './gc-sampler.js';
 export type { GcSample, GcSampler } from './gc-sampler.js';
 export { sampleMemory } from './memory-sampler.js';
 export type { MemorySample } from './memory-sampler.js';
+export { sampleHeapSpaces } from './heap-space-sampler.js';
+export type { HeapSpaceEntry, HeapSpaceSample } from './heap-space-sampler.js';
+export { takeHeapSnapshot } from './heap-snapshot.js';
+export type { HeapSnapshotOptions, HeapSnapshotResult } from './heap-snapshot.js';
 export { createBackpressureProbe } from './backpressure-probe.js';
 export type {
   BackpressureHotspot,
