@@ -1,0 +1,11 @@
+# Extends gitleaks' default rules. The only allowlist is for pharn.records.json, the PHARN
+# development tooling's bookkeeping file: it maps repository paths to SHA-256 hashes, and paths such as
+# "secrets-in-code" make the generic-api-key rule fire on those hashes. Scoped to that one rule and
+# that one file, so a real credential anywhere else (or any other rule firing there) still fails CI.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "pharn.records.json holds path-to-SHA-256 pairs, not credentials"
+targetRules = ["generic-api-key"]
+paths = ['''^pharn\.records\.json$''']
