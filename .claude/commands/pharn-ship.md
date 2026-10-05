@@ -42,12 +42,7 @@ reads:
     'pharn/pharn-contracts/ship-briefing.md',
     'pharn.config.json',
   ]
-writes:
-  [
-    'pharn/features/<name>/SHIP.md',
-    'pharn/features/<name>/ship-record.json',
-    'pharn/features/<name>/BRIEFING.md',
-  ]
+writes: ['pharn/features/<name>/SHIP.md', 'pharn/features/<name>/ship-record.json', 'pharn/features/<name>/BRIEFING.md']
 constitution_refs: ['P0', 'P2', 'P5', 'P6', 'P7']
 version: '0.11.1'
 ---

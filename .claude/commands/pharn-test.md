@@ -20,11 +20,7 @@ reads:
     'pharn/floor/check-red-run.mjs',
     'pharn/floor/run-gates.mjs',
   ]
-writes:
-  [
-    '<AC test files: AC-TESTS.md ## Files, via --from-plan>',
-    'pharn/features/<name>/AC-TESTS.lock.json',
-  ]
+writes: ['<AC test files: AC-TESTS.md ## Files, via --from-plan>', 'pharn/features/<name>/AC-TESTS.lock.json']
 constitution_refs: ['P0', 'P1', 'P2', 'P3', 'P5', 'P6', 'P7']
 version: '0.4.2'
 ---
