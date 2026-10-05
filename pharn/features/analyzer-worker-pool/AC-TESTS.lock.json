@@ -1,0 +1,81 @@
+{
+  "schema": "ac-tests-lock/4",
+  "feature": "analyzer-worker-pool",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "analyzer-worker-pool",
+    "spec_content_hash": "438827a9fd0efb534bd1a51e0fb22f6a7d0bf85c0c5af1ab4853b1569049722f"
+  },
+  "mapping": {
+    "path": "pharn/features/analyzer-worker-pool/AC-TESTS.md",
+    "sha256": "729effd262c0eeabfcc8aa11e988bfb3dd09f68febab208b93441cc85f6a39e2"
+  },
+  "files": [
+    {
+      "path": "src/analyzer/analyzer-worker-pool.ac1.integration.test.ts",
+      "sha256": "4503ee7cd3b03cad8ed6f459463c06eeb4cbba8ec44b7a4bfaafddce1c8ded24"
+    },
+    {
+      "path": "src/analyzer/analyzer-worker-pool.ac2.integration.test.ts",
+      "sha256": "a9540de379a29598b81c1ba35961b0732b59fcc25af9337444c9456118173281"
+    },
+    {
+      "path": "src/analyzer/analyzer-worker-pool.ac3.integration.test.ts",
+      "sha256": "d49952c35c579e69a09e11c2c1007817407c9639aa7c8c1e6236e2a0cfc1179b"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "de10d3db9efb735749cc5888d7841d76ae079cf03c9ae2f1f0897c9844b814bf",
+    "files_sha256": "e2949a3afa4b4b9ff83eb330ac2ab48c95d894f6ff9e92b0bb56d686248921c6",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "e5184905b82786be80506ff67319b27b5eb311299f8d24ae27761f00a7ccde2e"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/analyzer/analyzer-worker-pool.ac1.integration.test.ts::analyzer worker pool › AC-1: echoes, rejects a crash and a timeout, replaces the worker, and rejects queued tasks on close"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/analyzer/analyzer-worker-pool.ac2.integration.test.ts::analyzer heap-snapshot summary › AC-2: summarizes a real heap snapshot with integer totals and the held class in the top list"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/analyzer/analyzer-worker-pool.ac3.integration.test.ts::analyzer heap-snapshot diff › AC-3: diffs two real heap snapshots and ranks the newly held class by self-size growth"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null
+  }
+}
