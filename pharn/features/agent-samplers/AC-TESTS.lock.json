@@ -1,0 +1,83 @@
+{
+  "schema": "ac-tests-lock/4",
+  "feature": "agent-samplers",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "agent-samplers",
+    "spec_content_hash": "4de3b7fa138e2b3380e9c01fed10064b5806a55c77d86825ba43f2184dfd64ad"
+  },
+  "mapping": {
+    "path": "pharn/features/agent-samplers/AC-TESTS.md",
+    "sha256": "4692e69b7e1d86305af31ebd5cf31fa8753d4bf875d18efc914e9a16aacc46e9"
+  },
+  "files": [
+    {
+      "path": "src/agent/samplers.ac1.test.ts",
+      "sha256": "23a76fc9484e007796cffc705b6973a096618388a217a534b3de0893e811b7e1"
+    },
+    {
+      "path": "src/agent/samplers.ac2.test.ts",
+      "sha256": "d03b04153eb643aec55291edb095a9af52c22f90d3e1c82f1cd8415f6c5bfcd1"
+    },
+    {
+      "path": "src/agent/samplers.ac3.integration.test.ts",
+      "sha256": "be004e86446bc803b2b858e8d9d9ec1b8b59744108f02788e631ea07f8094ea7"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "f89a5c57c191e3778912252babec85934af9a762257d6a03c44c317f8c65920f",
+    "files_sha256": "0473fb6892bf917e9cfef4be84970a99233203c3f6032439856949b10d54b7f2",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "22dd4de905c1988860f8c5f1657ff5018a25b6ee187bf4f6f31082c9439e3e23"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/agent/samplers.ac1.test.ts::agent samplers — AC-1 › AC-1: the controller from the agent entrypoint emits one integer sample per interval"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/agent/samplers.ac2.test.ts::agent samplers — AC-2 › AC-2: a ~100 ms block raises one window max to >= 50 ms and the next window max is lower (histogram reset)"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/agent/samplers.ac3.integration.test.ts::agent samplers — AC-3 › AC-3: a separate Node process that only starts the controller exits on its own with code 0",
+          "src/agent/samplers.ac3.integration.test.ts::agent samplers — AC-3 › AC-3: start twice then stop gives at most one sample per interval and none after stop"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration",
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null
+  }
+}
