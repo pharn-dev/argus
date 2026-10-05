@@ -85,12 +85,18 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "build": "node scripts/build.mjs",
     "check:exports": "node scripts/check-exports.mjs",
+    "check:pins": "node scripts/check-action-pins.mjs",
+    "prepack": "npm run build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",

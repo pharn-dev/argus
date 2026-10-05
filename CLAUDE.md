@@ -162,9 +162,11 @@ These aren't bolted on — each is load-bearing in the design:
 
 ## Open-source-from-day-one
 
-- Conventional commits + `semantic-release`.
+- Conventional commits; releases are manual (version bump PR → GitHub Release → CI publishes to
+  npm with provenance). `CHANGELOG.md` is kept by hand. See `docs/RELEASING.md`.
 - `CONTRIBUTING.md`, labeled `good-first-issue`s.
-- CI/CD via GitHub Actions (test + build + release).
+- CI/CD via GitHub Actions (format, lint, typecheck, test, build, action pins, CodeQL, gitleaks;
+  release on GitHub Release).
 - OpenTelemetry instrumentation is a natural integration target — Argus emitting
   OTel traces/metrics turns it into a credible observability story (and is itself
   a portfolio signal). Treat OTel export as a first-class optional output, not the
