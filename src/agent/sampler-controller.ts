@@ -2,6 +2,7 @@
 import { createBackpressureProbe, type BackpressureSample } from './backpressure-probe.js';
 import { createEventLoopSampler, type EventLoopSample } from './event-loop-sampler.js';
 import { createGcSampler, type GcSample } from './gc-sampler.js';
+import { sampleHeapSpaces, type HeapSpaceSample } from './heap-space-sampler.js';
 import { sampleMemory, type MemorySample } from './memory-sampler.js';
 
 export type AgentSample = {
@@ -9,6 +10,7 @@ export type AgentSample = {
   timestamp: number;
   eventLoop: EventLoopSample;
   memory: MemorySample;
+  heapSpaces: HeapSpaceSample;
   gc: GcSample;
   backpressure: BackpressureSample;
 };
@@ -44,6 +46,7 @@ export function createSamplerController(
           timestamp: Date.now(),
           eventLoop: eventLoop.sample(),
           memory: sampleMemory(),
+          heapSpaces: sampleHeapSpaces(),
           gc: gc.sample(),
           backpressure: backpressure.sample(),
         });

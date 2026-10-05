@@ -1,0 +1,85 @@
+{
+  "schema": "ac-tests-lock/4",
+  "feature": "agent-v8-heap",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "agent-v8-heap",
+    "spec_content_hash": "578bb8916e3b3de896ebbb5850bd5da168b7b3ca12a7680f0de3115457a99896"
+  },
+  "mapping": {
+    "path": "pharn/features/agent-v8-heap/AC-TESTS.md",
+    "sha256": "e10497f42d67bbeeb7448a9de06a5410d712416592b9604db3faf43569637a78"
+  },
+  "files": [
+    {
+      "path": "src/agent/v8-heap.ac1.test.ts",
+      "sha256": "5492fa2c432eed176763eeeb4772447cfeddfb41d1e102978a19437bedeeba7b"
+    },
+    {
+      "path": "src/agent/v8-heap.ac2.integration.test.ts",
+      "sha256": "c35c2055c4854d0ef45dfca24cba1e0f2e633406a656d1c913fd0d0e4a9af2c5"
+    },
+    {
+      "path": "src/agent/v8-heap.ac3.integration.test.ts",
+      "sha256": "f88e980d2c9e5f350cdf03f4e42e8f1c556077650f50bc7536dcbcae520dcb41"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "f2ea805d4af4e57f952b6139154885083c2f31710a11f910f68d33f9e5f84506",
+    "files_sha256": "ee3c077d50334de1c5d248c45cf9dd55acc866ced21cda8ea4628af4c7f13f58",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "43f08ee32f690c075c1c6d60baa6174dea85109331954ee9c549ee88fbf5d421"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/agent/v8-heap.ac1.test.ts::agent V8 heap spaces — AC-1 › AC-1: sampleHeapSpaces() from the agent entrypoint lists new_space and old_space with non-negative integer sizes",
+          "src/agent/v8-heap.ac1.test.ts::agent V8 heap spaces — AC-1 › AC-1: the sampler controller's sample carries a heapSpaces part beside eventLoop, memory, gc and backpressure"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/agent/v8-heap.ac2.integration.test.ts::agent on-demand heap snapshot — AC-2 › AC-2: two sequential takeHeapSnapshot({ dir }) calls write distinct parseable .heapsnapshot files whose size equals bytes"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/agent/v8-heap.ac3.integration.test.ts::agent on-demand heap snapshot refusals — AC-3 › AC-3: a missing directory rejects with an Error naming the directory and leaves no .heapsnapshot file",
+          "src/agent/v8-heap.ac3.integration.test.ts::agent on-demand heap snapshot refusals — AC-3 › AC-3: a non-writable directory rejects with an Error naming the directory and leaves no .heapsnapshot file",
+          "src/agent/v8-heap.ac3.integration.test.ts::agent on-demand heap snapshot refusals — AC-3 › AC-3: of two same-tick calls the first resolves with a snapshot and the second rejects as already in progress"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration",
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null
+  }
+}
