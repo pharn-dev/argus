@@ -6,11 +6,15 @@ import tseslint from 'typescript-eslint';
 export default tseslint.config(
   {
     ignores: [
+      '.claude/**',
       'pharn/**',
+      '.pharn/**',
+      '.pharn-backup/**',
+      'pharn.config.json',
+      'pharn.records.json',
       'node_modules/**',
       '**/dist/**',
       'coverage/**',
-      '.pharn/**',
       'runs/**',
       'package-lock.json',
       '*.tsbuildinfo',
