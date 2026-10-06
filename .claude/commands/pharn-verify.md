@@ -7,16 +7,16 @@ model: sonnet
 effort: high
 reads:
   [
-    'pharn/CONSTITUTION.md',
-    'pharn/ARCHITECTURE.md',
-    'pharn/features/<name>/PLAN.md',
-    'pharn/floor/stage-verify.mjs',
-    'pharn/pharn-contracts/stage-exit.md',
+    "pharn/CONSTITUTION.md",
+    "pharn/ARCHITECTURE.md",
+    "pharn/features/<name>/PLAN.md",
+    "pharn/floor/stage-verify.mjs",
+    "pharn/pharn-contracts/stage-exit.md",
     "<the user's target repo>",
   ]
-writes: ['.pharn/pharn-verify/stage.json']
-constitution_refs: ['P0', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7']
-version: '0.5.1'
+writes: [".pharn/pharn-verify/stage.json"]
+constitution_refs: ["P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7"]
+version: "0.6.0"
 ---
 
 # /pharn-verify — did the feature get built CORRECTLY, in the user's codebase?
@@ -125,6 +125,7 @@ Read the printed `pharn-stage-exit/1` object and branch on the **exit code only*
   - `missing-artifact` — produce the named file: `PLAN.md` via `/pharn-plan`, `SPEC.md` via `/pharn-spec`;
   - `chain-red` — the SPEC changed after the PLAN pinned it: re-plan via `/pharn-plan`, or re-approve via
     `/pharn-spec` when the SPEC change is intended;
+  - `head-install-drift` — `node_modules` does not match the lockfile: run `npm ci`, then re-run;
   - `plan-files-unparseable` — fix the PLAN's `## Files` via `/pharn-plan`.
 - **`4` question** — relay `question` and `options[]` **verbatim**. On an answer, re-run with the object's own
   `resume.argv` **followed by** the chosen option's `argv`, each appended value single-quoted, an embedded `'`
@@ -145,10 +146,14 @@ Read the printed `pharn-stage-exit/1` object and branch on the **exit code only*
 
 - **Anything else (`1` included)** — the script **crashed**; no document is guaranteed. Present what exists and
   stop. A crash is never read as a verdict.
-- **The Bash tool itself timed out** — run the resume line once, then branch as above. The script checkpoints the top
-  of the drain and of the verdict, so a resume re-runs from the phase the record names: a kill in the drain re-runs
-  the interrupted gate, and a kill during the render re-runs the verdict as well, because the record stays parked
-  at `verdict` until the run ends. A kill before the drain left no record, and the resume answers `2 no-progress`.
+- **A call the Bash tool reports as moved to the background is STILL RUNNING** — wait for its completion notice (it
+  may outlast this turn) and branch on the exit code it reports, never on the notice's word ("failed" covers `5`
+  too). Never run `--resume`, or another fresh line, while it runs: nothing refuses the second script on the same
+  record. Only a call that is GONE without an exit code (interrupted, or stopped by the tool) is resumed, once, then
+  branch as above. The script checkpoints the top of the drain and of the verdict, so a resume re-runs from the phase
+  the record names: a kill in the drain re-runs the interrupted gate, and a kill during the render re-runs the verdict
+  as well, because the record stays parked at `verdict` until the run ends. A kill before the drain left no record,
+  and the resume answers `2 no-progress`. Unsure whether the call still runs → do not resume: stop and say so.
 
 **Before ending your turn, run the release step — `## Final step — release the writes-scope`, below.** It is a
 **procedure** step, not reference material; it sits beneath the audit sections for document layout only, and a
@@ -176,7 +181,8 @@ either way.
 
 - **Gate discovery:** explicit `--gates "<cmd>[::<id>],…"` wins; else the closed allowlist
   **`{ test, lint, format:check, lint:md, typecheck, type-check, build, test:e2e, e2e }`** intersected with the
-  project's `package.json` `scripts`; else the script's `no-gates` question. PHARN-internal tools are never
+  project's `package.json` `scripts`, minus any id its `pharn.config.json` `gates.exclude` lists (6.36.0, named in the
+  report and `VERIFY.md`); else the script's `no-gates` question. PHARN-internal tools are never
   hard-coded: `validate.mjs` runs only if the project exposes it as an allowlisted script or names it in `--gates`.
 - **The e2e gates** (`test:e2e`, `e2e`) are discovered here and at no other stage, and run after `build`. A red e2e
   gate fails verify like a red `test` gate. They are bounded by the same per-gate `--timeout-ms`; starting servers
@@ -184,7 +190,8 @@ either way.
 - **`--gates` and the AC gate:** the AC gate counts a level gate only when it ran as the **discovered** `npm run
 <id>`, so an explicit `--gates` run of a feature with AC evidence reads `test-infra-changed` (test-first — verify
   `FAIL` with `ac-evidence`, `/pharn-loop`'s S13) or `ac-untested` (`spec_kind: test-infra`). Do not pass `--gates`
-  for such a feature; if a report already carries that reading, re-run without it.
+  for such a feature; if a report already carries that reading, re-run without it. To leave a gate out, declare it
+  in `gates.exclude` and commit it before the run (`/pharn-test` pins it).
 - **Eval pairs:** one `structural:<expected>` gate per `<capDir>/evals/expected/<x>.json` whose colocated
   `<capDir>/findings.json` exists, for each capability directory the PLAN's `## Files` declares; the pair may be
   committed, or untracked and not git-ignored (a capability the build just wrote is untracked at verify time).
@@ -200,6 +207,9 @@ either way.
   contract's (`pharn/pharn-contracts/reconciliation-record.md`): git-ignored paths are outside the reconciled set,
   the window is anchor → reconcile, one worktree per session, no attribution. `CLEAN` means no escape was detected,
   never that none occurred.
+- **Before it, `instruction-growth`** (`check-instruction-files.mjs --growth --base-rule`): FAIL when the always-loaded
+  instruction files grew past `budget.instructionGrowthBytes` (the base commit's `pharn.config.json`; default 2048).
+  Spec: `instruction-files-core.mjs`.
 
 ## The verifier plug-in slot (ZERO verifiers authored — P7)
 

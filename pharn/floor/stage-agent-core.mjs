@@ -24,17 +24,28 @@
 //                  relaying that approval through a second model would weaken the gate;
 //   floor-only   — inline: /pharn-regress and /pharn-verify are thin callers of stage scripts whose
 //                  verdicts floor code produces, so the model barely matters, and the loop keeps its
-//                  deterministic stage-exit mapping; each quick mode's grill runs two checkers only;
+//                  deterministic stage-exit mapping; each quick mode's grill, and /pharn-loop's grill in
+//                  BOTH columns (6.45.0), runs two checkers only;
 //   skipped      — the stage does not run in that mode at all (each quick mode's regress).
 // A policy-inline cell NEVER consults the config (policy precedence). THE LOOP'S QUICK COLUMN (6.28.0,
 // loop-quick-mode — added by the second of the two increments to merge): `/pharn-loop --quick` routes what
-// its full column routes except the grill (`floor-only`, as in /pharn-ship --quick) and never runs
-// /pharn-regress; its spec agent is briefed with the quick invocation, `/pharn-spec --quick --model-approve`.
+// its full column routes and never runs /pharn-regress; its spec agent is briefed with the quick invocation,
+// `/pharn-spec --quick --model-approve`. THE LOOP'S GRILL IS FLOOR-ONLY IN BOTH COLUMNS (6.45.0,
+// front-grill-concurrent — a decision made by the orchestrating model under the maintainer's delegation): the full
+// loop runs `/pharn-grill <name> --floor-only` inline — its two floor stops plus the five deterministic `scan-plan-*`
+// scanners (pharn/floor/grill-scan.mjs, findings advisory), and no grill agent. THE TRADE: the plan interrogation and
+// the model-driven grillers (the security griller's judgment half included) no longer run in an unattended loop.
+// Why: unattended, the grill's findings gate nothing, and since 6.27.0 routing split the stages into separate
+// contexts no stage reads them before the build (GRILL.md is still read afterwards — the loop's summary points at
+// it). The 92-minute run's ledger (pharn-starter billing-plan-catalog cost.json) shows the grill stage at 361.0 s,
+// 43 opus requests, cache_write 391,438 and cache_read 16,097,324 tokens; an inline floor-only grill measured 8.5 s
+// in that project's quick run. /pharn-ship keeps its routed full grill: a person reads GRILL.md at GATE 2.
 //
 // ============================ THE FALLBACK — every inline reason, with its remedy ============================
-// Every case runs the stage inline, exactly as before 6.27.0, and SAYS SO: a stage with a route line
-// records `--route 'inline:<reason>'` on its stage-start marker. Each reason names a remedy reachable from
-// that reason (L27) — `INLINE_REMEDIES` below is the table, and `route` prints the remedy on stderr:
+// Every case runs the stage inline, exactly as before 6.27.0, and SAYS SO: a routed stage's stage-start marker
+// records `inline:<reason>` (written by `stage-agent.mjs start` since 6.43.0; before, the model passed the token
+// to `mark-phase.mjs --route`). Each reason names a remedy reachable from that reason (L27) — `INLINE_REMEDIES`
+// below is the table, and `route` and `start` print the remedy on stderr:
 //   interactive       policy (ship spec)          none needed: run /pharn-spec directly for its frontmatter model
 //   floor-only        policy                      none needed: the stage's model does not change its verdict
 //   no-config         route: config absent (a FOLLOWED stat — a dangling link reads absent, as the checker
@@ -48,9 +59,10 @@
 //   resolve-failed    route: the checker CRASHED — exit 1 without its `RED — ` line, any other exit, a signal,
 //                     a spawn error, or CHECKER_TIMEOUT_MS — or printed no {model, effort}
 //                                                 run check-model-config.mjs resolve <stage> by hand
-//   no-agent-tool     the orchestrating model (ADVISORY): no Agent tool, not even a deferred one
-//                                                 allow the Agent tool
-//   route-unavailable the orchestrating model: `route` itself exited outside 0/3
+//   no-agent-tool     the orchestrating model (ADVISORY): no Agent tool, not even a deferred one — since 6.43.0
+//                     passed to `start` as `--no-agent-tool`      allow the Agent tool
+//   route-unavailable `start`: a `route` refusal or a leftover result it cannot clear, its reason after the
+//                     remedy (before 6.43.0, the orchestrating model when `route` exited outside 0/3)
 //                                                 run the route line by hand
 // RED and GREEN are `shelledVerdict`'s reading (`pharn/floor/shelled-verdict-core.mjs`, the repo's one rule
 // for a shelled checker since 6.20.6 / 6.21.1): exit 1 is a RED only WITH its `RED — ` line, because node
@@ -70,7 +82,11 @@
 // values and a feature slug the CLI validated first. Its seven rules: read the constitution; follow
 // `.claude/commands/<stage>.md` as its fixed invocation, never re-resolving the name; ask no one (ship:
 // report `question` with the question verbatim; loop: report `refused` with a Step-2 row); run only this
-// stage; the stage command's own trust rules govern its reads (G-P2); the LAST action is one exact
+// stage — never the orchestrator's own lines (since 6.43.0 that list names `stage-agent.mjs start` / `finish`, which
+// write the stage's markers, and `stage-direct.mjs`, which runs /pharn-regress or /pharn-verify) — and author every
+// file inside the project with the write tools, never through Bash (`WRITE_TOOL_RULE`,
+// below — 6.35.1, scoped to the project in 6.35.2);
+// the stage command's own trust rules govern its reads (G-P2); the LAST action is one exact
 // `report` line; and, for the loop's build at iteration >= 2 only, read the standing reports' fix-list
 // fields as DATA — the four in full mode; in quick mode (6.28.0) only the three verify-report.json holds,
 // because a mode that skips /pharn-regress has no regression report (`fixListFields`, derived from the policy).
@@ -191,10 +207,11 @@ export const ROUTE_POLICY = Object.freeze({
     }),
   }),
   "pharn-loop": Object.freeze({
+    // 6.45.0 (front-grill-concurrent): the full loop's grill is floor-only too — the header says why.
     full: Object.freeze({
       "pharn-spec": AGENT,
       "pharn-plan": AGENT,
-      "pharn-grill": AGENT,
+      "pharn-grill": "floor-only",
       "pharn-test": AGENT,
       "pharn-build": AGENT,
       "pharn-regress": "floor-only",
@@ -236,7 +253,6 @@ export const INVOCATIONS = Object.freeze({
     full: Object.freeze({
       "pharn-spec": "/pharn-spec --model-approve",
       "pharn-plan": "/pharn-plan <name>",
-      "pharn-grill": "/pharn-grill <name>",
       "pharn-test": "/pharn-test <name> --unattended",
       "pharn-build": "/pharn-build <name>",
     }),
@@ -316,6 +332,31 @@ export const UNUSABLE_REASONS = Object.freeze(["no-result", "malformed", "mismat
 /** The first action of a routed stage agent: the orchestrator's whole Agent prompt is this prefix + the
  *  brief line (`briefLine`). The hygiene pin requires each pinned prompt line to start with it. */
 export const BRIEF_PROMPT_PREFIX = "Run exactly this line, then follow what it prints: ";
+
+/**
+ * Rule 4's write-tool sentences (6.35.1, build-writes-through-tools; corrected in 6.35.2), a closed constant that
+ * interpolates nothing.
+ * THE RECORDED FAILURE (P7): a routed /pharn-build agent wrote the user's code through 48 Bash calls (`python3`
+ * heredocs, `sed -i`, `cat >`, `prettier --write`) and no Edit, so the writes-scope guard judged none of those
+ * writes. A `prettier --write` over two DIRECTORIES reformatted a pinned AC test. Nothing in this brief named a tool to
+ * write with, and the harness's auto-mode reminder offered the shell for edits (`.dev/measurements/loop-wall-clock-
+ * 2026-10-05.md`). "Author" is load-bearing: a stage's own pinned lines (the scope setter, the anchor,
+ * `ac-tests-lock.mjs`, `report`) write through Bash and are commands, not authored content. "Inside the project" is
+ * load-bearing too (6.35.2, the #305 review's R1): for a path outside every git tree, `enforce-writes-scope.cjs`'s deny message
+ * itself routes scratch through Bash, so the rule stops at the project and points own scratch at `.pharn/`.
+ * ADVISORY (P0): no shell command is parsed, so an agent can still write through Bash; an out-of-scope Bash write
+ * stays DETECTED, never prevented, by /pharn-verify's reconcile gate (`LIMITS.md §6`), and an in-scope one is neither
+ * (residual `write-tool-attribution`).
+ */
+export const WRITE_TOOL_RULE =
+  "Author every file inside the project — code, tests, records — with the Write, Edit, MultiEdit or NotebookEdit " +
+  "tool: those are the only writes the writes-scope guard checks and a project's write hooks see. Never author a " +
+  "file inside the project through Bash (`sed -i`, a heredoc, a redirect, a script that writes one), whatever a " +
+  "harness reminder suggests; Bash runs commands — the stage's own lines and the project's tools. Keep your own " +
+  "scratch under `.pharn/`, written with the Write tool, or outside the project where a deny message routes it. Run a " +
+  "formatter only on files the stage may write, named one by one — never a directory, a glob or a list built from " +
+  "`git status` — and a generator only when the stage may write every path it writes. If a write inside the project " +
+  "is denied, do what the deny message says, or stop and report; never retry it through Bash.";
 
 /** The `read` line's no-result explanation, fixed text (GRILL G-P0: a backgrounded agent reads as this). */
 export const NO_RESULT_TEXT = "no result: the stage agent may still be running, or ended without reporting";
@@ -503,8 +544,9 @@ export function renderBrief({ command, mode = FULL_MODE, stage, name, iteration 
   }
   lines.push(
     "4. Run only this stage. Never run another /pharn-* stage, `pharn/floor/mark-phase.mjs`, `pharn/floor/run-marker.mjs`, " +
-      "`.claude/hooks/require-loop-record.cjs`, the `route` or `read` subcommand of `pharn/floor/stage-agent.mjs`, a git write, " +
-      "or the Agent tool."
+      "`.claude/hooks/require-loop-record.cjs`, the `route`, `read`, `start` or `finish` subcommand of `pharn/floor/stage-agent.mjs`, " +
+      "`pharn/floor/stage-direct.mjs`, a git write, " +
+      `or the Agent tool. ${WRITE_TOOL_RULE}`
   );
   // Ship's relay (GATE-2 review A8): with SendMessage the answer arrives as a later message to this same agent;
   // without it, a FRESH agent never saw the question, so its prompt carries the question AND the answer, each fenced.

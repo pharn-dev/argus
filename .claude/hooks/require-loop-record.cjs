@@ -13,7 +13,8 @@
 // produce, and what stuck point S11 (`blocked: stale-evidence`) exists for.
 //
 // ====================================== WHAT THIS GUARD CANNOT DO ======================================
-// (repeated verbatim from the plan, the PR and CLAUDE.md, never paraphrased into something stronger)
+// (repeated verbatim from the plan and the PR; .dev/guides/floor-orchestration.md summarizes it, and no copy
+// may paraphrase it into something stronger)
 //   • It cannot make a model do work. It refuses the turn end; the model decides what to do with the refusal.
 //   • It cannot judge a record. Blocking on record quality would contradict the loop's own rules: a second
 //     check-loop-record.mjs repair would pass the ≤1 bound, and check-loop-decision.mjs says "do not retry it".
@@ -88,17 +89,17 @@
 // could disarm it. Proportionate for a fail-open, advisory guard that a Bash `--close` can already disarm; a
 // Bash edit to it is still caught by `reconcile` (.claude/hooks/* is always-reconciled). Named follow-up.
 
-'use strict';
+"use strict";
 
-const fs = require('node:fs');
-const path = require('node:path');
+const fs = require("node:fs");
+const path = require("node:path");
 
-const SCHEMA = 'pharn-loop-active/1';
-const STATE_SUBDIR = path.join('.pharn', 'pharn-loop');
-const MARKER = 'active.json';
-const COUNTER = 'stop-blocks.json';
-const FEATURE_BASE = path.join('pharn', 'features');
-const RECORD = 'LOOP.md';
+const SCHEMA = "pharn-loop-active/1";
+const STATE_SUBDIR = path.join(".pharn", "pharn-loop");
+const MARKER = "active.json";
+const COUNTER = "stop-blocks.json";
+const FEATURE_BASE = path.join("pharn", "features");
+const RECORD = "LOOP.md";
 const DEFAULT_MAX = 3;
 const MAX_CEILING = 7; // strictly under the platform's documented 8-consecutive-block override
 const AGE_CEILING_MS = 24 * 60 * 60 * 1000;
@@ -125,7 +126,7 @@ function workTreeRoot(dir) {
   let stop = null;
   try {
     const env = process.env.CLAUDE_PROJECT_DIR;
-    if (typeof env === 'string' && env !== '') stop = fs.realpathSync(env);
+    if (typeof env === "string" && env !== "") stop = fs.realpathSync(env);
   } catch {
     /* an unresolvable project dir is simply not a stop */
   }
@@ -133,7 +134,7 @@ function workTreeRoot(dir) {
   for (;;) {
     let hasGit = false;
     try {
-      fs.lstatSync(path.join(cur, '.git'));
+      fs.lstatSync(path.join(cur, ".git"));
       hasGit = true;
     } catch {
       /* no .git entry here */
@@ -161,14 +162,14 @@ function lstatOrNull(p) {
 function readRegular(p) {
   const st = lstatOrNull(p);
   if (!st || !st.isFile()) return null;
-  return fs.readFileSync(p, 'utf8');
+  return fs.readFileSync(p, "utf8");
 }
 
 /** Is `name` one plain path segment? Not a grammar — a containment property: no separator, no NUL, not a
  *  dot entry, and it resolves to a direct child of the state directory. */
 function isPlainSegment(name, stateDir) {
-  if (typeof name !== 'string' || name === '' || name === '.' || name === '..') return false;
-  if (name.includes('/') || name.includes('\\') || name.includes('\0')) return false;
+  if (typeof name !== "string" || name === "" || name === "." || name === "..") return false;
+  if (name.includes("/") || name.includes("\\") || name.includes("\0")) return false;
   return path.dirname(path.resolve(stateDir, name)) === path.resolve(stateDir);
 }
 
@@ -205,37 +206,22 @@ function owingRun(root, sessionId, now) {
     } catch {
       continue;
     }
-    if (
-      marker === null ||
-      typeof marker !== 'object' ||
-      marker.schema !== SCHEMA ||
-      marker.name !== name
-    )
-      continue;
-    if (typeof marker.session_id !== 'string' || marker.session_id !== sessionId) continue;
+    if (marker === null || typeof marker !== "object" || marker.schema !== SCHEMA || marker.name !== name) continue;
+    if (typeof marker.session_id !== "string" || marker.session_id !== sessionId) continue;
     const started = Date.parse(marker.started_at);
-    if (
-      !Number.isFinite(started) ||
-      now - started > AGE_CEILING_MS ||
-      started - now > AGE_CEILING_MS
-    )
-      continue;
+    if (!Number.isFinite(started) || now - started > AGE_CEILING_MS || started - now > AGE_CEILING_MS) continue;
     const featureDir = path.join(root, FEATURE_BASE, name);
     const fst = lstatOrNull(featureDir);
     if (!fst || !fst.isDirectory()) continue; // no feature directory: the command writes no record here
     const record = path.join(featureDir, RECORD);
     const rst = lstatOrNull(record);
     if (rst && rst.isFile()) {
-      const body = fs.readFileSync(record, 'utf8');
-      if (body.trim() !== '') continue; // a record exists — quality is Step 6b's job, never this guard's
+      const body = fs.readFileSync(record, "utf8");
+      if (body.trim() !== "") continue; // a record exists — quality is Step 6b's job, never this guard's
     } else if (rst) {
       continue; // something that is not a regular file sits there: not ours to judge, stay inert
     }
-    return {
-      name,
-      dir,
-      recordRel: path.join(FEATURE_BASE, name, RECORD).split(path.sep).join('/'),
-    };
+    return { name, dir, recordRel: path.join(FEATURE_BASE, name, RECORD).split(path.sep).join("/") };
   }
   return null;
 }
@@ -246,22 +232,16 @@ function bumpCounter(dir, sessionId) {
   const st = lstatOrNull(file);
   let counts = {};
   if (st) {
-    if (!st.isFile()) throw new Error('counter is not a regular file');
-    const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
-    if (
-      parsed === null ||
-      typeof parsed !== 'object' ||
-      parsed.schema !== 'pharn-loop-stop-blocks/1'
-    )
-      throw new Error('bad counter');
-    counts = parsed.counts && typeof parsed.counts === 'object' ? parsed.counts : {};
+    if (!st.isFile()) throw new Error("counter is not a regular file");
+    const parsed = JSON.parse(fs.readFileSync(file, "utf8"));
+    if (parsed === null || typeof parsed !== "object" || parsed.schema !== "pharn-loop-stop-blocks/1") throw new Error("bad counter");
+    counts = parsed.counts && typeof parsed.counts === "object" ? parsed.counts : {};
   }
-  const prior =
-    Number.isInteger(counts[sessionId]) && counts[sessionId] >= 0 ? counts[sessionId] : 0;
+  const prior = Number.isInteger(counts[sessionId]) && counts[sessionId] >= 0 ? counts[sessionId] : 0;
   return {
     prior,
     persist(next) {
-      const out = { schema: 'pharn-loop-stop-blocks/1', counts: { ...counts, [sessionId]: next } };
+      const out = { schema: "pharn-loop-stop-blocks/1", counts: { ...counts, [sessionId]: next } };
       const tmp = `${file}.tmp-${process.pid}`;
       fs.writeFileSync(tmp, JSON.stringify(out));
       fs.renameSync(tmp, file);
@@ -275,23 +255,19 @@ function bumpCounter(dir, sessionId) {
 function stopGuard(stdinText, { now = Date.now(), root = null, env = process.env } = {}) {
   try {
     const payload = JSON.parse(stdinText);
-    if (payload === null || typeof payload !== 'object') return '';
-    if (payload.permission_mode === 'plan') return '';
+    if (payload === null || typeof payload !== "object") return "";
+    if (payload.permission_mode === "plan") return "";
     const sessionId = payload.session_id;
-    if (typeof sessionId !== 'string' || sessionId === '') return '';
+    if (typeof sessionId !== "string" || sessionId === "") return "";
     const run = owingRun(root ?? rootDir(), sessionId, now);
-    if (run === null) return '';
+    if (run === null) return "";
     const k = maxBlocks(env);
     const counter = bumpCounter(run.dir, sessionId);
-    if (counter.prior >= k)
-      return JSON.stringify({ systemMessage: exhaustedMessage(run.recordRel, k) });
+    if (counter.prior >= k) return JSON.stringify({ systemMessage: exhaustedMessage(run.recordRel, k) });
     counter.persist(counter.prior + 1);
-    return JSON.stringify({
-      decision: 'block',
-      reason: blockReason(run.recordRel, counter.prior + 1, k),
-    });
+    return JSON.stringify({ decision: "block", reason: blockReason(run.recordRel, counter.prior + 1, k) });
   } catch {
-    return ''; // FAIL OPEN — see the header
+    return ""; // FAIL OPEN — see the header
   }
 }
 
@@ -307,26 +283,26 @@ function markerMode(argv, { root = rootDir(), env = process.env, stderr = proces
   }
   const dir = path.join(stateDir, name);
   const file = path.join(dir, MARKER);
-  for (const p of [path.join(root, '.pharn'), stateDir, dir, file]) {
+  for (const p of [path.join(root, ".pharn"), stateDir, dir, file]) {
     const st = lstatOrNull(p);
     if (st && st.isSymbolicLink()) {
-      stderr.write('require-loop-record: refusing a marker path through a symlink\n');
+      stderr.write("require-loop-record: refusing a marker path through a symlink\n");
       return 2;
     }
   }
-  if (mode === '--close') {
+  if (mode === "--close") {
     fs.rmSync(file, { force: true });
     return 0;
   }
-  if (argv[2] !== '--cap' || !/^[1-9][0-9]{0,2}$/.test(argv[3] ?? '') || argv.length !== 4) {
-    stderr.write('require-loop-record: usage: --open <name> --cap <M>\n');
+  if (argv[2] !== "--cap" || !/^[1-9][0-9]{0,2}$/.test(argv[3] ?? "") || argv.length !== 4) {
+    stderr.write("require-loop-record: usage: --open <name> --cap <M>\n");
     return 2;
   }
   const sid = env.CLAUDE_CODE_SESSION_ID;
   const marker = {
     schema: SCHEMA,
     name,
-    session_id: typeof sid === 'string' && sid !== '' ? sid : null,
+    session_id: typeof sid === "string" && sid !== "" ? sid : null,
     started_at: new Date().toISOString(),
     cap: Number(argv[3]),
   };
@@ -337,16 +313,16 @@ function markerMode(argv, { root = rootDir(), env = process.env, stderr = proces
 
 function main() {
   const argv = process.argv.slice(2);
-  if (argv[0] === '--open' || argv[0] === '--close') {
-    if (argv[0] === '--close' && argv.length !== 2) {
-      process.stderr.write('require-loop-record: usage: --close <name>\n');
+  if (argv[0] === "--open" || argv[0] === "--close") {
+    if (argv[0] === "--close" && argv.length !== 2) {
+      process.stderr.write("require-loop-record: usage: --close <name>\n");
       process.exit(2);
     }
     process.exit(markerMode(argv));
   }
-  let input = '';
+  let input = "";
   try {
-    input = fs.readFileSync(0, 'utf8');
+    input = fs.readFileSync(0, "utf8");
   } catch {
     process.exit(0);
   }

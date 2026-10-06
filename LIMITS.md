@@ -1,8 +1,8 @@
 ---
-file: 'LIMITS.md'
+file: "LIMITS.md"
 trust: trusted
-editable_by: 'human only'
-purpose: 'What PHARN does NOT guarantee. Labels the irreducible limits, the residual, and the token cost model honestly. Required by P0 and P7: a limit sold as a guarantee is the disease this whole repo exists to prevent.'
+editable_by: "human only"
+purpose: "What PHARN does NOT guarantee. Labels the irreducible limits, the residual, and the token cost model honestly. Required by P0 and P7: a limit sold as a guarantee is the disease this whole repo exists to prevent."
 ---
 
 # PHARN — Limits (what we do not guarantee)
@@ -130,7 +130,7 @@ the largest practical token problem and it is not yet solved.
 > **The gated manual flag is `/pharn-ship --quick` (6.25.0), and it trades checks for cost.** A human chooses it for
 > a `spec_kind: quick` SPEC: one to three acceptance criteria, each verified at `unit` or `integration`. It
 > keeps both human gates, the grill's two floor stops, the test-first evidence for those criteria,
-> `/pharn-regress`'s scope check (a changed file outside the plan's `## Files` still stops the run, within
+> `/pharn-regress`'s scope check (a file the run changed outside the plan's `## Files` still stops the run, within
 > the bounds §6 states for that check) and `/pharn-verify` with its AC gate. It leaves out: **the regression
 > check** — no regression outside the feature is looked for, because nothing compares base and head; **the
 > plan interrogation** — `/pharn-grill --quick` runs its floor stops and no griller; and **`BRIEFING.md` and
@@ -148,8 +148,9 @@ the largest practical token problem and it is not yet solved.
 > SPEC still needs a regression verdict. It keeps the grill's floor stops, the test-first evidence, the scope check
 > (within the bounds §6 states for that check; it leaves no record, so nothing after its iteration re-checks it) and
 > the freshness check (a quick run's verify evidence must still describe the live tree and reproduce from its
-> stamp). It leaves out the regression check, the plan interrogation and `RUN-REPORT.md` (`cost.json` is still
-> written). Its green stop is `STOP_GREEN_QUICK`, which is not `STOP_GREEN` and claims no regression check; the
+> stamp). It leaves out the regression check and `RUN-REPORT.md` (`cost.json` is still written). Like every
+> `/pharn-loop` run since 6.45.0, it does not interrogate the plan: the grill runs its two floor stops only. Its
+> green stop is `STOP_GREEN_QUICK`, which is not `STOP_GREEN` and claims no regression check; the
 > record, the commit message and the summary name the mode after the run. The person who typed `--quick` chose it,
 > and the model's reading of that flag is advisory, as for `/pharn-ship`.
 
@@ -172,6 +173,37 @@ run is exactly when a new user decides whether PHARN is worth the price. The cli
 Fencing scaffolding on every untrusted block + re-stating the finding schema + re-injecting the
 constitution is per-call overhead × fan-out. "Free because it's frontmatter" is false at runtime;
 it is a real per-leaf tax.
+
+### 3e. The always-loaded instruction set is a model, and its growth gate measures that model
+
+`pharn/floor/check-instruction-files.mjs` models which project files Claude Code attaches to every
+session: the root `CLAUDE.md` / `.claude/CLAUDE.md` (else `AGENTS.md`), their `@path` imports, and the
+`.claude/rules/**/*.md` files without a `paths:` scope. The model comes from Claude Code's published
+memory documentation plus the assumptions its header labels. The harness's actual set may differ in
+either direction (versions, settings, `claudeMdExcludes`, HTML-comment stripping, the 4 MiB skip).
+
+- **Struck claim:** "`instruction-growth` PASS means the session prefix did not grow."
+- **True statement:** `--growth` (the `/pharn-verify` gate `instruction-growth`, 6.38.0) is a floor
+  verdict over that model: the bytes added to the modelled set since a base commit, against
+  `budget.instructionGrowthBytes` read from `pharn.config.json` at that base (default 2048). It measures
+  changed-since-base, not written-by-the-build; with a dirty working tree only uncommitted growth is
+  seen; and a per-change budget does not bound growth accumulated across changes that each stay under it.
+- **Under-count routes, known so far and never a complete list:** a catch-all `paths:` pattern spelled
+  another way, a YAML error the line reader does not recognise beside `paths:`, an always-loaded file
+  made git-ignored, and an uncommitted edit inside an initialised submodule.
+- **Not counted:** git-ignored files, `CLAUDE.local.md`, subdirectory `CLAUDE.md` files, directories
+  above the project root, `~/.claude/**`, managed policy files, and auto memory.
+- `--report` is advisory, and its token figure is bytes/4 (§1c). Whether `pharn update` preserves the
+  `budget` key in `pharn.config.json` is not verifiable from this repository; a dropped key falls back to
+  the default, which is the strict direction.
+
+### 3f. What goes into an instruction file is a planning choice, and the rule that steers it is advisory
+
+`/pharn-plan` carries an advisory planning rule (6.38.1): a feature's narrative, rationale, history and limits stay
+in its record, and a plan names an instruction file only for a standing convention every future session must obey.
+Nothing deterministic stops a plan from naming `CLAUDE.md`, and no behavioural eval covers `/pharn-plan`. The
+deterministic backstop is §3e's `instruction-growth` gate at `/pharn-verify`. It bounds the bytes one change adds to
+the modelled set, never what a plan names, and never growth accumulated across changes that each stay under budget.
 
 ---
 
@@ -199,9 +231,12 @@ scanners; there is no `scan-code-*` counterpart, and no lens in `pharn/pharn-rev
 telemetry wiring.
 
 The consequence, stated plainly: **a plan may declare telemetry, pass the grill, and the diff that
-results may wire none — with every floor green.** Nothing downstream re-checks the promise against
-the code. `/pharn-verify` re-runs the project's own gates; if the project has no telemetry test,
-neither does PHARN.
+results may wire none — with every floor green.** Under an unattended `/pharn-loop` (since 6.45.0) the grill runs
+only the observability scanner, not the griller's judgment, so there the plan's telemetry is not judged at all.
+Nothing downstream re-checks the promise against the code. `/pharn-verify` runs the project's own discovered gates,
+less any the project excludes in `pharn.config.json` `gates.exclude` (6.36.0); a gate result can also be reused from
+the same delivery run's `/pharn-regress` (6.34.0). If the project has no telemetry test, or excludes the gate that
+runs it, neither does PHARN.
 
 Two reasons this is a limit rather than a gap awaiting a fix:
 
@@ -251,8 +286,8 @@ either hook. Probed rather than read off the wiring — §1d's quantifier is pre
   bounds, all in `pharn/pharn-contracts/reconciliation-record.md`: ignored paths are outside the
   reconciled set; the window is anchor-to-verify; the model is **one worktree per session** (two sessions
   sharing a tree share `.pharn/`, so a second session's writes can surface as this one's escape —
-  [[L38]], which this inherits and cannot fix); and there is **no attribution** — it reports _what_,
-  never _who_.
+  [[L38]], which this inherits and cannot fix); and there is **no attribution** — it reports *what*,
+  never *who*.
 - **DELETING it is loud; FORGING it is silent — and that bounds the whole claim.** The baseline lives
   under `.pharn/`, which `Bash` reaches, and nothing authenticates it. Deleting it does not yield a quiet
   green: `/pharn-*verify` passes `--require-baseline`, which makes an absent baseline `INCONCLUSIVE`, and
@@ -280,12 +315,17 @@ either hook. Probed rather than read off the wiring — §1d's quantifier is pre
 - **Older partial backstop, advisory and still present.** `pharn/floor/check-regress.mjs scope` exits 1 on a changed
   path the plan's `## Files` did not declare (since 6.17.0 `/pharn-regress` also declares
   `AC-TESTS.md`'s), and before 4.0.0 was the only thing in the tree that could surface such a
-  write after the fact. Four bounds, every one stated in that checker's own header: it fires only if
+  write after the fact. Five bounds, every one stated in that checker's own header or in
+  `pharn/floor/pre-run-snapshot.mjs`'s: it fires only if
   `/pharn-regress` runs, or when `check-quick-scope.mjs` (6.28.0) applies that rule — for `/pharn-ship --quick`'s
   item 7 and for every `/pharn-loop --quick` iteration — to inputs it builds by code exactly as that stage's script
   does, without the rest of that stage; it compares _changed since base_, not _written by the build_; it carries
-  closed-enum exemptions for the pipeline's own artifacts; and a plan that edits its own `## Files`
-  (or its `AC-TESTS.md`) defeats it. A smoke alarm, never the guard.
+  closed-enum exemptions for the pipeline's own artifacts; a plan that edits its own `## Files`
+  (or its `AC-TESTS.md`) defeats it; and, inside a `/pharn-loop` or `/pharn-ship` run (6.37.0), a path already
+  changed when the run began whose bytes still equal the run's pre-run snapshot is reported, not counted — so a build
+  that writes such a path back to its pre-run bytes is not seen, a path an earlier run escaped with is pre-run state
+  for a re-run (reported, not refused), and the snapshot, kept in the git dir out of the write tools' reach, can be
+  forged through `Bash`. A smoke alarm, never the guard.
 - **The only true prevention is OS-level sandboxing of the `Bash` process** — a filesystem jail, a
   read-only mount, or an equivalent harness-layer control that makes the write fail before any hook
   would be consulted. PHARN does **not** implement it, and cannot: exactly like §1d's out-of-band
@@ -449,7 +489,7 @@ What either certifies is narrower than the config's presence suggests.
 - **Struck claim:** "PHARN runs each stage on its configured model" — or any reading of a green
   `check-model-config`, or of an `agent:<alias>` route on a marker, as evidence that `/pharn-plan` ran on
   Opus. The checker's own stdout carries the disclaimer: `NOTE (P0): this is config↔frontmatter EQUALITY —
-never proof a stage RAN under that model.`
+  never proof a stage RAN under that model.`
 - **True statement:** for a routed stage PHARN REQUESTS the configured model, and the stage's marker records
   that request; `cost.json` records the model each request was SERVED — evidence from a transcript format the
   platform does not document, not a floor primitive. Model and effort are applied by the Claude Code

@@ -1,5 +1,5 @@
 ---
-description: 'Turn an Approved, unchanged SPEC.md into PLAN.md with its declared files and applied_lessons declaration (plus AC-TESTS.md for a templated SPEC). Run after the SPEC is approved, before /pharn-grill.'
+description: "Turn an Approved, unchanged SPEC.md into PLAN.md with its declared files and applied_lessons declaration (plus AC-TESTS.md for a templated SPEC). Run after the SPEC is approved, before /pharn-grill."
 kind: pharn-owned
 trust: trusted
 model_tier: sonnet
@@ -7,21 +7,21 @@ model: opus
 effort: high
 reads:
   [
-    'pharn/CONSTITUTION.md',
-    'pharn/ARCHITECTURE.md',
-    'pharn/features/<name>/SPEC.md',
-    'memory-bank/lessons-learned.md',
-    '.pharn/lessons-index.md',
-    'pharn/floor/check-spec-approved.mjs',
-    'pharn/floor/check-spec.mjs',
-    'pharn/floor/check-plan-lessons.mjs',
-    'pharn/floor/check-lessons-index.mjs',
-    'pharn/floor/check-ac-tests.mjs',
-    'pharn/pharn-contracts/ac-tests.md',
+    "pharn/CONSTITUTION.md",
+    "pharn/ARCHITECTURE.md",
+    "pharn/features/<name>/SPEC.md",
+    "memory-bank/lessons-learned.md",
+    ".pharn/lessons-index.md",
+    "pharn/floor/check-spec-approved.mjs",
+    "pharn/floor/check-spec.mjs",
+    "pharn/floor/check-plan-lessons.mjs",
+    "pharn/floor/check-lessons-index.mjs",
+    "pharn/floor/check-ac-tests.mjs",
+    "pharn/pharn-contracts/ac-tests.md",
   ]
-writes: ['pharn/features/<name>/PLAN.md', 'pharn/features/<name>/AC-TESTS.md']
-constitution_refs: ['P0', 'P2', 'P4', 'P5', 'P6', 'P7']
-version: '0.5.2'
+writes: ["pharn/features/<name>/PLAN.md", "pharn/features/<name>/AC-TESTS.md"]
+constitution_refs: ["P0", "P2", "P4", "P5", "P6", "P7"]
+version: "0.5.3"
 ---
 
 # /pharn-plan — plan from Approved, un-drifted intent
@@ -130,6 +130,15 @@ node pharn/floor/check-spec-approved.mjs pharn/features/<name>/SPEC.md
 From the **approved** intent (the SPEC's sections), produce the plan **body** — _how to implement_ what
 the Acceptance Criteria require, within the Scope and Constraints. Plan only what the SPEC expresses; do not
 invent intent the human did not approve (P7).
+
+> **Instruction files load into every agent (ADVISORY — nothing checks a plan for it).** Claude Code loads
+> `CLAUDE.md`, any file it imports with `@…` (e.g. `AGENTS.md`), and every `.claude/rules/` file without `paths:`
+> frontmatter into every agent of every stage, so each byte there is paid on every run. A feature's narrative,
+> rationale, history and limits already live in its record (`pharn/features/<name>/`); if the project keeps a docs
+> folder, a page there may be planned. Neither becomes a new section in an instruction file. Name an instruction file
+> in `## Files` only when the feature changes a standing convention every future session must obey, as
+> ``- `CLAUDE.md` — convention: <the one convention, one line>``; a convention for some paths only belongs in a
+> `.claude/rules/` file with `paths:` frontmatter.
 
 ## Step 4 — Emit `pharn/features/<name>/PLAN.md`, carrying the hash forward, then halt
 
@@ -290,7 +299,9 @@ for such a SPEC is a `spec-kind` RED. Exit **0** → continue. Exit **2** → th
 
    - **0** → GREEN. **1** → the `RED — <kind>` lines name each problem. Fix AC-TESTS.md and re-run. If the fix is in
      PLAN.md's `## Files` (an `in-plan-files`, `test-infra-in-plan` or `ac-artifact-in-plan` RED, for instance), first re-scope to PLAN.md with the Step 0 setter
-     line. Then edit it, re-run Step 4b, re-scope to AC-TESTS.md (step 1 above), and re-run this check. **2** → a
+     line. Then edit it, re-run Step 4b, re-scope to AC-TESTS.md (step 1 above), and re-run this check. A
+     **`level-excluded`** RED (6.36.0) is not yours to fix: the SPEC sets the level and `pharn.config.json`'s
+     `gates.exclude` removes its gates — HALT and report it (re-specify the criterion, or keep the gate). **2** → a
      file is missing or unreadable, or (6.21.1) the chain check it shells crashed (`UNUSABLE child-crashed — …`):
      no verdict — HALT and report it.
    - **Map only NEW test files.** Nothing here checks that a mapped file does not already exist. An existing

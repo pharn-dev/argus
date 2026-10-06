@@ -1,5 +1,5 @@
 ---
-description: 'Turn a feature idea into SPEC.md: surface gaps, fill the SPEC template, stop for human approval (or, with --model-approve for /pharn-loop, the model approves), then pin it. The first pipeline stage; `--quick` writes a 1–3 criterion mini-SPEC.'
+description: "Turn a feature idea into SPEC.md: surface gaps, fill the SPEC template, stop for human approval (or, with --model-approve for /pharn-loop, the model approves), then pin it. The first pipeline stage; `--quick` writes a 1–3 criterion mini-SPEC."
 kind: pharn-owned
 trust: trusted
 model_tier: sonnet
@@ -7,19 +7,19 @@ model: opus
 effort: high
 reads:
   [
-    'pharn/CONSTITUTION.md',
-    'pharn/ARCHITECTURE.md',
-    'pharn/pharn-contracts/spec-template.md',
-    'pharn/pharn-contracts/templates/spec-template.md',
-    'pharn.spec-template.md',
-    'pharn/features/<name>/SPEC.md',
-    'pharn/floor/check-spec.mjs',
-    'pharn/floor/feature-name.mjs',
-    'package.json',
+    "pharn/CONSTITUTION.md",
+    "pharn/ARCHITECTURE.md",
+    "pharn/pharn-contracts/spec-template.md",
+    "pharn/pharn-contracts/templates/spec-template.md",
+    "pharn.spec-template.md",
+    "pharn/features/<name>/SPEC.md",
+    "pharn/floor/check-spec.mjs",
+    "pharn/floor/feature-name.mjs",
+    "package.json",
   ]
-writes: ['pharn/features/<name>/SPEC.md']
-constitution_refs: ['P0', 'P2', 'P4', 'P5', 'P6', 'P7']
-version: '0.7.1'
+writes: ["pharn/features/<name>/SPEC.md"]
+constitution_refs: ["P0", "P2", "P4", "P5", "P6", "P7"]
+version: "0.7.1"
 ---
 
 # /pharn-spec — capture intent as a human-approved SPEC.md
@@ -150,7 +150,7 @@ findings (there is no `rule_id` for "intent quality"):
   end-to-end runner. Say plainly that PHARN's gate discovery allowlist (`ALLOWLIST` in
   `pharn/floor/gate-run-core.mjs`) discovers an e2e suite at verify only from a `test:e2e` or `e2e` script
   (6.16.0), so without one it runs only if the project's `test` script runs it or an explicit `--gates` entry
-  does.
+  does — and never when `pharn.config.json` `gates.exclude` lists it (6.36.0), which `/pharn-test` then refuses.
 - **Ambiguity** — a genuine ambiguity that cannot be settled without inventing intent becomes a
   **clarification marker** in `## Open Questions`, spelled as `pharn/pharn-contracts/spec-template.md`
   defines it (`[NEEDS CLARIFICATION: <question>]`), at most three. Everything else becomes an informed

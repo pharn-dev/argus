@@ -145,9 +145,12 @@ answer on re-invocation** — a shape check on an argv flag is not a one-time tr
 
 Keyed by stage; `regress` and `verify` are its members.
 
-- **`question`** — `base-unresolved`, `no-gates` (its fixed text names all three causes a discovered set
-  can empty into), `install-unresolved`, `tests-unresolved`.
-- **`refused`** — `missing-artifact`, `chain-red`, `plan-files-unparseable`, `scope-escaped`.
+- **`question`** — `base-unresolved`, `no-gates` (its fixed text names every cause a discovered set can empty into —
+  four since 6.36.0, the fourth the project's `gates.exclude`), `install-unresolved`, `tests-unresolved`.
+- **`refused`** — `missing-artifact`, `chain-red`, `plan-files-unparseable`, `scope-escaped`, `head-install-drift`
+  (6.40.0: the HEAD working tree's npm install does not match its lockfile — raised first thing in head-init, before
+  any gate; its remedy is `npm ci`; the rule and its bounds are `pharn/floor/install-drift-core.mjs`'s header,
+  `regression-report.md` "The additive `head_install` block" says what is reported when it does not refuse).
   - **The `scope-escaped` remedy has a named blind spot (M3, GATE-2 round 2).** The remedy is to declare
     the escaped path in `PLAN.md`'s `## Files` via `/pharn-plan`, or to revert the change. But `scope`
     exempts this feature's own `PLAN.md` from the escape check (`--feature`, lessons L17), so a `PLAN.md`
@@ -171,12 +174,14 @@ Step 2 table, not restated here):
 ## The `verify` vocabulary (6.26.0, `stage-verify-script`)
 
 - **`question`** — `no-gates` only. Its fixed text names verify's one cause (no `--gates`, and `package.json` absent
-  or declaring none of the allowlisted scripts) and the caveat the AC gate makes true: for a SPEC written from the
+  or declaring none of the allowlisted scripts, or — 6.36.0 — the project's `gates.exclude` removing every one it
+  declares) and the caveat the AC gate makes true: for a SPEC written from the
   template, a gate named with `--gates` is not the discovered `npm run <id>` the AC-test lock pinned
   (`test-infra-changed` / `ac-untested`), so adding the missing script is the better answer there. Options:
   `--gates <value>` (`gates-spec`) or stop.
-- **`refused`** — `missing-artifact`, `chain-red`, `plan-files-unparseable`. Each writes `VERIFY.md` naming the
-  refusal and **no** `verify-report.json`.
+- **`refused`** — `missing-artifact`, `chain-red`, `plan-files-unparseable`, `head-install-drift` (6.40.0 — the same
+  check regress runs, first thing in `init`, before any gate). Each writes `VERIFY.md` naming the refusal and **no**
+  `verify-report.json`.
 - **`unusable`** — `usage-error`, `no-feature`, `path-containment`, `git-failed`, `child-crashed`, `child-refused`,
   `no-progress`, `progress-malformed`. `child-crashed` covers a shelled checker that crashed (the chain check, the
   verifier count, the verdict call whose exit disagrees with its printed verdict) AND a completeness capture that
@@ -190,7 +195,9 @@ Step 2 table, not restated here):
 disclosure):** a crashed completeness checker (before, it read `INCOMPLETE`, which `check-loop.mjs` CONTINUEs — a
 rebuild iteration, up to the cap), a runner refusal with a lapse included (before, a fail-closed report
 `check-loop-fresh.mjs` B could route to one re-run), and an unparseable `## Files` (before, the gates ran and the
-verdict read `INCONCLUSIVE`).
+verdict read `INCONCLUSIVE`). **New S9 stops as of 6.40.0:** `head-install-drift` from either stage (before, the gates
+ran over the drifted install: regress could report a false regression, verify FAILed, and the loop CONTINUEd into
+iterations no rebuild could fix — including when the build itself edited the lockfile without installing).
 
 ## The `regress` install command (GATE 1 Q3 — M10, GATE 2 review: this table had gone missing here)
 
@@ -236,8 +243,8 @@ runner's `init`, and the only slow steps are the gates. The unbudgeted tail afte
 `run --next`'s fingerprints, the verdict call, the report composition, the render and the writes.
 
 **A kill mid-invocation (GATE-2 round 2).** For `regress`, a progress record is persisted at the top of
-every phase from "drain-head" through "verdict". A hard kill (a harness timeout, say) therefore leaves the
-record at the phase it interrupted, and `--resume` re-runs that phase from its start. That includes a kill
+every phase from "drain-head" through "verdict". A hard kill (an interrupt, or the Bash tool stopping a call
+that ran past its background limit, say) therefore leaves the record at the phase it interrupted, and `--resume` re-runs that phase from its start. That includes a kill
 during `git worktree add`: git leaves that worktree locked and half-populated, and the script
 force-removes it before re-adding (measured, and tested by killing a real `add` mid-checkout). What a kill
 still costs:
@@ -252,6 +259,18 @@ re-derives the verdict from the same durable stamp: over an UNCHANGED tree it re
 report, but the AC gate also reads live files (the lock, the SPEC, the mapping), so after the tree moved it may
 not. `/pharn-loop`'s `check-loop-fresh.mjs` F catches a moved tree; `/pharn-ship` has no such check. A kill
 before "drain" leaves no record of that run, and `--resume` answers `no-progress`.
+
+**A Bash-tool timeout is not a kill (6.46.0).** Observed in this harness (probed with a 3 s tool timeout; the
+pinned 600 s is assumed to behave the same — ADVISORY, a harness behaviour, not a floor fact): a call that reaches
+the tool's timeout is MOVED TO THE BACKGROUND and runs on to its own exit, which the tool's completion notice reports
+later (that notice says "failed" for every non-zero code, `continue`'s `5` included). So a caller waits for that
+notice and branches on the exit code it reports; it runs `--resume` only for a call that is gone without one. A
+`--resume` (or a second fresh invocation) started while the first still runs would put two scripts on one progress
+record, and nothing refuses it: when either script is called directly it takes no in-flight lock. That guard exists
+only around `pharn/floor/stage-direct.mjs`, the orchestrators' call, whose own lock is held while it spawns the
+script. Giving the scripts their own is the named follow-up `stage-script-in-flight-guard` (it needs a parent
+pass-through and a new code in both stages' closed `unusable` sets); until then the thin callers' text is the only
+thing that prevents it, and that text is advisory.
 
 ## Guarantee audit (P0)
 

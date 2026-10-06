@@ -90,17 +90,24 @@
 // NAMED residual `verify-paused-chain-integrity`: while a budgeted verify chain is paused at `continue`, `state.json` —
 // its `reuse` binding included — is ordinary `.pharn/` state the write tools reach, exactly as its `runs` already are.
 //
+// ================================ GATE EXCLUSION (6.36.0) ================================
+// `init --discover <m>` (no `--gates`) reads the project's `gates.exclude` from the `pharn.config.json` beside `<m>`
+// (gate-exclusion-core.mjs) and hands it to resolveSet; a bad declaration is `bad-gate-exclusion`, nothing written. The
+// record (and so the stamp) carries the `excluded` block only when discovery removed an id; `init` prints its ids.
+//
 // TRUST (P2): every operand is a path, an integer or a hex digest. Untrusted inputs — a `--gates`
 // string, a `--extra` array, a scope JSON — are shape-gated by gate-run-core.mjs before use and are
 // never eval'd, imported, or compiled into a RegExp.
 //
 // Usage:
-//   node pharn/floor/run-gates.mjs init --stage verify|regress [--side base|head] --feature <name>
+//   node pharn/floor/run-gates.mjs init --stage verify|regress|entry [--side base|head] --feature <name>
 //        --out <dir> [--cwd <dir>] [--base <featureBase>] [--discover <package.json>] [--gates "<c>[::<id>],…"]
 //        [--extra <json-array>] [--scope-json <file>] [--skip-style] [--spec-from <dir>]
 //        [--reuse-stamp <file> --reuse-sha256 <hex>]
 //     `--reuse-stamp` (6.34.0) applies to `--stage verify` only, always with the offered bytes' `--reuse-sha256`: see
-//     REUSED EXECUTIONS above.
+//     REUSED EXECUTIONS above. `--base-tests <json-array-file>` (6.49.0) applies to `--stage entry` only: the entry
+//     check's evidence-only `base:test` slot (gate-run-core.mjs ENTRY_BASE_TEST_ID), the discovered `test` command handed
+//     exactly those files (each through ac-tests-core.mjs `badPath`), right after the style gates.
 //   node pharn/floor/run-gates.mjs init --stage ac-test --feature <name> --out <dir> --discover <package.json>
 //        --ac-tests <pharn/features/<name>/AC-TESTS.md> [--cwd <dir>]
 //     /pharn-test's RED RUN (6.18.0). The set is selected BY ID from the mapping's levels (gate-run-core.mjs
@@ -108,6 +115,12 @@
 //     e2e to each e2e gate. The mapping is read by ac-tests-core.mjs `acRowsOf` — the grammar's one home, the one
 //     check-ac-tests.mjs checks with (L35) — so a file the mapping checker would refuse (a leading `-` a runner
 //     would read as a flag, a glob, an absolute path) never reaches a gate's argv.
+//   node pharn/floor/run-gates.mjs init --stage build --feature <name> --out <dir> (--discover <package.json> |
+//        --gates "<c>[::<id>],…") [--targets <json-array-file>] [--cwd <dir>]
+//     /pharn-build's own gate (6.39.0), run by build-gate.mjs: the DISCOVERED set minus the e2e gates, or a human's
+//     explicit --gates, never filtered; no reconcile, no aux.completeness; with `--targets`, the `test` gate alone,
+//     handed those files (each through ac-tests-core.mjs `badPath`). `--extra`, `--skip-style`, `--scope-json`,
+//     `--spec-from`, `--side`, `--base` are refused.
 //   node pharn/floor/run-gates.mjs run --next --out <dir> --timeout-ms <N>
 //
 // Exit: init  0 ok · 2 runner error (reason_code) · 3 empty SOURCE set (nothing written)
@@ -148,8 +161,9 @@ import {
   resultsFileName,
 } from "./gate-run-core.mjs";
 import { fingerprint } from "./worktree-fingerprint.mjs";
-import { acRowsOf } from "./ac-tests-core.mjs";
+import { acRowsOf, badPath } from "./ac-tests-core.mjs";
 import { executionIdentity, findReusable, reusedRunRecord } from "./gate-reuse-core.mjs";
+import { loadGateExclusion } from "./gate-exclusion-core.mjs";
 
 const STATE_ROOT = ".pharn";
 /** Grace between SIGTERM and SIGKILL, and the pid-reuse margin on a stale lock. */
@@ -549,6 +563,24 @@ function readAcRows(file, feature) {
   return rows.ok ? rows : { ok: false, reason: `--ac-tests ${JSON.stringify(file)}: ${rows.reason}` };
 }
 
+/** `--targets` (6.39.0, build): a JSON array of repo-relative test files, read from a FILE (the `--scope-json` pattern —
+ *  no list through argv splitting, L5), each one a path ac-tests-core.mjs `badPath` accepts — the path rule the red run
+ *  already applies to the files it hands a runner (no glob, not absolute, no leading `-`, normalized, outside `.pharn/`
+ *  and `pharn/features/`). The array's shape (non-empty, unique, capped) is resolveSet's. Returns `{ok, targets}` or a
+ *  reason naming a POSITION, never a value (L62). */
+function readTargets(file, name = "--targets") {
+  if (!file || file.startsWith("-")) return { ok: false, reason: `${name} requires a file` };
+  const r = readJson(resolve(file));
+  if (!r.ok) return { ok: false, reason: `${name} is not readable/parseable (${file}): ${r.reason}` };
+  if (!Array.isArray(r.value)) return { ok: false, reason: `${name} must hold a JSON array of paths (${file})` };
+  for (let i = 0; i < r.value.length; i++) {
+    const p = r.value[i];
+    if (typeof p !== "string" || badPath(p))
+      return { ok: false, reason: `${name} entry ${i} is not a usable repo-relative test file path` };
+  }
+  return { ok: true, targets: r.value };
+}
+
 function runInit(args) {
   const cwd = flag(args, "--cwd") ?? ".";
   const out = flag(args, "--out");
@@ -615,6 +647,34 @@ function runInit(args) {
     fail("usage-error", "--ac-tests applies to --stage ac-test only");
   }
 
+  // 6.39.0 — /pharn-build's own gate (build-gate.mjs): discovered, or a human's --gates (review R1); by-presence refusals.
+  let targets = null;
+  if (stage === "build") {
+    for (const f of ["--scope-json", "--spec-from", "--side", "--base", "--extra", "--skip-style"]) {
+      if (has(args, f)) fail("usage-error", `${f} does not apply to --stage build`);
+    }
+    if (!flag(args, "--discover") && !flag(args, "--gates")) {
+      fail("usage-error", "--stage build requires --discover <package.json> or --gates <spec>");
+    }
+    if (has(args, "--targets")) {
+      const r = readTargets(flag(args, "--targets"));
+      if (!r.ok) fail("usage-error", r.reason);
+      targets = r.targets;
+    }
+  } else if (has(args, "--targets")) {
+    fail("usage-error", "--targets applies to --stage build only");
+  }
+
+  // 6.49.0 (entry-run-as-base-evidence) — the entry check's evidence-only base:test slot: a JSON array of test files, read
+  // from a FILE through the --targets reader (the badPath rule), for --stage entry only. resolveSet owns the shape.
+  let baseTests = null;
+  if (has(args, "--base-tests")) {
+    if (stage !== "entry") fail("usage-error", "--base-tests applies to --stage entry only");
+    const r = readTargets(flag(args, "--base-tests"), "--base-tests");
+    if (!r.ok) fail("usage-error", r.reason);
+    baseTests = r.targets;
+  }
+
   const discover = flag(args, "--discover");
   let scripts = null;
   if (discover) {
@@ -622,16 +682,31 @@ function runInit(args) {
     if (!r.ok) fail("usage-error", `--discover manifest is not readable/parseable: ${r.reason}`);
     scripts = r.value && typeof r.value === "object" ? r.value.scripts : null;
   }
+  // 6.36.0 — the project's declared exclusion, read beside the manifest discovery reads (the project root for every
+  // pinned caller) and only when the set is discovered: an explicit --gates string is never filtered (gate-exclusion-core).
+  // Keyed on the PARSED --gates value, the one resolveSet receives (review R4): a valueless trailing `--gates` used to
+  // skip the declaration while resolveSet still discovered, so an excluded gate ran. It is refused instead.
+  const gatesRaw = flag(args, "--gates");
+  if (has(args, "--gates") && gatesRaw === undefined) fail("usage-error", "--gates requires a value");
+  let exclude = [];
+  if (discover && gatesRaw === undefined) {
+    const x = loadGateExclusion(dirname(resolve(discover)));
+    if (!x.ok) fail("bad-gate-exclusion", x.reason);
+    exclude = x.exclude;
+  }
 
   const res = resolveSet({
     stage,
     side: stage === "regress" ? side : null,
-    gates: flag(args, "--gates") ?? null,
+    gates: gatesRaw ?? null,
     scripts,
     extras: flag(args, "--extra") ?? null,
     skipStyle: has(args, "--skip-style"),
     feature,
     acRows,
+    exclude,
+    targets,
+    baseTests,
   });
   if (!res.ok) {
     // The empty SOURCE set is the ONE refusal that writes no state and exits 3, so the invoking command
@@ -689,7 +764,7 @@ function startRecord(spec, outAbs, cwd, args, opts = {}) {
   rmSync(outAbs, { recursive: true, force: true });
   mkdirSync(outAbs, { recursive: true });
 
-  const fp = fingerprint(cwd, { feature: spec.feature });
+  const fp = fingerprint(cwd, { feature: spec.feature, stage: spec.stage });
   if (!fp.ok) fail("usage-error", `cannot fingerprint the worktree: ${fp.reason}`);
 
   let head = null;
@@ -718,6 +793,8 @@ function startRecord(spec, outAbs, cwd, args, opts = {}) {
     source: spec.source,
     source_raw: spec.source_raw,
     style_skipped: spec.style_skipped,
+    // 6.36.0 — present only when discovery removed an id the project excluded, so every other record is unchanged.
+    ...(spec.excluded ? { excluded: spec.excluded } : {}),
     finalized: false,
     fingerprint: { algo: fp.algo, init: fp.digest, final: null },
     required: spec.required,
@@ -740,6 +817,7 @@ function startRecord(spec, outAbs, cwd, args, opts = {}) {
       source: spec.source,
       ids: spec.entries.map((e) => e.id),
       e2e_excluded: spec.e2e_excluded ?? [],
+      ...(spec.excluded ? { excluded: spec.excluded.ids } : {}),
       reuse_offered: Boolean(opts.reuse),
     },
     0
@@ -906,7 +984,7 @@ async function runNext(args) {
     const next = rec.entries[rec.runs.length];
     if (next === undefined) emit({ ok: true, remaining: 0, finalized: rec.finalized === true }, 3);
 
-    const fpBefore = fingerprint(cwd, { feature: rec.feature });
+    const fpBefore = fingerprint(cwd, { feature: rec.feature, stage: rec.stage });
     if (!fpBefore.ok) fail("usage-error", `cannot fingerprint before ${next.id}: ${fpBefore.reason}`);
 
     // The log names come from gate-run-core's ONE copy of the rule, which check-loop-fresh.mjs re-hashes.
@@ -974,7 +1052,7 @@ async function runNext(args) {
         timed_out = res.timed_out;
       }
 
-      fpAfter = fingerprint(cwd, { feature: rec.feature });
+      fpAfter = fingerprint(cwd, { feature: rec.feature, stage: rec.stage });
       if (!fpAfter.ok) fail("usage-error", `cannot fingerprint after ${next.id}: ${fpAfter.reason}`);
 
       const run = {
@@ -1055,7 +1133,7 @@ async function main(argv) {
       ok: false,
       reason_code: "usage-error",
       reason:
-        'usage: run-gates.mjs init --stage verify|regress [--side base|head] --feature <name> --out <dir> [--cwd <dir>] [--base <featureBase>] [--discover <package.json>] [--gates "<c>[::<id>],…"] [--extra <json>] [--scope-json <f>] [--skip-style] [--spec-from <dir>] [--reuse-stamp <f> --reuse-sha256 <hex>] | init --stage ac-test --feature <name> --out <dir> --discover <package.json> --ac-tests <AC-TESTS.md> [--cwd <dir>] | run --next --out <dir> --timeout-ms <N>',
+        'usage: run-gates.mjs init --stage verify|regress [--side base|head] --feature <name> --out <dir> [--cwd <dir>] [--base <featureBase>] [--discover <package.json>] [--gates "<c>[::<id>],…"] [--extra <json>] [--scope-json <f>] [--skip-style] [--spec-from <dir>] [--reuse-stamp <f> --reuse-sha256 <hex>] | init --stage ac-test --feature <name> --out <dir> --discover <package.json> --ac-tests <AC-TESTS.md> [--cwd <dir>] | init --stage build --feature <name> --out <dir> (--discover <package.json> | --gates "<c>[::<id>],…") [--targets <json-file>] [--cwd <dir>] | run --next --out <dir> --timeout-ms <N>',
     },
     2
   );

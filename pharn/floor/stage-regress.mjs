@@ -58,6 +58,17 @@
 // additive `base_evidence` block (pharn/pharn-contracts/regression-report.md). The verdict itself is always the
 // checker's over the stamps on disk.
 //
+// ==================================== ENTRY-DERIVED BASE EVIDENCE (6.49.0) ====================================
+// When the retained decision above MISSES, `entry-base-evidence.mjs` decides whether THIS delivery run's validated entry
+// execution (entry-gates.mjs, offered through the git dir) is exactly the BASE evidence this invocation needs
+// (`entry-base-evidence-core.mjs` holds the rule and every bound). On a HIT the phases worktree -> install -> base-init
+// -> drain-base are skipped, and so is cleanup. At "verdict" the HIT is RE-DECIDED in full from the offer and the entry
+// source (never trusted from stage.json), and only then is the entry-derived `regress/base` stamp written into
+// `base-gates/` — runs `ran: false` with a `reused` block naming the entry stamp, logs copied and verified — for the
+// unchanged `check-regress.mjs verdict`. A changed source, or a copy that does not verify, is a MISS: the BASE side then
+// runs exactly as before. No retained record is published over entry-derived evidence. The report's `base_evidence`
+// gains `source` (fresh | reused | entry) and `entry`.
+//
 // ==================================== THE HEAD OFFER (6.34.0) ====================================
 // /pharn-verify may record a gate result from a completed HEAD execution of THIS delivery run instead of spawning the
 // gate again (gate-reuse-core.mjs). It does so only through the OFFER this stage keeps in the git dir
@@ -106,22 +117,30 @@ import {
 } from "./stage-runtime.mjs";
 import {
   REGRESS_PATHS,
-  isTestFile,
+  LOCKFILE_FAMILIES,
   shouldSkipStyle,
   resolveInstall,
   resolveBaseSource,
   PROGRESS_SCHEMA,
   validateProgress,
 } from "./stage-regress-core.mjs";
+import { readInstallCheck, recordInstallCheck, readRecordedInstallCheck, refuses } from "./install-drift.mjs";
+import { detailText } from "./install-drift-core.mjs";
 import { renderDone, renderRefused } from "./render-regression.mjs";
 import { shelledVerdict } from "./shelled-verdict-core.mjs";
 import { spawnGate } from "./run-gates.mjs";
 import { declaredWrites, changedPaths } from "./scope-inputs.mjs";
+// 6.49.0 — the default test universe's one owner (the entry check's base:test slot lists with it too).
+import { defaultTestUniverse } from "./scope-inputs.mjs";
 import { partitionScope, scopeFindings, normPath } from "./check-regress.mjs";
+import { preRunUnchanged, entryChangesUnchanged } from "./pre-run-snapshot.mjs";
+import { entryBlocks } from "./pre-run-snapshot-core.mjs";
 import { FEATURE_SLUG_RE, SCHEMA as GATE_RUN_SCHEMA, actualForExpected } from "./gate-run-core.mjs";
 import { isExcluded, ALGO as FINGERPRINT_ALGO } from "./worktree-fingerprint.mjs";
 import { decideFromDisk, discardRetained, publishRecord } from "./regress-base-reuse.mjs";
 import { discardOffer, publishOffer } from "./head-reuse-offer.mjs";
+import { decideEntryFromDisk, materializeEntryBase } from "./entry-base-evidence.mjs";
+import { entryEvidenceBlock } from "./entry-base-evidence-core.mjs";
 import { regressWork, recordWork } from "./stage-work.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -317,6 +336,8 @@ function parseRestOfArgv(args, feature) {
     gatesSpec,
     noInstall: has(args, "--no-install"),
     explicitInstall,
+    // 6.49.0 — an explicit install choice is a BASE environment entry evidence never sampled (entry-base-evidence-core).
+    installOverride: has(args, "--install") || has(args, "--no-install"),
     noTests: has(args, "--no-tests"),
     explicitTests,
     originalArgv: [...args],
@@ -390,8 +411,8 @@ function phaseFreshLate(cfg) {
   return { planPath, specPath };
 }
 
-function writeRefusedAndEmit(feature, reasonCode, detail) {
-  const md = renderRefused({ feature, reasonCode, detail });
+function writeRefusedAndEmit(feature, reasonCode, detail, preRun = null, entryGates = null) {
+  const md = renderRefused({ feature, reasonCode, detail, preRun, entryGates });
   const renderPath = `${FEATURES_DIR}/${feature}/REGRESSION.md`;
   atomicWriteIntoFeature(renderPath, md);
   emit(refusedExit({ stage: "regress", feature, reasonCode, render: renderPath }));
@@ -499,9 +520,10 @@ function computeTests(cfg) {
     if (!r.ok) emitUnusable(cfg.feature, "git-failed", `git ls-files for --tests failed: ${r.detail}`);
     return nulList(r.stdout);
   }
-  const r = gitSync(["ls-files", "-z", "--cached", "--others", "--exclude-standard"]);
+  // The default universe has ONE owner (scope-inputs.mjs, 6.49.0) — the entry check's base:test slot lists with it too.
+  const r = defaultTestUniverse();
   if (!r.ok) emitUnusable(cfg.feature, "git-failed", `git ls-files failed: ${r.detail}`);
-  return nulList(r.stdout).filter(isTestFile);
+  return r.value;
 }
 
 function computeEvalPairs(cfg) {
@@ -524,12 +546,23 @@ function computeEvalPairs(cfg) {
 // flag, so either passed the scope check falsely. Now `partitionScope` — the rule that CLI applies, and the call
 // `quick-scope-core.mjs` makes — reads the sets as ARRAYS, each path exactly as git printed it; the declared patterns get
 // `normPath`, as that CLI's `parseList` gives them. The document written to scope.json has the keys and the order that
-// CLI printed, so run-gates.mjs, the verdict phase and render-regression.mjs read it unchanged, and its bytes are that
-// CLI's for every name but one kind. NAMED, the round-2 re-review's R3: git lists an untracked nested repository (a
+// CLI printed, plus ONE key that CLI never prints — `pre_run_snapshot` (6.37.0, below) — so run-gates.mjs, the verdict
+// phase and render-regression.mjs read it unchanged, and its bytes minus that key are that CLI's for every name but one
+// kind. NAMED, the round-2 re-review's R3: git lists an untracked nested repository (a
 // directory holding its own `.git`) as `vendor/lib/`, with a trailing slash, which the CLI's `normPath` stripped. So
 // scope.json and REGRESSION.md now carry the slash, and a PLAN declaring the bare `vendor/lib` no longer covers it — it is
 // `scope-escaped`, stricter than before and what check-quick-scope.mjs already did; `vendor/**` or `vendor/lib/**`
 // covers it. Only the changed paths still meet `assertRepresentable`: the verdict call echoes them as a comma list.
+//
+// THE PRE-RUN SNAPSHOT (6.37.0, regress-pre-run-snapshot). Inside an open `/pharn-loop` or `/pharn-ship` run, the
+// partition also asks `pre-run-snapshot.mjs` which changed paths still hold the bytes the run's entry snapshot recorded;
+// an undeclared, non-exempt one is reported, not counted as an escape (`check-regress.mjs` `partitionScope`; the rule
+// and its bounds are pre-run-snapshot-core.mjs's header). `pre_run_snapshot: {status, unchanged}` is ALWAYS written to
+// scope.json — `unchanged` the subtracted paths only — and the render phase copies it into the report; a refusal renders
+// it beside the escapes. This phase decides it once, before anything can pause; a resumed chain re-reads scope.json, a
+// `.pharn/` file, so the block it renders is advisory. A standalone regress reads `no-delivery-run` and behaves exactly
+// as before — unless an interrupted /pharn-loop or /pharn-ship of the same feature left its marker (≤ 24 h), whose
+// snapshot it then applies (a marker is read by presence and age only; pre-run-snapshot-core.mjs, `no-delivery-run`).
 function phasePartition(cfg, planPath, specPath, base) {
   const declared = readPlanDeclared(cfg, planPath, specPath);
   const inside = computeInside(cfg, base);
@@ -539,19 +572,27 @@ function phasePartition(cfg, planPath, specPath, base) {
   assertRepresentable(inside, cfg.feature);
 
   const declaredPatterns = [...new Set(declared.map(normPath).filter(Boolean))];
-  const { escaped, escapeExempt, outsideTests, outsideEvalPairs } = partitionScope({
+  const preRunDecision = preRunUnchanged({ feature: cfg.feature, base, inside });
+  // 6.42.0 (loop-entry-preflight, review R1): the run's ENTRY GATES' own writes, recorded beside the snapshot by the same
+  // rule — subtracted only while they hold the recorded bytes, and reported in their own block (entryBlocks).
+  const entryDecision = entryChangesUnchanged({ feature: cfg.feature, base, inside });
+  const { escaped, escapeExempt, preRun, outsideTests, outsideEvalPairs } = partitionScope({
     inside,
     declared: declaredPatterns,
     tests,
     evalPairs,
     feature: cfg.feature,
+    preRunUnchanged: [...new Set([...preRunDecision.unchanged, ...entryDecision.unchanged])],
   });
+  const { preRunBlock, entryBlock } = entryBlocks(preRunDecision, entryDecision, preRun);
   const scope = escaped.length
     ? {
         inside,
         declared: declaredPatterns,
         escaped,
         escape_exempt: escapeExempt,
+        pre_run_snapshot: preRunBlock,
+        ...(entryBlock ? { entry_gate_changes: entryBlock } : {}),
         findings: scopeFindings(escaped),
         outside_tests: outsideTests,
         outside_eval_pairs: outsideEvalPairs,
@@ -561,6 +602,8 @@ function phasePartition(cfg, planPath, specPath, base) {
         declared: declaredPatterns,
         escaped: [],
         escape_exempt: escapeExempt,
+        pre_run_snapshot: preRunBlock,
+        ...(entryBlock ? { entry_gate_changes: entryBlock } : {}),
         outside_tests: outsideTests,
         outside_eval_pairs: outsideEvalPairs,
       };
@@ -569,15 +612,17 @@ function phasePartition(cfg, planPath, specPath, base) {
     writeRefusedAndEmit(
       cfg.feature,
       "scope-escaped",
-      `${escaped.length} path(s) escaped the declared writes-scope: ${JSON.stringify(escaped)}\n` + JSON.stringify(scope.findings, null, 2)
+      `${escaped.length} path(s) escaped the declared writes-scope: ${JSON.stringify(escaped)}\n` + JSON.stringify(scope.findings, null, 2),
+      preRunBlock,
+      entryBlock
     );
   }
   return { scope, tests };
 }
 
 /** ------------------------------------------------------------------------------------------------
- *  PHASE 5 — head-init: resolve --skip-style, run `run-gates.mjs init --side head`, then the TESTS and
- *  INSTALL checks.
+ *  PHASE 5 — head-init: the HEAD install check (6.40.0), resolve --skip-style, run `run-gates.mjs init --side
+ *  head`, then the TESTS and INSTALL checks.
  *  ---------------------------------------------------------------------------------------------- */
 function runGatesInit(args) {
   return spawnSync(process.execPath, [RUN_GATES, "init", ...args], { encoding: "utf8" });
@@ -588,18 +633,25 @@ function lockfilesAtBase(base) {
     const r = gitSync(["cat-file", "-e", `${base}:${path}`]);
     return r.ok;
   };
-  return {
-    hasPackageJson: check("package.json"),
-    lockfiles: {
-      npm: check("package-lock.json") || check("npm-shrinkwrap.json"),
-      pnpm: check("pnpm-lock.yaml"),
-      yarn: check("yarn.lock"),
-      bun: check("bun.lock") || check("bun.lockb"),
-    },
-  };
+  // The names per family are stage-regress-core.mjs's LOCKFILE_FAMILIES (6.40.0), which the HEAD install check reads too.
+  const lockfiles = {};
+  for (const [family, names] of Object.entries(LOCKFILE_FAMILIES)) lockfiles[family] = names.some(check);
+  return { hasPackageJson: check("package.json"), lockfiles };
+}
+
+// THE HEAD INSTALL CHECK (6.40.0, regress-head-install-drift) runs first: the HEAD gates run in the user's working tree,
+// over whatever `node_modules` it holds, while the BASE side gets a fresh install — so an install that does not match
+// its lockfile is refused here, before any gate, never compared as if it were the change. `--no-install` and `--gates`
+// do not change it (it is about the tree the HEAD gates run in). Every non-refusing state proceeds as before and is
+// recorded for the report. The rule and its bounds: install-drift-core.mjs's header.
+function phaseHeadInstall(cfg) {
+  const check = readInstallCheck(".");
+  if (refuses(check)) writeRefusedAndEmit(cfg.feature, "head-install-drift", detailText(check));
+  recordInstallCheck(REGRESS_PATHS.headInstall, check);
 }
 
 function phaseHeadInit(cfg, base, scope, tests) {
+  phaseHeadInstall(cfg);
   const skipStyle = shouldSkipStyle({ source: cfg.gatesSpec !== null ? "explicit" : "discover", insidePaths: scope.inside });
   const args = [
     "--stage",
@@ -687,6 +739,17 @@ function reuseInputs(state) {
   };
 }
 
+/** The inputs of the ENTRY-derived BASE predicate this stage owns (6.49.0); entry-base-evidence.mjs reads the rest. */
+function entryInputs(state) {
+  return { feature: state.feature, base: state.base, timeoutMs: state.timeoutMs, installOverride: state.installOverride };
+}
+
+/** An entry HIT that could not be confirmed or materialized, as a MISS with `miss` (a decision the progress record
+ *  admits outside "verdict"). */
+function entryMissFrom(decision, miss) {
+  return { reused: false, miss, offerSha256: null, sourceStampSha256: null, run: decision.run };
+}
+
 function persistProgress(state) {
   mkdirSync(REGRESS_PATHS.root, { recursive: true });
   const rec = { schema: PROGRESS_SCHEMA, ...state };
@@ -739,7 +802,9 @@ function runPhases(state, budget) {
     // would copy its spec from. A kill before the next checkpoint resumes at drain-head, whose drain is then an
     // idempotent repeat, and decides again. A HIT goes straight to the verdict.
     state.baseReuse = decideFromDisk(reuseInputs(state));
-    state.phase = state.baseReuse.reused ? "verdict" : "worktree";
+    // ENTRY-derived BASE evidence (6.49.0): asked only when the retained decision misses, after the HEAD stamp is final.
+    state.entryReuse = state.baseReuse.reused ? null : decideEntryFromDisk(entryInputs(state)).decision;
+    state.phase = state.baseReuse.reused || state.entryReuse.reused ? "verdict" : "worktree";
   }
 
   if (state.phase === "worktree") {
@@ -837,9 +902,40 @@ function runPhases(state, budget) {
       const again = decideFromDisk(reuseInputs(state));
       if (!again.reused || again.stampSha256 !== state.baseReuse.stampSha256) {
         state.baseReuse = again.reused ? { ...again, reused: false, miss: "evidence-unbound", stampSha256: null } : again;
+        // The retained decision is now a MISS, so the entry rule is asked, exactly as at drain-head (6.49.0); an entry
+        // HIT is then re-decided and materialized by the verdict phase itself, like any other.
+        state.entryReuse = decideEntryFromDisk(entryInputs(state)).decision;
+        state.phase = state.entryReuse.reused ? "verdict" : "worktree";
+        return runPhases(state, budget);
+      }
+    }
+    if (state.entryReuse && state.entryReuse.reused) {
+      // A persisted entry HIT is never trusted either (the progress record is `.pharn/` state): re-decide in full from
+      // the git-dir offer and the entry source, go on only on a HIT over the SAME offer and source bytes, then write the
+      // derived evidence from scratch. Anything else runs the BASE side after all, from "worktree".
+      const again = decideEntryFromDisk(entryInputs(state));
+      const same =
+        again.decision.reused &&
+        again.decision.offerSha256 === state.entryReuse.offerSha256 &&
+        again.decision.sourceStampSha256 === state.entryReuse.sourceStampSha256;
+      if (!same) {
+        state.entryReuse = again.decision.reused ? entryMissFrom(again.decision, "source-unbound") : again.decision;
         state.phase = "worktree";
         return runPhases(state, budget);
       }
+      discardRetained(); // the retained 6.33.0 record and directory go first, as on every non-retained path
+      const m = materializeEntryBase({
+        feature: state.feature,
+        base: state.base,
+        detail: again.detail,
+        entryStampSha256: again.decision.sourceStampSha256,
+      });
+      if (!m.ok) {
+        state.entryReuse = entryMissFrom(again.decision, m.miss);
+        state.phase = "worktree";
+        return runPhases(state, budget);
+      }
+      state.entryBlock = entryEvidenceBlock(again.decision, again.detail, state.base);
     }
     const scopeText = readFileSync(REGRESS_PATHS.scopeJson, "utf8");
     const scope = JSON.parse(scopeText);
@@ -871,14 +967,16 @@ function runPhases(state, budget) {
     // through the predicate, and only for the run and requirement the decision saw. A HIT keeps the record that bound it.
     state.recordOutcome = state.baseReuse.reused
       ? { published: true, why: null }
-      : r.status === 0 || r.status === 1
-        ? publishRecord({
-            ...reuseInputs(state),
-            installResult: state.installResult,
-            decisionRun: state.baseReuse.run,
-            decisionRequirementSha256: state.baseReuse.requirementSha256,
-          })
-        : { published: false, why: "verdict-inconclusive" };
+      : entryUsed(state)
+        ? { published: false, why: "entry-derived" } // a retained record binds only evidence a BASE worktree produced
+        : r.status === 0 || r.status === 1
+          ? publishRecord({
+              ...reuseInputs(state),
+              installResult: state.installResult,
+              decisionRun: state.baseReuse.run,
+              decisionRequirementSha256: state.baseReuse.requirementSha256,
+            })
+          : { published: false, why: "verdict-inconclusive" };
     if (!state.recordOutcome.published && state.recordOutcome.why === "write-failed") {
       console.error("stage-regress: note — the BASE evidence could not be recorded for reuse (the git dir was not writable)");
     }
@@ -886,8 +984,8 @@ function runPhases(state, budget) {
   }
 
   if (state.phase === "cleanup") {
-    if (state.baseReuse.reused) {
-      // A HIT made no base worktree, so there is nothing to remove.
+    if (state.baseReuse.reused || entryUsed(state)) {
+      // A HIT (retained or entry-derived) made no base worktree, so there is nothing to remove.
       state.cleanupResult = { ok: true };
     } else {
       // A SINGLE `--force`, on purpose: a worktree someone LOCKED is left in place and reported (GRILL G4) —
@@ -906,16 +1004,32 @@ function runPhases(state, budget) {
   }
 
   // "render" — always reached in the same invocation as verdict/cleanup (neither is budgeted). The report is the
-  // checker's object with ONE additive block appended last; every key the checker printed keeps its bytes, because
-  // this is the same `JSON.stringify(…, null, 2)` the checker prints with (a test pins report-minus-block == stdout).
+  // checker's object with THREE additive blocks appended last — `base_evidence` (6.33.0), then `pre_run_snapshot`
+  // (6.37.0, copied from scope.json), then `head_install` (6.40.0); every key the checker printed keeps its bytes, because this is the same
+  // `JSON.stringify(…, null, 2)` the checker prints with (a test pins report-minus-blocks == stdout).
   const reportPath = `${FEATURES_DIR}/${state.feature}/regression-report.json`;
   const baseEvidence = {
     reused: state.baseReuse.reused,
     miss: state.baseReuse.miss,
     requirement_sha256: state.baseReuse.requirementSha256,
     recorded: state.recordOutcome.published,
+    // 6.49.0 — where the BASE evidence came from, and the entry decision (null when a retained HIT left it unasked).
+    source: state.baseReuse.reused ? "reused" : entryUsed(state) ? "entry" : "fresh",
+    entry: state.baseReuse.reused ? null : entryUsed(state) ? state.entryBlock : entryEvidenceBlock(state.entryReuse),
   };
-  atomicWriteIntoFeature(reportPath, `${JSON.stringify({ ...state.report, base_evidence: baseEvidence }, null, 2)}\n`);
+  const preRunBlock = state.scope.pre_run_snapshot ?? null;
+  // 6.40.0 — the HEAD install check's block, re-read from the stage's scratch (null when absent or malformed: advisory).
+  const headInstall = readRecordedInstallCheck(REGRESS_PATHS.headInstall);
+  // 6.42.0: `entry_gate_changes`, last, only when the partition wrote one (pre-run-snapshot-core.mjs entryBlocks).
+  const entryGates = state.scope.entry_gate_changes ? { entry_gate_changes: state.scope.entry_gate_changes } : {};
+  atomicWriteIntoFeature(
+    reportPath,
+    `${JSON.stringify(
+      { ...state.report, base_evidence: baseEvidence, pre_run_snapshot: preRunBlock, head_install: headInstall, ...entryGates },
+      null,
+      2
+    )}\n`
+  );
   const md = renderDone({
     feature: state.feature,
     base: state.base,
@@ -928,6 +1042,7 @@ function runPhases(state, budget) {
       e2eExcluded: state.e2eExcluded,
       styleSkipped: state.styleSkipped,
       baseEvidence: { ...baseEvidence, notRecordedWhy: state.recordOutcome.published ? null : state.recordOutcome.why },
+      headInstall,
     },
   });
   const renderPath = `${FEATURES_DIR}/${state.feature}/REGRESSION.md`;
@@ -946,6 +1061,7 @@ function runPhases(state, budget) {
       headStamp: readStampOrNull(join(REGRESS_PATHS.head, "stamp.json")),
       baseStamp: readStampOrNull(join(REGRESS_PATHS.baseGates, "stamp.json")),
       baseReuse: state.baseReuse,
+      entryUsed: entryUsed(state),
       installResult: state.installResult,
       ts: new Date().toISOString(),
       sessionId: process.env.CLAUDE_CODE_SESSION_ID ?? null,
@@ -953,6 +1069,11 @@ function runPhases(state, budget) {
     (m) => console.error(`stage-regress: ${m}`)
   );
   emit(doneExit({ stage: "regress", feature: state.feature, verdict: state.report.verdict, report: reportPath, render: renderPath }));
+}
+
+/** Did THIS invocation take its BASE evidence from the entry gates? Only after the verdict-time re-decision wrote it. */
+function entryUsed(state) {
+  return Boolean(state.entryReuse && state.entryReuse.reused && state.entryBlock);
 }
 
 /** A stamp as parsed JSON, or null — for the work record only, which treats null as "cannot count". */
@@ -989,6 +1110,8 @@ function runFresh(args) {
     installResult: null,
     cleanupResult: null,
     baseReuse: null, // decided once the HEAD side is finalized (runPhases, drain-head)
+    installOverride: cfg.installOverride,
+    entryReuse: null, // decided right after baseReuse, only when it misses (6.49.0)
     phase: "drain-head",
   };
   return runPhases(state, makeBudget(state, invocationStart));
