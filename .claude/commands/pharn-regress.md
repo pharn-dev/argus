@@ -7,16 +7,16 @@ model: sonnet
 effort: high
 reads:
   [
-    'pharn/CONSTITUTION.md',
-    'pharn/ARCHITECTURE.md',
-    'pharn/features/<name>/PLAN.md',
-    'pharn/floor/stage-regress.mjs',
-    'pharn/pharn-contracts/stage-exit.md',
+    "pharn/CONSTITUTION.md",
+    "pharn/ARCHITECTURE.md",
+    "pharn/features/<name>/PLAN.md",
+    "pharn/floor/stage-regress.mjs",
+    "pharn/pharn-contracts/stage-exit.md",
     "<the user's target repo>",
   ]
-writes: ['.pharn/pharn-regress/stage.json']
-constitution_refs: ['P0', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7']
-version: '0.5.1'
+writes: [".pharn/pharn-regress/stage.json"]
+constitution_refs: ["P0", "P2", "P3", "P4", "P5", "P6", "P7"]
+version: "0.5.1"
 ---
 
 # /pharn-regress — detect regressions OUTSIDE the feature, in the user's codebase
@@ -57,14 +57,18 @@ Load the trusted prefix and obey it:
 ## What you may claim, and the one honest residual (P0/P7)
 
 - **Guaranteed:** any regression OUTSIDE the feature **that the project's deterministic suite covers** is
-  caught — deterministically — built only from a **current Approved, un-drifted** plan.
+  caught — deterministically — built only from a **current Approved, un-drifted** plan. Bound: a path changed before
+  an open `/pharn-loop` or `/pharn-ship` run began counts as inside, so a test file among them is not compared here
+  (the report's `pre_run_snapshot`; `pharn/floor/pre-run-snapshot-core.mjs`).
 - **The residual, named not hidden:** `/pharn-regress` catches **exactly what the project's suite
   catches — nothing more.** A regression no deterministic check covers is **invisible**. Never read a
   `done` exit as "nothing broke."
-- **A reused BASE side** (the report's `base_evidence.reused`, 6.33.0) is reused because the run marker, the reuse
-  record, the stamp and its logs agree with this invocation's BASE requirement — a floor decision over hashes and
-  enums. That an earlier `/pharn-regress` of this run produced it, and that it equals a fresh base run, are
-  **advisory** (L43; a marker an interrupted run left, ≤ 24 h, also binds — `pharn/pharn-contracts/regression-report.md`).
+- **A BASE side not run here** (the report's `base_evidence.source`: `reused`, 6.33.0, or `entry`, 6.49.0 — this
+  run's own entry gates) is used because the run marker, the reuse record or entry offer, the stamp and its logs agree
+  with this invocation's BASE needs — a floor decision over hashes and enums. That the evidence was produced as its
+  record says, and that it equals a fresh base run, are **advisory** (L43; a marker an interrupted run left, ≤ 24 h, also
+  binds). Entry evidence is the run's real start environment, not a fresh worktree, and a non-style entry gate that read
+  the feature directory can hide a regression as `pre_existing` (`pharn/pharn-contracts/regression-report.md`).
 
 ## Step 0 — Resolve `<name>`, then set the writes-scope (fix #7, fail-closed; amendment A1)
 
@@ -118,7 +122,7 @@ Read the printed `pharn-stage-exit/1` JSON object and branch on the **exit code 
   - a `usage-error` from any OTHER flag has removed this feature's stale prior report, but has NOT cleared
     an earlier run's `.pharn/pharn-regress/` scratch. That run's progress record and base worktree survive,
     and a `--resume` run now would revive that earlier run. Run `--resume` only after a `5`, or after a
-    Bash-tool timeout (below);
+    call that is gone (below);
   - every later `unusable` has removed the stale report and cleared that scratch (all but a retained
     `base-gates/`, kept for reuse), and from "drain-head"
     onward may have written new state: this run's own progress record, a base-commit checkout, install
@@ -136,8 +140,10 @@ Read the printed `pharn-stage-exit/1` JSON object and branch on the **exit code 
   - `chain-red` — the SPEC drifted after the PLAN pinned it: re-approve via `/pharn-spec`, or re-plan via
     `/pharn-plan` if the PLAN itself is stale against the current SPEC;
   - `plan-files-unparseable` — fix `PLAN.md`'s `## Files` heading (or its list syntax) so it parses;
+  - `head-install-drift` — `node_modules` does not match the lockfile: run `npm ci`, then re-run;
   - `scope-escaped` — an undeclared path changed: either declare it in `PLAN.md`'s `## Files` via
-    `/pharn-plan` (a legitimate widening) or revert the undeclared change. **The blind spot this remedy
+    `/pharn-plan` (a legitimate widening) or revert the undeclared change. Re-running does not fix it; it only replaces
+    the refusal with a report, and the escaped change stays in the tree. **The blind spot this remedy
     walks into (M3, GATE-2 round 2):** `scope` exempts this feature's own `PLAN.md` from the escape check,
     so once a `## Files` line authorizes a path, nothing here can tell a legitimate widening from a
     `## Files` rewritten to authorize a path the build had already written. `check-plan-spec-agree.mjs`
@@ -170,15 +176,16 @@ Read the printed `pharn-stage-exit/1` JSON object and branch on the **exit code 
 
 - **Anything else (`1` included)** — the script **crashed**; no JSON document is guaranteed. Present
   whatever stdout/stderr exist and stop. This is never read as a verdict.
-- **The Bash tool itself timed out** (no exit code at all: the harness killed the script mid-run) — run
-  the pinned resume line once (GATE-2 round 2). From "drain-head" onward the script checkpoints the top of
-  every phase, so `--resume` re-runs only the phase the kill interrupted. That includes a kill during the
-  base worktree's `git worktree add`, whose locked, half-created leftover the script force-removes first.
-  Then branch on its exit code as above. A kill before "drain-head" left no checkpoint of THIS run, and by
-  then "fresh" has normally cleared the scratch, so `--resume` answers `2 no-progress`: present it and
-  stop. The exception is a kill inside "fresh" itself, before its scratch clear. An earlier run's record
-  can then survive, and `--resume` would revive that run (the N1 residual in `stage-exit.md`). A Bash-tool
-  timeout lands minutes into a run, long past that point.
+- **A call the Bash tool reports as moved to the background is STILL RUNNING** — wait for its completion
+  notice (it may outlast this turn) and branch on the exit code it reports, never on the notice's
+  word ("failed" covers `5` too). Never run `--resume`, or another
+  fresh line, while it runs: nothing refuses the second script on the same record. Only a call that is
+  GONE without an exit code (interrupted, or stopped by the tool) is resumed, once. From "drain-head" on
+  the script checkpoints every phase, so `--resume` re-runs the one the kill interrupted (a half-created
+  base worktree is force-removed first); a kill before it left no record, so `--resume` answers `2
+no-progress` (present it, stop) — unless the kill hit "fresh" before its scratch clear, which can
+  revive an earlier run (the N1 residual in `stage-exit.md`). Unsure whether it still runs → do not
+  resume: stop and say so.
 
 **Before ending your turn, run the release step — `## Final step — release the writes-scope`, below.** It
 is a **procedure** step, not reference material; it sits beneath the audit sections for document layout
@@ -209,9 +216,10 @@ either way.
 **`{ test, lint, format:check, lint:md, typecheck, type-check, build, test:e2e, e2e }`** intersected with
 the project's own `package.json` `scripts`, **minus the e2e ids `test:e2e` and `e2e`**, which `/pharn-regress`
 never discovers (verify-only — a base-side e2e run would double an expensive stage, and a red e2e gate
-already fails `/pharn-verify`'s absolute threshold). No discoverable gate → the script's own `no-gates`
-question, which names all three causes (no allowlisted script, an e2e-only manifest, or every discovered
-gate being style-only and skipped by the config-touch rule).
+already fails `/pharn-verify`'s absolute threshold), then minus any id the project's `pharn.config.json`
+`gates.exclude` lists (6.36.0; both sides skip it, and the report names it). No discoverable gate → the script's own
+`no-gates` question, which names all four causes (no allowlisted script, an e2e-only manifest, every discovered
+gate being style-only and skipped by the config-touch rule, or the project's `gates.exclude`).
 
 The base-commit **install** command is resolved from exactly one lockfile family present at that commit
 (`npm ci`; `pnpm install --frozen-lockfile`, `yarn install --frozen-lockfile` and

@@ -215,10 +215,10 @@
 //
 // Wired via .claude/settings.json (PreToolUse matcher: Write|Edit|MultiEdit|NotebookEdit).
 
-'use strict';
+"use strict";
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 function realpathOr(p) {
   try {
@@ -235,7 +235,7 @@ const CWD = (() => {
   try {
     return realpathOr(process.cwd());
   } catch {
-    return '.';
+    return ".";
   }
 })();
 
@@ -246,8 +246,7 @@ const CWD = (() => {
 const ROOTS = (() => {
   const dirs = [__dirname];
   try {
-    if (typeof process.argv[1] === 'string' && process.argv[1])
-      dirs.push(path.dirname(path.resolve(CWD, process.argv[1])));
+    if (typeof process.argv[1] === "string" && process.argv[1]) dirs.push(path.dirname(path.resolve(CWD, process.argv[1])));
   } catch {
     /* argv unavailable: __dirname alone still anchors the common case */
   }
@@ -255,7 +254,7 @@ const ROOTS = (() => {
   for (const d of dirs) {
     let base;
     try {
-      base = path.resolve(d, '..', '..');
+      base = path.resolve(d, "..", "..");
     } catch {
       continue;
     }
@@ -282,7 +281,7 @@ function workTreeRoot(dir) {
   let stop = null;
   try {
     const env = process.env.CLAUDE_PROJECT_DIR;
-    if (typeof env === 'string' && env !== '') stop = fs.realpathSync(env);
+    if (typeof env === "string" && env !== "") stop = fs.realpathSync(env);
   } catch {
     /* an unresolvable project dir is simply not a stop */
   }
@@ -290,7 +289,7 @@ function workTreeRoot(dir) {
   for (;;) {
     let hasGit = false;
     try {
-      fs.lstatSync(path.join(cur, '.git'));
+      fs.lstatSync(path.join(cur, ".git"));
       hasGit = true;
     } catch {
       /* no .git entry here */
@@ -304,7 +303,7 @@ function workTreeRoot(dir) {
 
 function hasGitEntry(dir) {
   try {
-    fs.lstatSync(path.join(dir, '.git'));
+    fs.lstatSync(path.join(dir, ".git"));
     return true;
   } catch {
     return false;
@@ -318,14 +317,14 @@ function hasGitEntry(dir) {
 // --separate-git-dir, or a submodule — which is a different repository and resolves as one).
 function gitCommonDir(tree) {
   try {
-    const entry = path.join(tree, '.git');
+    const entry = path.join(tree, ".git");
     if (fs.statSync(entry).isDirectory()) return fs.realpathSync(entry);
-    const m = /^gitdir:[ \t]*(.+?)[ \t]*$/m.exec(fs.readFileSync(entry, 'utf8'));
+    const m = /^gitdir:[ \t]*(.+?)[ \t]*$/m.exec(fs.readFileSync(entry, "utf8"));
     if (!m) return null;
     const gitdir = path.resolve(tree, m[1]);
     let common = gitdir;
     try {
-      const rel = fs.readFileSync(path.join(gitdir, 'commondir'), 'utf8').trim();
+      const rel = fs.readFileSync(path.join(gitdir, "commondir"), "utf8").trim();
       if (rel) common = path.resolve(gitdir, rel);
     } catch {
       /* no commondir: the gitdir is its own common dir */
@@ -360,29 +359,29 @@ function gitCommonDir(tree) {
 const DEFAULT_PROTECTED = [
   // The four trusted spec docs at their real repo-relative locations (anchored paths, never bare
   // basenames — a basename denies a user's own same-named file and protects the wrong one).
-  'pharn/CONSTITUTION.md',
-  'pharn/ARCHITECTURE.md',
-  'THREAT-MODEL.md',
-  'LIMITS.md',
+  "pharn/CONSTITUTION.md",
+  "pharn/ARCHITECTURE.md",
+  "THREAT-MODEL.md",
+  "LIMITS.md",
   // CODEOWNERS at the three GitHub-recognized locations; whichever exists is a live review gate.
-  'CODEOWNERS',
-  '.github/CODEOWNERS',
-  'docs/CODEOWNERS',
+  "CODEOWNERS",
+  ".github/CODEOWNERS",
+  "docs/CODEOWNERS",
   // The pre-write guards' own control surface. BOTH settings files are here: settings.local.json is a
   // real, loaded settings file that can wire or override the same hooks, so guarding only settings.json
   // left the control surface half-open. Kept identical to CONTROL_SURFACE in set-writes-scope.cjs; the
   // two declarations are pinned equal by a ✧ test in set-writes-scope.test.cjs.
-  '.claude/settings.json',
-  '.claude/settings.local.json',
-  '.claude/hooks/protect-trusted-paths.cjs',
-  '.claude/hooks/enforce-writes-scope.cjs',
-  '.claude/hooks/set-writes-scope.cjs',
-  '.claude/hooks/require-loop-record.cjs',
+  ".claude/settings.json",
+  ".claude/settings.local.json",
+  ".claude/hooks/protect-trusted-paths.cjs",
+  ".claude/hooks/enforce-writes-scope.cjs",
+  ".claude/hooks/set-writes-scope.cjs",
+  ".claude/hooks/require-loop-record.cjs",
   // The writes-scope guard's INPUT (see the header). Deliberately this ONE file and not ".pharn/**":
   // the rest of .pharn/ is disposable runtime scratch that stages legitimately write, and the
   // product lessons-index cache lives there too. First entry naming a GENERATED file rather than a
   // committed one — the deny is by path, so it holds whether or not the file exists yet.
-  '.pharn/writes-scope.json',
+  ".pharn/writes-scope.json",
   // The project's own SPEC template (pharn/pharn-contracts/spec-template.md, "The project template"). Its guidance
   // comments are instructions /pharn-spec follows, so it is a persistent instruction channel: a build agent that
   // could write it would steer every later SPEC. That is also why its path is FIXED in
@@ -390,36 +389,33 @@ const DEFAULT_PROTECTED = [
   // whether or not the file exists (the .pharn/writes-scope.json precedent above); a human edits it directly. The
   // core's copy of the path and this entry are pinned equal by a test in pharn/floor/check-spec.test.mjs.
   // Bounded as every entry here is: a Bash write reaches it.
-  'pharn.spec-template.md',
+  "pharn.spec-template.md",
 ];
 
 // Memory-bank canon, denied as ROOTED SUBTREES (see the header). Both halves of the deliberate
 // dev/product copy-pair are listed, because the second copy is where a pair's obligation gets dropped
 // (lessons-learned L31). No trailing slash here — one is appended once, at fold time.
-const PROTECTED_SUBTREES = ['memory-bank', '.dev/memory-bank'];
+const PROTECTED_SUBTREES = ["memory-bank", ".dev/memory-bank"];
 
 // The four canon files the two promote commands' TARGET_ENUMs actually name. Used ONLY to collect
 // hard-link inodes (a bounded four stats, versus a recursive walk of the subtrees on every tool call).
 const CANON_FILES = [
-  'memory-bank/lessons-learned.md',
-  'memory-bank/pattern-library.md',
-  '.dev/memory-bank/lessons-learned.md',
-  '.dev/memory-bank/pattern-library.md',
+  "memory-bank/lessons-learned.md",
+  "memory-bank/pattern-library.md",
+  ".dev/memory-bank/lessons-learned.md",
+  ".dev/memory-bank/pattern-library.md",
 ];
 
 // The ONLY writes-scope origins that may authorize a canon write. Exact membership over a literal array
 // (ARCHITECTURE.md §2 primitive #3) — never a prefix test, never a pattern: `pharn-dev-memory-promote`
 // and `pharn-memory-promote` are named in full so a differently-named command cannot prefix its way in.
-const PROMOTE_COMMANDS = [
-  '.claude/commands/pharn-memory-promote.md',
-  '.claude/commands/pharn-dev-memory-promote.md',
-];
+const PROMOTE_COMMANDS = [".claude/commands/pharn-memory-promote.md", ".claude/commands/pharn-dev-memory-promote.md"];
 
 // The writes-scope guard's input, read (never written) by the canon escape.
-const SCOPE_FILE = '.pharn/writes-scope.json';
+const SCOPE_FILE = ".pharn/writes-scope.json";
 
-const extra = (process.env.PHARN_PROTECTED || '')
-  .split(',')
+const extra = (process.env.PHARN_PROTECTED || "")
+  .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
 
@@ -432,11 +428,11 @@ const extra = (process.env.PHARN_PROTECTED || '')
 // are distinct names and stripping them is a deliberate over-block in the safe direction.
 function toKey(rel) {
   return path.posix
-    .normalize(String(rel).replace(/\\/g, '/'))
-    .normalize('NFC')
-    .split('/')
-    .map((s) => (s === '.' || s === '..' ? s : s.replace(/[. ]+$/, '')))
-    .join('/')
+    .normalize(String(rel).replace(/\\/g, "/"))
+    .normalize("NFC")
+    .split("/")
+    .map((s) => (s === "." || s === ".." ? s : s.replace(/[. ]+$/, "")))
+    .join("/")
     .toUpperCase()
     .toLowerCase();
 }
@@ -444,13 +440,13 @@ function toKey(rel) {
 const PROTECTED_KEYS = new Set(DEFAULT_PROTECTED.map(toKey));
 const ROOT_PREFIXES = ROOTS.map((r) => {
   const k = toKey(r);
-  return k.endsWith('/') ? k : k + '/';
+  return k.endsWith("/") ? k : k + "/";
 });
 
 // Canon subtrees as folded prefixes WITH the trailing slash, so `memory-banked/x.md` cannot match
 // `memory-bank`. The bare directory itself is not a write target, so requiring something after the
 // slash is correct as well as narrower.
-const PROTECTED_SUBTREE_KEYS = PROTECTED_SUBTREES.map((s) => toKey(s) + '/');
+const PROTECTED_SUBTREE_KEYS = PROTECTED_SUBTREES.map((s) => toKey(s) + "/");
 const PROMOTE_COMMAND_KEYS = new Set(PROMOTE_COMMANDS.map(toKey));
 
 // PHARN_PROTECTED keeps its ORIGINAL basename/path-fragment semantics, deliberately. Narrowing it to
@@ -462,11 +458,11 @@ const PROMOTE_COMMAND_KEYS = new Set(PROMOTE_COMMANDS.map(toKey));
 const EXTRA_KEYS = extra.map(toKey);
 
 function matchesExtra(key, entryKey) {
-  if (key === entryKey || key.split('/').pop() === entryKey) return true;
-  const needle = '/' + entryKey;
+  if (key === entryKey || key.split("/").pop() === entryKey) return true;
+  const needle = "/" + entryKey;
   for (let i = key.indexOf(needle); i !== -1; i = key.indexOf(needle, i + 1)) {
     const after = i + needle.length;
-    if (after === key.length || key[after] === '/') return true;
+    if (after === key.length || key[after] === "/") return true;
   }
   return false;
 }
@@ -480,7 +476,7 @@ function collectInodes(rels) {
     for (const rel of rels) {
       try {
         const st = fs.statSync(path.join(root, rel));
-        if (st.nlink > 1) s.add(st.dev + ':' + st.ino);
+        if (st.nlink > 1) s.add(st.dev + ":" + st.ino);
       } catch {
         /* absent here: nothing to alias */
       }
@@ -500,7 +496,7 @@ function inodeIn(set, abs) {
   if (!set.size) return false;
   try {
     const st = fs.statSync(abs);
-    return set.has(st.dev + ':' + st.ino);
+    return set.has(st.dev + ":" + st.ino);
   } catch {
     return false; // absent: cannot be an alias of an existing file
   }
@@ -526,7 +522,7 @@ function fsRootOf(p) {
 }
 
 function resolveWriteTarget(p) {
-  const raw = String(p).replace(/\\/g, '/');
+  const raw = String(p).replace(/\\/g, "/");
   const fsRoot = (() => {
     try {
       return path.parse(path.resolve(raw)).root;
@@ -540,7 +536,7 @@ function resolveWriteTarget(p) {
   } catch {
     cur = CWD;
   }
-  let pending = raw.split('/').filter((s) => s && s !== '.');
+  let pending = raw.split("/").filter((s) => s && s !== ".");
   const missing = [];
   let hops = 0;
   let walked = 0;
@@ -559,7 +555,7 @@ function resolveWriteTarget(p) {
       missing.push(seg);
       continue;
     }
-    const next = seg === '..' ? path.dirname(cur) : path.join(cur, seg);
+    const next = seg === ".." ? path.dirname(cur) : path.join(cur, seg);
     const real = (() => {
       try {
         return fs.realpathSync(next);
@@ -587,9 +583,9 @@ function resolveWriteTarget(p) {
     }
     if (link !== null) {
       const segs = link
-        .replace(/\\/g, '/')
-        .split('/')
-        .filter((x) => x && x !== '.');
+        .replace(/\\/g, "/")
+        .split("/")
+        .filter((x) => x && x !== ".");
       // An absolute target restarts at the filesystem root; a relative one resolves against the link's
       // own directory, which is exactly `cur`.
       if (path.isAbsolute(link)) cur = realpathOr(fsRootOf(link));
@@ -601,7 +597,7 @@ function resolveWriteTarget(p) {
   // One join over a pre-joined tail. NOT path.join(cur, ...missing): the spread throws RangeError past
   // the argument limit, and an unhandled throw here exits 1 — a non-blocking error, so the write would
   // proceed. NOT a per-segment reduce either: that is quadratic in the total length.
-  return missing.length ? path.join(cur, missing.join('/')) : cur;
+  return missing.length ? path.join(cur, missing.join("/")) : cur;
 }
 
 // RESOLUTION (2) — the filesystem's own reading (write-guard-narrowing; header, item 6). A DELIBERATE COPY of
@@ -613,7 +609,7 @@ function resolveWriteTarget(p) {
 // realpathOr() for its start directory and an absolute link's filesystem root (the JS realpath; enforce's is the
 // native one): every rule here folds case and Unicode through toKey(), so that difference cannot move a verdict.
 const MAX_LINK_HOPS = 40;
-const SEPARATORS = path.sep === '\\' ? /[\\/]/ : /\//;
+const SEPARATORS = path.sep === "\\" ? /[\\/]/ : /\//;
 
 function resolvePhysicalTarget(p) {
   const raw = String(p);
@@ -623,7 +619,7 @@ function resolvePhysicalTarget(p) {
   } catch {
     cur = CWD;
   }
-  let pending = raw.split(SEPARATORS).filter((s) => s && s !== '.');
+  let pending = raw.split(SEPARATORS).filter((s) => s && s !== ".");
   const missing = [];
   let hops = 0;
   let walked = 0;
@@ -638,7 +634,7 @@ function resolvePhysicalTarget(p) {
       missing.push(seg);
       continue;
     }
-    const next = seg === '..' ? path.dirname(cur) : path.join(cur, seg);
+    const next = seg === ".." ? path.dirname(cur) : path.join(cur, seg);
     const real = (() => {
       try {
         return fs.realpathSync.native(next);
@@ -665,7 +661,7 @@ function resolvePhysicalTarget(p) {
       if (path.isAbsolute(link)) cur = realpathOr(fsRootOf(link));
       pending = link
         .split(SEPARATORS)
-        .filter((x) => x && x !== '.')
+        .filter((x) => x && x !== ".")
         .concat(pending);
       continue;
     }
@@ -673,7 +669,7 @@ function resolvePhysicalTarget(p) {
   }
   // One join over a pre-joined tail, not path.join(cur, ...missing) (which throws RangeError past the
   // argument limit) and not a per-segment reduce (quadratic in the total length).
-  return missing.length ? path.join(cur, missing.join('/')) : cur;
+  return missing.length ? path.join(cur, missing.join("/")) : cur;
 }
 
 // Exact membership over the target's path relative to a guarded root (ARCHITECTURE §2 primitive #3),
@@ -701,8 +697,7 @@ function canonMatch(abs) {
   for (let i = 0; i < ROOT_PREFIXES.length; i++) {
     if (!key.startsWith(ROOT_PREFIXES[i])) continue;
     const rel = key.slice(ROOT_PREFIXES[i].length);
-    for (const sub of PROTECTED_SUBTREE_KEYS)
-      if (rel.startsWith(sub) && rel.length > sub.length) return { rel, root: ROOTS[i] };
+    for (const sub of PROTECTED_SUBTREE_KEYS) if (rel.startsWith(sub) && rel.length > sub.length) return { rel, root: ROOTS[i] };
   }
   return null;
 }
@@ -723,7 +718,7 @@ function gitMetaRelKey(abs) {
   for (const prefix of ROOT_PREFIXES) {
     if (!key.startsWith(prefix)) continue;
     const rel = key.slice(prefix.length);
-    if (rel.split('/').includes('.git')) return rel;
+    if (rel.split("/").includes(".git")) return rel;
   }
   return null;
 }
@@ -733,42 +728,39 @@ function gitMetaRelKey(abs) {
 // the guard is fail-closed on an absent, unreadable, unparseable, non-object, wrong-origin, multi-entry or
 // mismatched record.
 function canonWriteAuthorized(relKey, root) {
-  if (typeof relKey !== 'string' || !relKey || typeof root !== 'string' || !root) return false;
+  if (typeof relKey !== "string" || !relKey || typeof root !== "string" || !root) return false;
   let parsed;
   try {
-    parsed = JSON.parse(fs.readFileSync(path.join(root, SCOPE_FILE), 'utf8'));
+    parsed = JSON.parse(fs.readFileSync(path.join(root, SCOPE_FILE), "utf8"));
   } catch {
     return false; // absent or unparseable at that root -> not an authorization
   }
   // JSON.parse("null") returns null and JSON.parse("[]") an array; neither throws.
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return false;
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return false;
   // (2) ORIGIN: exact membership over a literal array. This is the argv-derived field.
-  if (typeof parsed.set_by !== 'string' || !PROMOTE_COMMAND_KEYS.has(toKey(parsed.set_by)))
-    return false;
+  if (typeof parsed.set_by !== "string" || !PROMOTE_COMMAND_KEYS.has(toKey(parsed.set_by))) return false;
   // (3) EXACTLY ONE entry, equal to this very target. A promote run resolves `--target` to one path,
   // so this is the shape the legitimate caller emits; anything wider is refused rather than searched.
   if (!Array.isArray(parsed.scope) || parsed.scope.length !== 1) return false;
-  if (typeof parsed.scope[0] !== 'string') return false;
+  if (typeof parsed.scope[0] !== "string") return false;
   return toKey(parsed.scope[0]) === relKey;
 }
 
 function readStdin() {
   try {
-    return fs.readFileSync(0, 'utf8');
+    return fs.readFileSync(0, "utf8");
   } catch {
-    return '';
+    return "";
   }
 }
 
 function extractPaths(toolInput) {
-  if (!toolInput || typeof toolInput !== 'object') return [];
+  if (!toolInput || typeof toolInput !== "object") return [];
   const paths = [];
-  for (const k of ['file_path', 'path', 'notebook_path'])
-    if (typeof toolInput[k] === 'string') paths.push(toolInput[k]);
+  for (const k of ["file_path", "path", "notebook_path"]) if (typeof toolInput[k] === "string") paths.push(toolInput[k]);
   // MultiEdit: edits[] each may carry file_path; some shapes nest under .edits
   if (Array.isArray(toolInput.edits)) {
-    for (const e of toolInput.edits)
-      if (e && typeof e.file_path === 'string') paths.push(e.file_path);
+    for (const e of toolInput.edits) if (e && typeof e.file_path === "string") paths.push(e.file_path);
   }
   return paths;
 }
@@ -791,41 +783,34 @@ const DENY_REASONS = {
 
 function denyMalformedHookInput(detail) {
   const reason =
-    'BLOCKED by PHARN floor: hook input is not a usable PreToolUse JSON object' +
-    (detail ? ` (${detail})` : '') +
-    ' — fail-closed; the write is denied.';
+    "BLOCKED by PHARN floor: hook input is not a usable PreToolUse JSON object" +
+    (detail ? ` (${detail})` : "") +
+    " — fail-closed; the write is denied.";
   process.stdout.write(
     JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: 'PreToolUse',
-        permissionDecision: 'deny',
-        permissionDecisionReason: reason,
-      },
-      decision: 'block',
+      hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: reason },
+      decision: "block",
       reason,
-    }),
+    })
   );
-  process.stderr.write(reason + '\n');
+  process.stderr.write(reason + "\n");
   process.exit(2);
 }
 
 const raw = readStdin();
 let payload;
 try {
-  payload = JSON.parse(raw || '{}');
+  payload = JSON.parse(raw || "{}");
 } catch {
-  denyMalformedHookInput('invalid JSON');
+  denyMalformedHookInput("invalid JSON");
 }
 // JSON.parse("null") returns null and JSON.parse("42") a number — neither throws; both must deny, not
 // normalize to {} (exit 0 on a write would fail OPEN).
-if (!payload || typeof payload !== 'object' || Array.isArray(payload))
-  denyMalformedHookInput('not a plain object');
+if (!payload || typeof payload !== "object" || Array.isArray(payload)) denyMalformedHookInput("not a plain object");
 
-const toolName = payload.tool_name || payload.toolName || '';
+const toolName = payload.tool_name || payload.toolName || "";
 const toolInput = payload.tool_input || payload.toolInput || {};
-const isWrite =
-  /^(Write|Edit|MultiEdit|NotebookEdit)$/i.test(toolName) ||
-  (!toolName && extractPaths(toolInput).length);
+const isWrite = /^(Write|Edit|MultiEdit|NotebookEdit)$/i.test(toolName) || (!toolName && extractPaths(toolInput).length);
 
 if (isWrite) {
   // Deny if EITHER the literal path (resolved against CWD, which is what a relative payload path means)
@@ -838,11 +823,11 @@ if (isWrite) {
       const literal = path.resolve(CWD, String(rawPath));
       const real = resolveWriteTarget(rawPath);
       if (isProtected(literal) || isProtected(real)) {
-        hit = { rawPath, literal, real, kind: 'trusted' };
+        hit = { rawPath, literal, real, kind: "trusted" };
       } else if (gitMetaRelKey(literal) !== null || gitMetaRelKey(real) !== null) {
         // Git metadata (hook-cwd-anchoring), checked AFTER the trusted denylist and BEFORE the canon
         // branch: it carries no escape at all, so nothing below may re-classify it into one.
-        hit = { rawPath, literal, real, kind: 'gitmeta' };
+        hit = { rawPath, literal, real, kind: "gitmeta" };
       } else {
         // ORDER MATTERS, and getting it wrong is not theoretical — the first draft of this branch
         // ANDed in `!aliased` and the probe caught it: a canon file that merely HAPPENS to carry a
@@ -854,23 +839,15 @@ if (isWrite) {
         //     command's `--target`, so there is no key to authorize and it is unconditionally denied.
         const cm = canonMatch(literal) || canonMatch(real);
         if (cm !== null) {
-          hit = canonWriteAuthorized(cm.rel, cm.root)
-            ? null
-            : { rawPath, literal, real, kind: 'canon' };
+          hit = canonWriteAuthorized(cm.rel, cm.root) ? null : { rawPath, literal, real, kind: "canon" };
         } else if (inodeIn(CANON_INODES, literal) || inodeIn(CANON_INODES, real)) {
-          hit = { rawPath, literal, real, kind: 'canon' };
+          hit = { rawPath, literal, real, kind: "canon" };
         } else {
           hit = null;
         }
       }
     } catch {
-      hit = {
-        rawPath,
-        literal: String(rawPath),
-        real: String(rawPath),
-        errored: true,
-        kind: 'trusted',
-      };
+      hit = { rawPath, literal: String(rawPath), real: String(rawPath), errored: true, kind: "trusted" };
     }
     if (hit) {
       offender = hit;
@@ -889,25 +866,22 @@ if (isWrite) {
         const physical = resolvePhysicalTarget(rawPath);
         const shown = `${rawPath} -> ${physical}`;
         if (isProtected(physical)) {
-          hit = { rawPath, shown, kind: 'trusted' };
+          hit = { rawPath, shown, kind: "trusted" };
         } else if (gitMetaRelKey(physical) !== null) {
-          hit = { rawPath, shown, kind: 'gitmeta' };
+          hit = { rawPath, shown, kind: "gitmeta" };
         } else {
           const cm = canonMatch(physical);
           if (cm !== null) {
-            const backslashName = path.sep === '/' && String(physical).includes('\\');
-            hit =
-              !backslashName && canonWriteAuthorized(cm.rel, cm.root)
-                ? null
-                : { rawPath, shown, kind: 'canon' };
+            const backslashName = path.sep === "/" && String(physical).includes("\\");
+            hit = !backslashName && canonWriteAuthorized(cm.rel, cm.root) ? null : { rawPath, shown, kind: "canon" };
           } else if (inodeIn(CANON_INODES, physical)) {
-            hit = { rawPath, shown, kind: 'canon' };
+            hit = { rawPath, shown, kind: "canon" };
           } else {
             hit = null;
           }
         }
       } catch {
-        hit = { rawPath, shown: String(rawPath), kind: 'trusted' };
+        hit = { rawPath, shown: String(rawPath), kind: "trusted" };
       }
       if (hit) {
         offender = hit;
@@ -918,12 +892,8 @@ if (isWrite) {
   if (offender) {
     let shown = offender.rawPath;
     try {
-      if (typeof offender.shown === 'string') shown = offender.shown;
-      else if (
-        !offender.errored &&
-        !isProtected(offender.literal) &&
-        canonRelKey(offender.literal) === null
-      )
+      if (typeof offender.shown === "string") shown = offender.shown;
+      else if (!offender.errored && !isProtected(offender.literal) && canonRelKey(offender.literal) === null)
         shown = `${offender.rawPath} -> ${offender.real}`;
     } catch {
       /* keep the raw path in the message */
@@ -937,16 +907,16 @@ if (isWrite) {
     process.stdout.write(
       JSON.stringify({
         hookSpecificOutput: {
-          hookEventName: 'PreToolUse',
-          permissionDecision: 'deny',
+          hookEventName: "PreToolUse",
+          permissionDecision: "deny",
           permissionDecisionReason: reason,
         },
-        decision: 'block',
+        decision: "block",
         reason,
-      }),
+      })
     );
     // Also emit on stderr and use exit 2 for older versions that block on non-zero exit:
-    process.stderr.write(reason + '\n');
+    process.stderr.write(reason + "\n");
     process.exit(2);
   }
 }

@@ -43,7 +43,7 @@ initialize at all.
 ```json
 {
   "schema": "gate-run-record/1",
-  "stage": "verify | regress | ac-test",
+  "stage": "verify | regress | ac-test | build | entry",
   "side": "base | head | null",
   "feature": "<slug>",
   "head": "<40-hex> | null",
@@ -92,6 +92,7 @@ initialize at all.
 | `runs[].results_sha256`  | Optional (6.15.0). The sha256 of the gate's results file, or `null`. See below.                                                   |
 | `runs[].identity_sha256` | Optional (6.34.0). The entry's execution identity (`gate-reuse-core.mjs`). See "Reused entries".                                  |
 | `runs[].reused`          | Only on a reused entry (6.34.0): `{stage, side, seq, stamp_sha256}` naming the source execution.                                  |
+| `excluded`               | Optional (6.36.0): `{declared_in, ids}` — the discovered gates the project's `gates.exclude` removed. See below.                  |
 
 ## Per-test results (`results_sha256`, 6.15.0)
 
@@ -135,6 +136,89 @@ so a re-run — the fail-closed direction). The in-progress record's `reuse` bin
 dropped at finalize. While a verify chain is paused at `continue`, that in-progress binding is ordinary `.pharn/` state
 the write tools reach, as the in-progress `runs` already are — the named residual `verify-paused-chain-integrity`.
 
+### The closed reuse matrix, and the entry-derived BASE stamp (6.49.0)
+
+A reused run validates only in one of the two (target ← source) pairs `REUSE_PAIRS` holds; any other pair is
+`stamp-malformed`:
+
+| target stamp   | source         | shape                                                                                                   |
+| -------------- | -------------- | ------------------------------------------------------------------------------------------------------- |
+| `verify`       | `regress/head` | the 6.34.0 entry above, unchanged                                                                       |
+| `regress/base` | `entry`        | `ran: false`, `reason: "reused"`, an ALLOWLIST id, exit 0..125, `timed_out: false`, `mutated: false`,   |
+|                |                | `fp_before === fp_after`, `results_sha256: null`, NO `identity_sha256`, `reused: {stage: "entry", side: |
+|                |                | null, seq, stamp_sha256}`                                                                               |
+
+A `regress/base` stamp that carries a reused run is an **entry-derived BASE stamp**: `/pharn-regress` wrote it from
+this delivery run's entry execution instead of running its BASE side (`pharn/floor/entry-base-evidence-core.mjs` holds
+when, and every bound; `regression-report.md`, "The additive `base_evidence` block", the report's side). Every run is
+`ran: false` — reused or `no-files`, never a run this invocation spawned — and every reused run names ONE entry stamp;
+its `fingerprint.algo` is the entry stamp's `ENTRY_ALGO`, so the derivation is visible in the stamp itself. It is new
+evidence with explicit provenance, never an entry stamp relabelled: each run carries the entry run's exit and log
+digests, and its logs are copied under the regress slot's own names, each verified before and after the write.
+`check-regress.mjs` and `check-loop-fresh.mjs` read it unchanged. A historical `regress/base` stamp (no reused run)
+validates exactly as before.
+
+## Excluding a discovered gate (`gates.exclude`, `excluded`, 6.36.0)
+
+**Why (P7).** In a user's project the discovered `e2e` gate could not run on the user's machine, discovery offered no
+way to leave it out, and an explicit `--gates` list makes `/pharn-verify`'s AC gate read `test-infra-changed` by design.
+Two of three real `/pharn-loop` runs stopped on exactly that.
+
+**The declaration** is an optional, closed block in the project root's `pharn.config.json`:
+
+```json
+{ "gates": { "exclude": ["e2e"] } }
+```
+
+**Declare it and commit it before the run.** `/pharn-test` pins it. An uncommitted declaration is a change since base,
+so regress's scope partition (and `--quick`'s scope check) reads it `scope-escaped` unless the PLAN declares
+`pharn.config.json` (`ac-tests.md`, "The test-infrastructure pin", states that bound).
+
+`pharn/floor/gate-exclusion-core.mjs` reads it; its header is the grammar (cited, not restated — P4). An absent file
+or an absent `gates` key excludes nothing and changes nothing. `exclude` is a list of distinct `ALLOWLIST` members.
+Anything else refuses: `run-gates.mjs init` exits 2 with `bad-gate-exclusion` and writes nothing. A `pharn.config.json`
+that exists but is not valid JSON refuses too. Before 6.36.0 discovery never read that file, so this is a behaviour
+change.
+
+**Where it applies.** It applies to DISCOVERY only, at every stage that discovers. `init --discover <m>` without
+`--gates` reads the declaration from `<m>`'s directory, which is the project root for every pinned caller.
+`resolveSet` removes the declared ids that discovery found:
+
+- at verify, from the whole discovered set;
+- at regress, AFTER the fixed e2e rule;
+- at the `ac-test` red run, from the level gates the mapping needs.
+
+It does this before the empty-source test, so an exclusion that leaves nothing is `empty-source-set` (the existing
+no-gates stop) with a reason that names it. An explicit `--gates` string is never filtered: `resolveSet` refuses an
+exclusion passed with one, and `init` never reads the declaration when `--gates` is given.
+
+**The stamp** carries the optional, additive `excluded` block only when discovery removed at least one id, so every
+other stamp is byte-identical to before. It looks like this:
+
+```json
+"excluded": { "declared_in": "pharn.config.json#gates.exclude", "ids": ["e2e"] }
+```
+
+`validateStamp` admits the block only in exactly this shape:
+
+- `declared_in` is that one value;
+- `ids` is a non-empty list of distinct `ALLOWLIST` members, in ALLOWLIST order;
+- the stamp's `source` is `discover`;
+- no id is in `required` or `runs`.
+
+Anything else is `stamp-malformed`. `SCHEMA` is unchanged. A floor older than 6.36.0 ignores the key, because
+`validateStamp` has no closed top-level key set. `gateRunBlock` copies the block when present, so `verify-report.json`
+(`gate_run.excluded`) and `regression-report.json` (`gate_run.head.excluded`) disclose it with no checker change. The
+regress base side runs the head's set through `baseSpecFrom`, which does not copy the block, so a base stamp never
+carries one.
+
+**What it proves, and what it does not (P0).** That a declared id was not run is FLOOR at the moment `init` resolves
+the set: a membership test in tested runner code. It is not re-derived later. `validateStamp` checks the block's shape
+only, so a stamp missing a gate with no block validates as before. The red run's `bindStamp` is the one reader that
+re-resolves the set. An excluded gate is not evidence either way: the map holds no exit for it. The declaration is
+agent-editable project input. `/pharn-test` pins it in the AC lock (`ac-tests.md`, "The test-infrastructure pin"),
+and that pin is agreement, never provenance (**L43**).
+
 ## Build-completeness is NOT a gate
 
 The runner **captures** `check-build-complete.mjs`'s exit code — so it is not model-typed — and records it
@@ -149,12 +233,14 @@ gate — it already is one today.
 ## Ordering and coverage
 
 - **Order:** the source ids (ALLOWLIST order, or the explicit token order), then `structural:*` sorted,
-  then `reconcile` **last** so it judges any tree write an earlier gate made. The e2e ids (`E2E_SET`:
+  then — verify only — `instruction-growth` (6.38.0), then `reconcile` **last** so it judges any tree write an earlier
+  gate made. The e2e ids (`E2E_SET`:
   `test:e2e`, `e2e`, 6.16.0) are the last ALLOWLIST members, so a discovered e2e gate runs after `build`.
 - **Coverage:** `runs` ⊇ `required`. For regress, `required` is the source set minus `STYLE_SET` when
   `--skip-style` was passed, and a **discovered** regress source never contains an `E2E_SET` member (a fixed
   rule, not a flag; an explicit `--gates` string is not filtered). An e2e-only manifest is therefore
-  `empty-source-set` at regress.
+  `empty-source-set` at regress. A discovered source never contains an id the project's `gates.exclude` names (6.36.0,
+  above).
 - **`ac-test` (6.18.0), `/pharn-test`'s red run:** `--ac-tests <AC-TESTS.md>` and `--discover` are required, and
   `--gates`, `--extra`, `--skip-style`, `--scope-json`, `--spec-from` and `--side` are refused. The set is the
   discovered ids the mapping's levels need (`LEVEL_GATES`: `unit`/`integration` → `test`, `e2e` → `E2E_SET`), in
@@ -162,9 +248,32 @@ gate — it already is one today.
   its levels (`acFilesFor`), appended after `--`, and an entry with none is refused rather than run. No
   `reconcile`, no `aux.completeness`. Every other stamp reader asserts its own stage, so an `ac-test` stamp is
   `stage-mismatch` there. What the stamp's per-test records decide is `ac-tests.md`'s contract.
+- **`entry` (6.42.0), a delivery run's entry check (`pharn/floor/entry-gates.mjs`):** the set `/pharn-verify` would
+  discover — e2e kept, `gates.exclude` applied — with every `STYLE_SET` member first (each part in its own order), no
+  `reconcile` and no `aux.completeness`. Its fingerprint also excludes the run's whole `pharn/features/<name>/`, because
+  its gates run in the background while `/pharn-spec`, `/pharn-plan` and `/pharn-grill` write there, and it records its
+  own algo (`worktree-fingerprint.mjs` `ENTRY_ALGO`). An `entry` stamp is never `/pharn-verify`'s reuse evidence
+  (`gate-reuse-core.mjs` `findReusable` accepts only a regress/head stamp, and the execution identity carries the algo),
+  and every other stamp reader asserts its own stage, so it is `stage-mismatch` there. Since 6.49.0 it may become
+  `/pharn-regress`'s BASE evidence, only through the closed matrix row above and `entry-base-evidence-core.mjs`'s rule,
+  which keeps the 6.42.0 advisory assumption about the excluded directory and states where it now points. With
+  `--base-tests <file>` (a JSON array of test files, each through `badPath`) the set also holds the evidence-only slot
+  `base:test` (`ENTRY_BASE_TEST_ID`, reserved): the discovered `test` command handed regress's own default test list,
+  right after the style part; the entry verdict never counts it. Any other tree change between two gates still refuses (`tree-changed-between-gates`). What
+  counts as red at entry, and why a style gate's red is weighed differently, is `entry-gates-core.mjs`'s header.
+- **`build` (6.39.0), `/pharn-build`'s own gate, run by `pharn/floor/build-gate.mjs`:** `--discover` or a human's
+  `--gates` is required, and `--extra`, `--skip-style`, `--scope-json`, `--spec-from`, `--side` and `--base` are
+  refused. The set is the DISCOVERED ids minus `E2E_SET` (the regress rule — e2e runs at `/pharn-verify`), then the
+  project's exclusion, in ALLOWLIST order — or the explicit `--gates` spec, never filtered; an empty set is
+  `empty-source-set`. With `--targets <file>` — a JSON array of repo-relative test files, each accepted by
+  `ac-tests-core.mjs` `badPath`, non-empty, unique — the set is the `test` gate alone, handed those files after `--`;
+  an id a targeted run skips anyway is never named in `excluded`. No `reconcile`, no
+  `aux.completeness`. No verdict reads a `build` stamp: the helper prints a summary from it, and every other stamp
+  reader asserts its own stage, so a `build` stamp is `stage-mismatch` there.
 - **Reserved ids:** `reconcile` and `completeness` (the runner's), and `ac-delivery` and `ac-evidence` (6.20.0 — the ids
   `check-verify.mjs --ac-gate` adds to a verify report's `failing_gates`, which `check-loop.mjs` reads by exact
-  membership; a real gate carrying one would be read as the AC gate). The `structural:` prefix belongs to `--extra` only.
+  membership; a real gate carrying one would be read as the AC gate), and `instruction-growth` (6.38.0, the runner's).
+  The `structural:` prefix belongs to `--extra` only.
 - **`<actual>` is derived, never supplied:** a `structural:<expected>` entry's argv resolves `<actual>` as
   the `findings.json` colocated with the capability directory that owns `<expected>`, per
   `finding-shape.md`'s emission contract. A supplied or mismatched `<actual>` is refused, so the one
@@ -203,7 +312,8 @@ release line; `check-loop-fresh.mjs`'s log check is now its emitter.
 - the map's **values** are the exit codes the runner recorded from the listed argv — for a reused entry (6.34.0), the
   exit a runner recorded for the SOURCE execution its `reused` block names, which the runner of THIS stamp found
   eligible and identity-equal at the live tree when it recorded the entry;
-- the map's **keys** cover the resolved source set, plus `reconcile` for verify;
+- the map's **keys** cover the resolved source set, plus `instruction-growth` and `reconcile` for verify (the runner
+  composes both; nothing re-checks that a stamp carries them);
 - **no tree edit happened between consecutive gate runs** (`fp_after[k-1] === fp_before[k]`);
 - `reconcile`, when present, ran **last**.
 

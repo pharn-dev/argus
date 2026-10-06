@@ -1,5 +1,5 @@
 ---
-description: 'Part of /pharn-ship: the --quick deltas it reads at entry. Not run on its own; use /pharn-ship --quick.'
+description: "Part of /pharn-ship: the --quick deltas it reads at entry. Not run on its own; use /pharn-ship --quick."
 disable-model-invocation: true
 user-invocable: false
 kind: pharn-owned
@@ -60,23 +60,24 @@ written for a `--quick` invocation too; only what is listed here changes.**
 spec_kind: quick`. The remedy is to re-run `/pharn-ship <description>` **without** `--quick`: the SPEC
    resumes and the full flow runs. A STOP here still runs Steps 3 and 3a (with the quick deltas below).
 
-   **Then the run marker, unchanged.** On a `quick` token, Step 2's run-marker `--open` line runs next,
-   exactly as written there, with its own rule: a non-zero exit is a STOP before `/pharn-plan`. The
-   order in a quick run is therefore: the backstop exits `0`, this kind read prints `quick`, the marker
-   opens, then `/pharn-plan` starts. A refused `--quick` never opens a marker. Every quick exit still reaches
-   Step 3a, whose `--close` runs right after the run-stop marker and is idempotent (item 12).
+   **Then the run marker and the pre-run snapshot, unchanged.** On a `quick` token, Step 2's run-marker `--open` line
+   and its snapshot line run next, exactly as written there, each with its own rule: a non-zero exit is a STOP before
+   `/pharn-plan`. The order in a quick run is therefore: the backstop exits `0`, this kind read prints `quick`, the
+   marker opens, the snapshot is recorded, the entry gates start (Step 2's line and rule), then `/pharn-plan` starts. A refused `--quick` never opens a marker. Every quick exit still reaches
+   Step 3a, whose closeout closes the marker right after the run-stop marker, idempotently (item 12).
 
-4. **The grill step.** Run this pinned QUICK route line in place of Step 2's grill route line (6.27.0):
+4. **The grill step.** Run this pinned QUICK start line in place of Step 2's grill start line (6.27.0):
 
    ```bash
-   node pharn/floor/stage-agent.mjs route --command pharn-ship --stage pharn-grill --name '<name>' --mode quick
+   node pharn/floor/stage-agent.mjs start --command pharn-ship --stage pharn-grill --name '<name>' --mode quick
    ```
 
    It prints `inline:floor-only` (exit `3` — the quick grill runs two checkers, so its model does not change
-   its verdict), which Step 2's grill stage-start records as its `<route>`. Then invoke
-   `/pharn-grill <name> --quick` INLINE, in place of `/pharn-grill`, and run no `read` and no Agent call.
-   Its markers (Step 2's grill item) and the two-exit verdict read (`check-plan-spec-agree.mjs` +
-   `check-plan-lessons.mjs`) run exactly as written; `/pharn-grill --quick` writes a `GRILL.md` recording
+   its verdict) and records it on the grill's stage-start marker. Then invoke
+   `/pharn-grill <name> --quick` INLINE, in place of `/pharn-grill`, and run no `finish` and no Agent call — the
+   inline return line closes it. Step 2's pre-grill verdict block is SKIPPED, because `/pharn-grill --quick`'s own
+   two floor stops (`check-plan-spec-agree.mjs` + `check-plan-lessons.mjs`) are that read — either RED is a STOP, its
+   RED line presented as DATA; `/pharn-grill --quick` writes a `GRILL.md` recording
    `mode: quick`, both floor results, and the pinned line `interrogation NOT performed — skipped by mode
 (quick)` — see `pharn-grill.md`'s own `--quick` section. No `ADVISORY VERDICT` line and no finding
    object are written (nothing was interrogated, so none is fabricated).
@@ -85,7 +86,7 @@ spec_kind: quick`. The remedy is to re-run `/pharn-ship <description>` **without
    `feature`, so `/pharn-test` and `/pharn-build` need no delta at all — the same mapping check, red run,
    test-stage gate and build project-gate apply.
 
-6. **The regress step: SKIPPED.** No `/pharn-regress`, no `pharn-regress` markers, no base worktree, no
+6. **The regress step: SKIPPED.** No `/pharn-regress` line (so no `pharn-regress` markers), no base worktree, no
    `regression-report.json` read. (Step 2's regress item, above, is the full-mode procedure this one item
    omits — every other Step-2 item runs as written.) Its first check is **kept**: item 7.
 
@@ -110,7 +111,8 @@ spec_kind: quick`. The remedy is to re-run `/pharn-ship <description>` **without
    document is the checker's own file failing to start (run from outside the project root, say): the same STOP,
    with no breach to present. `2` (inconclusive — its `reason_code` names why; `crashed` since 6.28.0 for a
    checker module that cannot load or throws) or any other exit → **STOP**, fail-closed. Record the
-   result for `SHIP.md` (item 11).
+   result for `SHIP.md` (item 11), and keep the document's `pre_run_snapshot.unchanged`: paths changed before this run,
+   reported and not counted (`pharn/floor/pre-run-snapshot-core.mjs`), which item 11 and GATE 2 name.
 
 8. **The verify step: unchanged.** `PASS` → GATE 2 below; `INCOMPLETE` → Step 2b, with the regress re-run
    skipped (item 9); `FAIL` / `INCONCLUSIVE` → STOP.
@@ -125,11 +127,11 @@ spec_kind: quick`. The remedy is to re-run `/pharn-ship <description>` **without
     (Step 2d's only input is `BRIEFING.md`, which quick mode never writes).
 
 11. **Step 3 — `SHIP.md` records `mode: quick`** (a full run records `mode: full` — Step 3), the scope
-    check's result verbatim (`scope: clean`, item 7), and a `## Not checked in quick mode` list, plainly,
-    in this order:
+    check's result verbatim (`scope: clean`, item 7), then `pre-run unchanged: <n>` with those paths fenced as quoted
+    DATA when `<n>` is not 0, and a `## Not checked in quick mode` list, plainly, in this order:
     - **regressions outside the feature** — no base comparison ran (`/pharn-regress` was skipped), so a
       break the feature's own tests and the head gates do not exercise is not looked for. **Kept:** the
-      scope check (item 7) — a changed file outside the plan's `## Files` still stops the run;
+      scope check (item 7) — a file the run changed outside the plan's `## Files` still stops the run;
     - **the plan interrogation** — `/pharn-grill --quick` ran its two floor stops only, and no griller ran;
     - **the briefing and the run report** — no `BRIEFING.md` and no `RUN-REPORT.md` (`cost.json` **is**
       still emitted and checked, unchanged — item 12 below).
@@ -143,16 +145,17 @@ spec_kind: quick`. The remedy is to re-run `/pharn-ship <description>` **without
     `RUN-REPORT.md` in this directory predates this run and is not part of it."_ They are **labelled, not
     removed**.
 
-12. **Step 3a.** Items 1–3 (the run-stop marker and, directly after it, the run-marker `--close` line; the
-    base-SHA capture; `render-cost-ledger.mjs` + `check-cost-ledger.mjs`) run **unchanged**, on every quick
+12. **Step 3a.** Its closeout line runs items 1–3 (the run-stop marker and, directly after it, the run marker's
+    close; the base-SHA capture; `render-cost-ledger.mjs` + `check-cost-ledger.mjs`) **unchanged**, on every quick
     exit as on every full one — `cost.json` is kept in quick mode. **Item 4
-    (`render-run-report.mjs`) is SKIPPED** — no `RUN-REPORT.md` in quick mode. Item 5's presentation shows
+    (`render-run-report.mjs`) is SKIPPED** — the closeout reads quick from the run-start marker this mode's `--mode
+quick` line wrote, so no `RUN-REPORT.md` in quick mode. Item 5's presentation shows
     the emitter's printed table and the checker's verdict only; there is no report table to reproduce.
 
 **GATE 2 in quick mode** presents the same standing verdicts as full mode, minus the regress verdict (never
 read) and every pointer to `RUN-REPORT.md` or `BRIEFING.md` (a quick run writes neither, and a file of either
-name already in the directory belongs to an earlier run — item 11), plus the scope check's result (item 7)
-and the `## Not checked in quick mode` list from `SHIP.md`, so the human sees exactly what was and was not
+name already in the directory belongs to an earlier run — item 11), plus the scope check's result (item 7), its
+`pre-run unchanged` paths as quoted DATA, and the `## Not checked in quick mode` list from `SHIP.md`, so the human sees exactly what was and was not
 looked for before deciding.
 
 **What quick mode claims** — the rest is in `## What you may claim`:

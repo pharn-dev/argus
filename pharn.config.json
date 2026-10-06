@@ -1,10 +1,10 @@
 {
   "pharnVersion": "0.7.0",
-  "skillsVersion": "6.35.0",
+  "skillsVersion": "6.49.1",
   "repo": "pharn-dev/pharn-oss",
-  "commit": "ea0234b4f57fd9d525b99a2de769a411c542264f",
+  "commit": "404907346cf6538188950621f83539d174a62dc2",
   "modules": [],
-  "installedAt": "2026-10-05T08:41:22.937Z",
+  "installedAt": "2026-10-06T18:15:17.104Z",
   "models": {
     "stages": {
       "default": {
@@ -58,11 +58,19 @@
     }
   },
   "seam": {
-    "resolutionOrder": ["official-skill", "pinned-docs", "model", "fetch", "ask"],
+    "resolutionOrder": [
+      "official-skill",
+      "pinned-docs",
+      "model",
+      "fetch",
+      "ask"
+    ],
     "modelConfidenceThreshold": "high",
     "haltOnUnknown": true
   },
-  "archetypes": ["lib"],
+  "archetypes": [
+    "lib"
+  ],
   "capabilities": [
     {
       "name": "architecture",

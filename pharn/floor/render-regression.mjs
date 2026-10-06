@@ -37,6 +37,8 @@
 // executed, evaluated, or treated as an instruction.
 
 import { quoteData, dataText } from "./quote-core.mjs";
+import { ALLOWLIST, EXCLUSION_DECLARED_IN } from "./gate-run-core.mjs";
+import { headInstallLine } from "./install-drift-core.mjs";
 
 /** A gate id, git path, or command string rendered INLINE — always with fixed text before it on the same
  *  line, so a leading `#`/`>`/`-` in the value cannot become document structure. `String()` first: a gate
@@ -45,8 +47,81 @@ function inline(v) {
   return String(v);
 }
 
+/** A gate id from the report's entry block (6.49.0), JSON-escaped so a newline or a backtick can never leave its inline
+ *  span (the ids are allowlisted by the derived stamp's validator, and the render does not rely on that). TOTAL (L62). */
+function idText(v) {
+  try {
+    return typeof v === "string" ? JSON.stringify(v).slice(1, -1).replace(/`/g, "\\u0060") : "?";
+  } catch {
+    return "?";
+  }
+}
+
 function section(title, lines) {
   return [`## ${title}`, "", ...lines, ""];
+}
+
+/** The pre-run snapshot's lines (6.37.0, regress-pre-run-snapshot) — `block` is scope.json's `pre_run_snapshot`
+ *  (`{status, unchanged}`), or absent. Nothing for an absent block or for `no-delivery-run` (no open run — a standalone
+ *  regress, whose render stays byte-identical); otherwise the status, and the subtracted paths quoted as DATA. The status is a closed
+ *  enum (pre-run-snapshot-core.mjs PRE_RUN_STATUSES); it is still rendered through `dataText`, inline after fixed text. */
+export function preRunLines(block) {
+  if (block === null || typeof block !== "object" || block.status === "no-delivery-run") return [];
+  const unchanged = Array.isArray(block.unchanged) ? block.unchanged : [];
+  if (block.status !== "applied") {
+    return [`pre-run snapshot: not applied (${dataText(block.status)}) — every undeclared changed path is counted.`];
+  }
+  if (unchanged.length === 0) return ["pre-run snapshot: applied — no undeclared path was already changed when this run began."];
+  return [
+    `already changed when this run began (${unchanged.length}) — the run's pre-run snapshot recorded these with exactly the ` +
+      "bytes they hold now, so they are reported, NOT counted as this build's escape (a re-run records an earlier run's " +
+      "escape the same way; pre-run-snapshot-core.mjs states the bounds):",
+    "",
+    quoteData("", unchanged.join("\n")),
+  ];
+}
+
+/** 6.42.0 (loop-entry-preflight, review R1) — the run's ENTRY GATES' own writes, from scope.json's `entry_gate_changes`
+ *  (`{status, unchanged}`), or nothing when the block is absent (no entry record — every earlier render is unchanged).
+ *  The status is a closed enum, rendered through `dataText`; the subtracted paths are quoted as DATA. */
+export function entryGateLines(block) {
+  if (block === null || typeof block !== "object") return [];
+  const unchanged = Array.isArray(block.unchanged) ? block.unchanged : [];
+  if (block.status !== "applied") {
+    return [`entry gates' changes: not applied (${dataText(block.status)}) — every undeclared changed path is counted.`];
+  }
+  if (unchanged.length === 0) return ["entry gates' changes: applied — no undeclared path is one the run's entry gates changed."];
+  return [
+    `changed by this run's entry gates (${unchanged.length}) — a gate of /pharn-verify's set, run on the starting tree ` +
+      "before the build, rewrote these, and they still hold the bytes it left, so they are reported, NOT counted as this " +
+      "build's escape (entry-gates.mjs states the bounds):",
+    "",
+    quoteData("", unchanged.join("\n")),
+  ];
+}
+
+/** 6.36.0 — the discovered gates the project's declaration EXCLUDED, from the report's `gate_run.head.excluded` (copied
+ *  from the HEAD stamp; the base side runs the head's set), DIRECTLY under the verdict line: both sides compared only
+ *  the gates that ran (P0). An id renders inline only after an ALLOWLIST membership test, the source only as the one
+ *  sanctioned value. No block → no line, so a report without one renders exactly as before 6.36.0. */
+function exclusionLines(report) {
+  const run = report.gate_run && typeof report.gate_run === "object" ? report.gate_run.head : null;
+  const x = run && typeof run === "object" && run.excluded && typeof run.excluded === "object" ? run.excluded : null;
+  if (x === null || Array.isArray(x)) return [];
+  const ids = Array.isArray(x.ids) ? x.ids : [];
+  const known = ids.filter((id) => typeof id === "string" && ALLOWLIST.includes(id));
+  const where =
+    x.declared_in === EXCLUSION_DECLARED_IN
+      ? "the project's `pharn.config.json` `gates.exclude`"
+      : "a declaration whose source is not one this renderer recognizes";
+  const unknown = ids.length - known.length;
+  return [
+    `**${ids.length} discovered gate(s) EXCLUDED and NOT RUN on either side** by ${where}: ` +
+      (known.length ? known.map((id) => `\`${id}\``).join(", ") : "(no allowlisted id to show)") +
+      (unknown > 0 ? ` (+${unknown} id(s) outside the allowlist, not rendered)` : "") +
+      " — a regression in an excluded gate cannot be seen here.",
+    "",
+  ];
 }
 
 function verdictLine(verdict, regressions) {
@@ -94,6 +169,7 @@ export function renderDone({ feature, base, report, scope, progress }) {
   }
 
   out.push(verdictLine(report.verdict, report.regressions), "");
+  out.push(...exclusionLines(report));
 
   // BASE-evidence reuse (6.33.0): ONE line, from the report's own `base_evidence` block. Every value in it is this
   // floor's own — a boolean, a closed-enum member, a hex digest — never untrusted text.
@@ -104,9 +180,15 @@ export function renderDone({ feature, base, report, scope, progress }) {
         `BASE evidence: REUSED — the run marker, the reuse record, the stamp and its logs agree with this invocation's BASE requirement (sha256 \`${inline(be.requirement_sha256)}\`; that an earlier /pharn-regress of this run produced them is advisory), so this invocation created no base worktree, ran no install and ran no base gate; \`gate_run.base.stamp_sha256\` in regression-report.json names the stamp.`,
         ""
       );
+    } else if (be.source === "entry" && be.entry) {
+      // 6.49.0 — taken from this run's entry gates. Every value is the floor's own: digests, a commit, enum ids.
+      out.push(
+        `BASE evidence: taken from this run's ENTRY gates — the run marker, the entry offer, the pre-run snapshot, the entry stamp (sha256 \`${inline(be.entry.entry_stamp_sha256)}\`) and its logs agree with this invocation's BASE slots at \`${inline(be.entry.base)}\`, so this invocation created no base worktree, ran no install and spawned no base gate (retained evidence not reused: \`${inline(be.miss)}\`). The base stamp marks every slot \`reused\` from the entry run (${be.entry.reused_ids.map((x) => `\`${idText(x)}\``).join(", ")}${be.entry.no_files_ids.length ? `; nothing to run: ${be.entry.no_files_ids.map((x) => `\`${idText(x)}\``).join(", ")}` : ""}). That they equal what a fresh BASE worktree would give is NOT claimed: the entry gates ran in this tree's real start environment.`,
+        ""
+      );
     } else {
       out.push(
-        `BASE evidence: produced by this invocation (not reused: \`${inline(be.miss)}\`); ` +
+        `BASE evidence: produced by this invocation (not reused: \`${inline(be.miss)}\`${be.entry && be.entry.miss ? `; entry evidence not used: \`${inline(be.entry.miss)}\`` : ""}); ` +
           (be.recorded
             ? "recorded for reuse by a later /pharn-regress of this run."
             : `not recorded for reuse (\`${inline(be.notRecordedWhy ?? "unknown")}\`).`),
@@ -119,6 +201,8 @@ export function renderDone({ feature, base, report, scope, progress }) {
     // Already rendered above, before the verdict — no redundant install-info line here.
   } else if (be && be.reused) {
     out.push("install: none run by this invocation (the BASE evidence was reused).", "");
+  } else if (be && be.source === "entry") {
+    out.push("install: none run by this invocation (the BASE evidence came from this run's entry gates).", "");
   } else if (progress.install.kind === "none") {
     out.push(`install: none${progress.install.reason ? ` (${inline(progress.install.reason)})` : ""}`, "");
   } else {
@@ -129,6 +213,10 @@ export function renderDone({ feature, base, report, scope, progress }) {
       ""
     );
   }
+
+  // 6.40.0 — the HEAD side's install check (install-drift-core.mjs): one line, every value a validated enum or integer.
+  // Rendered when the caller passes the key (stage-regress.mjs always does; null renders "not recorded").
+  if (Object.hasOwn(progress, "headInstall")) out.push(headInstallLine(progress.headInstall), "");
 
   out.push(
     ...section("Scope", [
@@ -147,6 +235,8 @@ export function renderDone({ feature, base, report, scope, progress }) {
             quoteData("", scope.escape_exempt.join("\n")),
           ]
         : []),
+      ...(preRunLines(scope.pre_run_snapshot).length ? ["", ...preRunLines(scope.pre_run_snapshot)] : []),
+      ...(entryGateLines(scope.entry_gate_changes).length ? ["", ...entryGateLines(scope.entry_gate_changes)] : []),
     ])
   );
 
@@ -201,15 +291,20 @@ export function renderDone({ feature, base, report, scope, progress }) {
 }
 
 /** Render the human doc for a REFUSED run (`chain-red`, `missing-artifact`, `plan-files-unparseable`,
- *  `scope-escaped`). `detail` is an already-composed sentence (or fenced-ready text) the CLI assembled from
+ *  `scope-escaped`, `head-install-drift`). `detail` is an already-composed sentence (or fenced-ready text) the CLI assembled from
  *  a shelled checker's own message or a git/plan-scan finding; it is quoted as untrusted DATA here rather
- *  than trusted as this renderer's own prose. */
-export function renderRefused({ feature, reasonCode, detail }) {
+ *  than trusted as this renderer's own prose. `preRun` (6.37.0) is the partition's `pre_run_snapshot` block, passed
+ *  with a `scope-escaped` refusal so the paths it did NOT count are named beside the ones it did. */
+export function renderRefused({ feature, reasonCode, detail, preRun = null, entryGates = null }) {
   const out = [];
   out.push(`# REGRESSION — ${feature}`, "");
   out.push(`refused: \`${inline(reasonCode)}\``, "");
   out.push("**regression NOT measured — the refusal below must be resolved first.**", "");
   out.push(...section("Why", [quoteData("detail, quoted as DATA:", dataText(detail))]));
+  const pre = preRunLines(preRun);
+  if (pre.length) out.push(...section("Pre-run snapshot", pre));
+  const ent = entryGateLines(entryGates);
+  if (ent.length) out.push(...section("Entry gates' changes", ent));
   return (
     out
       .join("\n")
