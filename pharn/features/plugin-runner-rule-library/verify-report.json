@@ -1,0 +1,99 @@
+{
+  "feature": "plugin-runner-rule-library",
+  "gates": {
+    "build": 0,
+    "format:check": 0,
+    "instruction-growth": 0,
+    "lint": 0,
+    "reconcile": 0,
+    "test": 0,
+    "typecheck": 0
+  },
+  "verdict": "PASS",
+  "failing_gates": [],
+  "gate_run": {
+    "stamp_sha256": "0b9913a7df1e213bfff45fce7bf8b6e53f73fe2a7784f5ac06f7b4044ca7526e",
+    "source": "discover",
+    "fingerprint": {
+      "algo": "worktree-fingerprint/2+sha256",
+      "final": "78bd491dd3cb3b0b21defb5ac16101ba181894d74287dfb506f874392c494e7e"
+    }
+  },
+  "ac_gate": {
+    "mode": "test-first",
+    "verdict": "PASS",
+    "reason": null,
+    "evidence": [],
+    "acs": [
+      {
+        "id": "AC-1",
+        "level": "integration",
+        "tests": [
+          "src/plugin-runner/plugin-runner-rule-library.ac1.integration.test.ts::plugin-runner rule library — AC-1 › AC-1: explicitly given parameters reach the built-in rules and change which windows they cover",
+          "src/plugin-runner/plugin-runner-rule-library.ac1.integration.test.ts::plugin-runner rule library — AC-1 › AC-1: the three built-in rules with default parameters flag exactly the covered windows, and match nothing in quiet windows"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-2",
+        "level": "integration",
+        "tests": [
+          "src/plugin-runner/plugin-runner-rule-library.ac2.integration.test.ts::plugin-runner rule library — AC-2 › AC-2: an invalid built-in rule parameter throws a typed invalid-parameter error naming the rule id and the parameter, and no sandbox run starts"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-3",
+        "level": "integration",
+        "tests": [
+          "src/plugin-runner/plugin-runner-rule-library.ac3.integration.test.ts::plugin-runner rule library — AC-3 › AC-3: user rules loaded from a directory run alongside the built-ins, each failure stays its own typed result, and no user file runs in the host"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      }
+    ],
+    "unmapped_anomalies": [],
+    "note": "an AC is delivered = a locked, once-red test titled AC-<n>:, in a file mapped to AC-<n>, passed on this head run. PHARN does not judge whether that test fully captures the AC's intent."
+  },
+  "completeness": {
+    "plan": "pharn/features/plugin-runner-rule-library/PLAN.md",
+    "repoDir": ".",
+    "declared": [
+      "src/plugin-runner/rule-result.ts",
+      "src/plugin-runner/rule-descriptor.ts",
+      "src/plugin-runner/rule-parameter-error.ts",
+      "src/plugin-runner/builtin-rules.ts",
+      "src/plugin-runner/rules-directory.ts",
+      "src/plugin-runner/run-rules.ts",
+      "src/plugin-runner/index.ts"
+    ],
+    "skipped": [],
+    "missing": [],
+    "complete": true,
+    "verdict": "complete"
+  },
+  "verifiers": {
+    "registered": 0,
+    "findings": []
+  },
+  "gate_reuse": {
+    "reused": []
+  },
+  "head_install": {
+    "state": "clean",
+    "why": null,
+    "family": "npm",
+    "lockfile": "package-lock.json",
+    "counts": {
+      "changed": 0,
+      "missing": 0,
+      "extraneous": 0,
+      "missing_unchecked": 24
+    }
+  }
+}

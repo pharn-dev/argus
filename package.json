@@ -80,6 +80,16 @@
         "default": "./dist/cjs/plugin-runner/index.js"
       }
     },
+    "./otel": {
+      "import": {
+        "types": "./dist/esm/otel/index.d.ts",
+        "default": "./dist/esm/otel/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/otel/index.d.ts",
+        "default": "./dist/cjs/otel/index.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -116,6 +126,7 @@
     "eslint": "^10.12.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.13.0",
+    "happy-dom": "^20.14.5",
     "isolated-vm": "^6.2.0",
     "prettier": "^3.9.9",
     "typescript": "~6.0.3",

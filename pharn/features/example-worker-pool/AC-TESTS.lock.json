@@ -1,0 +1,82 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "example-worker-pool",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "example-worker-pool",
+    "spec_content_hash": "c605d6eb8de99aeed66a62dc386a3a68cfa2fc974181285f3fc6773150c8de40"
+  },
+  "mapping": {
+    "path": "pharn/features/example-worker-pool/AC-TESTS.md",
+    "sha256": "843c6e625dfeb63256e0f90db21c78752baa45525b4cf8393fe8440579957210"
+  },
+  "files": [
+    {
+      "path": "src/analyzer/example-worker-pool.ac1.integration.test.ts",
+      "sha256": "c04035f3234173a180e9a0356c06f0dc700bef1bcf8580e63014e26dec888de1"
+    },
+    {
+      "path": "src/analyzer/example-worker-pool.ac2.integration.test.ts",
+      "sha256": "b585168212874c7127fc6a8cc44367a2496dba5c88e61c04969638063feb62d1"
+    },
+    {
+      "path": "src/analyzer/example-worker-pool.ac3.integration.test.ts",
+      "sha256": "99bc671e514c6631058cf785e786265f8929c80a365c8093c660feb0153cf440"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "72aebb8d8cbbb4223d074c73db0398451396615000da807c84fd9483c970bebf",
+    "files_sha256": "077aee7a2f5d5a782e52724756c9497f1a8e69411d060eb78ae350c34f0696e8",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "2c2baf25996e8c2c4ec5f6be9bb3fa7c81dfa9b1639d1b6e0718d200193f8101"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/analyzer/example-worker-pool.ac1.integration.test.ts::examples/worker-pool: CPU tasks on Worker Threads › AC-1: the example exits 0 with the agent enabled and reports the completed CPU worker tasks"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/analyzer/example-worker-pool.ac2.integration.test.ts::examples/worker-pool: heap snapshot analysis on the analyzer pool › AC-2: the example prints a heap-snapshot summary and the main event loop ticked during the analysis"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/analyzer/example-worker-pool.ac3.integration.test.ts::examples/worker-pool: package-only imports and README › AC-3: every Argus import in the example is a bare argus/<subpath> specifier and the README has the build and run commands"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}

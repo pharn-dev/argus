@@ -1,0 +1,102 @@
+{
+  "feature": "otel-metrics-export",
+  "gates": {
+    "build": 0,
+    "format:check": 0,
+    "instruction-growth": 0,
+    "lint": 0,
+    "reconcile": 0,
+    "test": 0,
+    "typecheck": 0
+  },
+  "verdict": "PASS",
+  "failing_gates": [],
+  "gate_run": {
+    "stamp_sha256": "7d16373370bc93e85bd4db095592317df23fd31ba105d08a1150cbe5a79fba2e",
+    "source": "discover",
+    "fingerprint": {
+      "algo": "worktree-fingerprint/2+sha256",
+      "final": "64f0c1af65cdf9c95c34514cbbf37b15128e1b3fc446fb2d3b333f1d484ed9bc"
+    }
+  },
+  "ac_gate": {
+    "mode": "test-first",
+    "verdict": "PASS",
+    "reason": null,
+    "evidence": [],
+    "acs": [
+      {
+        "id": "AC-1",
+        "level": "unit",
+        "tests": [
+          "src/otel/otel-metrics-export.ac1.test.ts::otel metrics export — AC-1 › AC-1: converts one aggregated window into OTLP JSON gauges and a delta GC sum with exact nanosecond strings"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-2",
+        "level": "integration",
+        "tests": [
+          "src/otel/otel-metrics-export.ac2.integration.test.ts::otel metrics export — AC-2 › AC-2: exports one batch of two windows as a single JSON POST with the caller headers"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-3",
+        "level": "integration",
+        "tests": [
+          "src/otel/otel-metrics-export.ac3.integration.test.ts::otel metrics export — AC-3 › AC-3: reports a 500 response to the error callback without throwing or rejecting",
+          "src/otel/otel-metrics-export.ac3.integration.test.ts::otel metrics export — AC-3 › AC-3: reports a connection error to the error callback without throwing or rejecting",
+          "src/otel/otel-metrics-export.ac3.integration.test.ts::otel metrics export — AC-3 › AC-3: with queue capacity 1 and the first request held open, drops the third batch and sends two"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      }
+    ],
+    "unmapped_anomalies": [],
+    "note": "an AC is delivered = a locked, once-red test titled AC-<n>:, in a file mapped to AC-<n>, passed on this head run. PHARN does not judge whether that test fully captures the AC's intent."
+  },
+  "completeness": {
+    "plan": "pharn/features/otel-metrics-export/PLAN.md",
+    "repoDir": ".",
+    "declared": [
+      "src/otel/otlp-types.ts",
+      "src/otel/otlp-metrics.ts",
+      "src/otel/otlp-transport.ts",
+      "src/otel/otlp-exporter.ts",
+      "src/otel/index.ts",
+      "package.json",
+      "eslint.config.mjs",
+      "ARCHITECTURE.md",
+      "README.md"
+    ],
+    "skipped": [],
+    "missing": [],
+    "complete": true,
+    "verdict": "complete"
+  },
+  "verifiers": {
+    "registered": 0,
+    "findings": []
+  },
+  "gate_reuse": {
+    "reused": []
+  },
+  "head_install": {
+    "state": "clean",
+    "why": null,
+    "family": "npm",
+    "lockfile": "package-lock.json",
+    "counts": {
+      "changed": 0,
+      "missing": 0,
+      "extraneous": 0,
+      "missing_unchecked": 24
+    }
+  }
+}

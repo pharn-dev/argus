@@ -1,0 +1,82 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "dashboard-ui",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "dashboard-ui",
+    "spec_content_hash": "96ec196cd34dd2f95fb482c6294486bf33c7ea3f19eb9aef67c46d2943db4205"
+  },
+  "mapping": {
+    "path": "pharn/features/dashboard-ui/AC-TESTS.md",
+    "sha256": "53ab90ff78029f2a15bf47d69d5360dba3ee3522cb8826ac83f1392eecd849c2"
+  },
+  "files": [
+    {
+      "path": "src/dashboard/dashboard-ui.ac1.integration.test.ts",
+      "sha256": "fd2825dbd052d0030f8c22626a6ca54b3442f1d8f7637c0a45a1f4c805de04b6"
+    },
+    {
+      "path": "src/dashboard/dashboard-ui.ac2.integration.test.ts",
+      "sha256": "8b82dbc60384da154e31ebe81dd2e088c5d20ffc9d3712762e37975ad1486374"
+    },
+    {
+      "path": "src/dashboard/dashboard-ui.ac3.integration.test.ts",
+      "sha256": "d00cdf6c4a8897605dba1aa15c22cc8defd3926366734152242c8933ea24fa20"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "54e89628fa64721ebf9a601c7d5ae2bdae5a54e37824e2f0707c03e301a38b59",
+    "files_sha256": "61d7f3fac8b43778d395b04d7fc89de43222680e643c5a41838892e4942d7474",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "3d2156469aa4390591562bb3455e12dab046d1e8480deccf26cdfef5aea6d1e0"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/dashboard/dashboard-ui.ac1.integration.test.ts::dashboard UI — AC-1 › AC-1: GET /?token=s3cret serves an HTML page whose same-origin script and stylesheet load like a browser would, all under a restrictive CSP"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/dashboard/dashboard-ui.ac2.integration.test.ts::dashboard UI — AC-2 › AC-2: the page and every asset it references answer 401 with no page or asset content for missing or wrong credentials, and 200 with Bearer s3cret"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/dashboard/dashboard-ui.ac3.integration.test.ts::dashboard UI — AC-3 › AC-3: the served page, run in a DOM, shows the newest window and the recent alerts, then updates live on a new window"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}

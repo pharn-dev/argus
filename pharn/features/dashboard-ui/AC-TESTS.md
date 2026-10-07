@@ -1,0 +1,16 @@
+---
+spec_id: dashboard-ui
+spec_content_hash: 96ec196cd34dd2f95fb482c6294486bf33c7ea3f19eb9aef67c46d2943db4205
+---
+
+## Files
+
+- `src/dashboard/dashboard-ui.ac1.integration.test.ts` — the tests for AC-1
+- `src/dashboard/dashboard-ui.ac2.integration.test.ts` — the tests for AC-2
+- `src/dashboard/dashboard-ui.ac3.integration.test.ts` — the tests for AC-3
+
+## Mapping
+
+- AC-1 | integration | `src/dashboard/dashboard-ui.ac1.integration.test.ts` | route GET / then GET of each `<script src>` and `<link rel="stylesheet" href>` URL in the returned HTML resolved against the page URL (no Authorization header, carrying any set-cookie) on src/dashboard/index.ts#createDashboardServer({ collector, host: '127.0.0.1', port: 0, token: 's3cret' }): Promise<DashboardServer> (imported inside the test body) over src/collector/index.ts#createCollector({ windowMs, capacity }); first request `/?token=s3cret`; observed: status 200 and content-type text/html for the page, at least one same-origin script and stylesheet reference, no inline script content and no on*= attribute; status 200 with content-type text/javascript or application/javascript per script and text/css per stylesheet; a content-security-policy header on every response containing default-src 'none', script-src 'self', style-src 'self', connect-src 'self', base-uri 'none', form-action 'none', frame-ancestors 'none' and neither 'unsafe-inline' nor 'unsafe-eval'; server.close() after
+- AC-2 | integration | `src/dashboard/dashboard-ui.ac2.integration.test.ts` | routes GET / and GET of each asset pathname (query stripped) that the authorized page GET /?token=s3cret references, on src/dashboard/index.ts#createDashboardServer({ collector, host: '127.0.0.1', port: 0, token: 's3cret' }) (imported inside the test body); each path requested with no credentials, with `Authorization: Bearer wrong`, and with `?token=wrong` → status 401 and a body containing no `<html`, `<script`, `<link` and none of the authorized asset bodies; each path requested with `Authorization: Bearer s3cret` → status 200
+- AC-3 | integration | `src/dashboard/dashboard-ui.ac3.integration.test.ts` | the served page in a DOM test environment: src/dashboard/index.ts#createDashboardServer({ collector, host: '127.0.0.1', port: 0, token: 's3cret' }) over src/collector/index.ts#createCollector({ windowMs, capacity, alerts: [{ id: 'lag-high', metric: 'eventLoop.p99', comparison: '>', threshold: 10_000_000 }] }) fed with collector.consume(Readable.from(samples)) to produce W1 (eventLoop.p99 12_000_000 ns, memory.heapUsedLast 52_428_800 B, gc.count 7) and the firing lag-high alert before the page loads, then W2 (34_000_000 ns, 104_857_600 B, gc.count 9) after the script connects; DOM from the dev dependency happy-dom loaded with `await import('happy-dom')` inside the test body: a Window at the page URL `/?token=s3cret` holding the HTML from GET /?token=s3cret, the referenced stylesheet and script fetched from the server and the script executed in that window; observed by the text of the section whose heading reads `Event loop lag` (contains `12` and `ms`, then `34` and `ms`), `Memory` (`50`, then `100`), `GC` (`7`, then `9`) and `Alerts` (an item containing `lag-high` and `firing`, before and after W2), polling until each holds or a timeout; the window is closed before server.close()
