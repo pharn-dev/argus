@@ -269,7 +269,7 @@ either hook. Probed rather than read off the wiring — §1d's quantifier is pre
 | ------------------------------------------------------------- | --------------------------- | ------------------------- |
 | `{"tool_name":"Bash",…{"command":"printf x >> LIMITS.md"}}`   | `protect-trusted-paths.cjs` | **exit 0** — not denied   |
 | `{"tool_name":"Bash",…{"command":"printf x >> README.md"}}`   | `enforce-writes-scope.cjs`  | **exit 0** — not denied   |
-| `{"tool_name":"Edit","tool_input":{"file_path":"LIMITS.md"}}` | `protect-trusted-paths.cjs` | exit 2 — denied (control) |
+| `{"tool_name":"Edit","tool_input":{"file_path":"pharn/LIMITS.md"}}` | `protect-trusted-paths.cjs` | exit 2 — denied (control) |
 
 - **Struck claim:** "the trusted docs are write-protected", "`writes:` is enforced", or "canon cannot be
   written", stated without a tool-surface qualifier. Each is true of `Write`/`Edit`/`MultiEdit`/

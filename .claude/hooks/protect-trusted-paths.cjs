@@ -361,8 +361,8 @@ const DEFAULT_PROTECTED = [
   // basenames — a basename denies a user's own same-named file and protects the wrong one).
   "pharn/CONSTITUTION.md",
   "pharn/ARCHITECTURE.md",
-  "THREAT-MODEL.md",
-  "LIMITS.md",
+  "pharn/THREAT-MODEL.md",
+  "pharn/LIMITS.md",
   // CODEOWNERS at the three GitHub-recognized locations; whichever exists is a live review gate.
   "CODEOWNERS",
   ".github/CODEOWNERS",

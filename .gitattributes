@@ -4,7 +4,3 @@
 pharn/** linguist-vendored
 .claude/** linguist-vendored
 pharn.*.json linguist-generated
-# PHARN's own threat model and limits (Argus's are docs/THREAT-MODEL.md and docs/LIMITS.md). They stay
-# at the root because the PHARN installer, its write-guard hook and its drift records expect them there.
-/THREAT-MODEL.md linguist-vendored
-/LIMITS.md linguist-vendored

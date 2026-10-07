@@ -11,5 +11,3 @@ runs/
 package-lock.json
 *.tsbuildinfo
 .tsbuildinfo
-LIMITS.md
-THREAT-MODEL.md

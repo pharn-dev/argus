@@ -171,7 +171,7 @@ const FEATURE_SLUG_RE = /^(?!\.\.?$)[A-Za-z0-9._-]+$/;
 // assumption. BOUNDED, and stated: the hook gates the Write-tool surface only, so a Bash-tool write
 // bypasses both it and this exemption (the L19 escape). The claim is "the build could not have written
 // this WITH THE WRITE TOOL", never "no process changed it".
-const TRUSTED_DOCS = ["pharn/CONSTITUTION.md", "pharn/ARCHITECTURE.md", "THREAT-MODEL.md", "LIMITS.md"];
+const TRUSTED_DOCS = ["pharn/CONSTITUTION.md", "pharn/ARCHITECTURE.md", "pharn/THREAT-MODEL.md", "pharn/LIMITS.md"];
 
 // THE NARROWING THIS EXEMPTION INTRODUCES — the honest cost, stated because it is not obvious (P0/P7).
 // A build that rewrites its OWN `pharn/features/<name>/PLAN.md` `## Files` to retroactively authorize a path it
