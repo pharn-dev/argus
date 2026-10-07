@@ -5,19 +5,23 @@ Argus runs **inside** the Node.js process it observes, and its dashboard exposes
 the product, not an afterthought. We welcome coordinated disclosure of any vulnerability in this
 repository.
 
-> **Status:** Argus is pre-release. No version has been published yet, so there is nothing to
-> patch in the wild today — but reports against `main` are welcome and are handled the same way.
+> **Status:** Argus is pre-release. Roadmap steps S0 to S7 are implemented on `main`, but no version
+> has been published yet, so there is nothing to patch in the wild today. Reports against `main` are
+> welcome and are handled the same way.
 
 ## What Argus is, and its security surface
 
-Argus is a single npm package with five modules (`agent`, `collector`, `analyzer`, `dashboard`,
-`plugin-runner`), each exposed as a subpath export such as `argus/agent`. Its security-relevant
+Argus is a single npm package with six subpath exports (`argus/agent`, `argus/collector`,
+`argus/analyzer`, `argus/dashboard`, `argus/plugin-runner`, `argus/otel`). Its security-relevant
 surface is:
 
-- **The dashboard and SSE endpoint** — an HTTP server inside the monitored process. It is
-  token-gated by default whenever it is not bound to localhost.
-- **Data Argus collects** — traces, headers/URLs and, on demand, heap snapshots, which can contain
-  secrets and personal data. Redaction defaults and what leaves the process are part of the surface.
+- **The dashboard and SSE endpoint** — an HTTP server in whichever process you start it in (the
+  monitored process or a separate collector process). Binding it anywhere but loopback requires a
+  token; every request's `Host` is checked against an allowlist, and a cross-origin `Origin` on
+  `/events` is refused.
+- **Data Argus collects** — request method, path (query string removed), status and timing, runtime
+  samples and, on demand, heap snapshots, which can contain secrets and personal data. What is
+  captured and what leaves the process are part of the surface.
 - **The plugin runner** — user-supplied rules executed in `isolated-vm` with a memory limit and a
   timeout.
 - **The analyzer** — heap-snapshot and stack-trace parsing in Worker Threads. Both are untrusted
@@ -75,7 +79,7 @@ unless you ask to remain anonymous.
   or bypassable Host/Origin protections (e.g. DNS rebinding), or unintended exposure when not bound
   to localhost.
 - **Data exposure** — secrets, credentials or personal data reaching the dashboard, logs, disk, an
-  alert sink or an export despite the documented redaction behavior; heap snapshots produced or
+  alert sink or an export beyond what the threat model says is captured; heap snapshots produced or
   exposed without an explicit opt-in.
 - **Plugin sandbox** — escaping `isolated-vm`, or bypassing the memory limit or timeout enforced by
   the plugin runner, from a user-supplied rule.
@@ -95,7 +99,8 @@ unless you ask to remain anonymous.
   can bump our floor).
 - Issues that require the attacker to already control the monitored process, or have local code
   execution as the same user.
-- Exposing the dashboard to the internet **after** explicitly disabling its token gate.
+- Exposing a loopback-bound, token-less dashboard to other people through your own tunnel or
+  proxy.
 - Social engineering, or attacks requiring physical access to a machine.
 - Denial of service that does not exploit a specific vulnerability (e.g. simply sending a very high
   request rate).
@@ -103,11 +108,14 @@ unless you ask to remain anonymous.
 ## Security best practices for users
 
 1. **Keep the dashboard on localhost** and reach it through an authenticated tunnel (such as SSH
-   port-forwarding) in production. If you must bind elsewhere, keep the token gate on.
+   port-forwarding) in production. Binding elsewhere requires a token; use a long random one, and
+   list the names you reach it by in `allowedHosts`.
 2. **Treat heap snapshots as secrets.** They contain whatever was in memory.
 3. **Review plugin rules** before loading them, and keep the sandbox limits enabled.
-4. **Pin and verify.** Install exact versions and verify package provenance where it is available.
-5. **Run with the Node Permission Model** (`--permission`) where your deployment allows it.
+4. **Confine the symbolizer** with the `roots` option when stack frames may name files outside your
+   own build.
+5. **Pin and verify.** Install exact versions and verify package provenance where it is available.
+6. **Run with the Node Permission Model** (`--permission`) where your deployment allows it.
 
 ## Acknowledgements
 

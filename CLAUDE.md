@@ -62,7 +62,7 @@ the agent" constraint is the killer adoption feature — never compromise it.**
 
 ## Architecture
 
-One npm package (`argus`) with five modules under `src/`, each exposed as a subpath
+One npm package (`argus`) with six modules under `src/`, each exposed as a subpath
 export (`argus/agent`, `argus/collector`, …):
 
 ```
@@ -72,7 +72,8 @@ argus/
 │   ├── collector/      # argus/collector — metric aggregation, stream pipeline
 │   ├── analyzer/       # argus/analyzer — Worker Threads, heap analysis
 │   ├── dashboard/      # argus/dashboard — lightweight UI (SSE + vanilla JS)
-│   └── plugin-runner/  # argus/plugin-runner — isolated-vm sandbox for user rules
+│   ├── plugin-runner/  # argus/plugin-runner — isolated-vm sandbox for user rules
+│   └── otel/           # argus/otel — opt-in OTLP/HTTP JSON export (Node core only)
 ├── scripts/            # build (dual ESM + CJS) and exports smoke test
 ├── examples/
 │   ├── express-app/    # example with full instrumentation
@@ -94,6 +95,8 @@ argus/
 - **plugin-runner** — optional. Users can write custom diagnostic rules (e.g.
   "alert when function X takes > 50ms"). Rules execute inside `isolated-vm` with a
   hard memory limit and timeout.
+- **otel** — optional. OTLP/HTTP JSON export of collector windows (metrics) and
+  spans (traces), Node core only, outside the agent.
 
 ### Dependency boundaries
 
@@ -126,9 +129,10 @@ These aren't bolted on — each is load-bearing in the design:
   `isolated-vm` with a hard memory limit and timeout. The Node Permission Model
   (`--permission`, stable since Node 22.13; older 22.x used
   `--experimental-permission`) constrains what the agent itself may do.
-- **V8 performance / memory** → exposes `v8.getHeapSpaceStatistics()`, surfaces
-  `--trace-gc` events via a custom hook, supports on-demand heap snapshots, and
-  detects deoptimizations by parsing `--trace-deopt` output.
+- **V8 performance / memory** → exposes `v8.getHeapSpaceStatistics()`, surfaces GC
+  events through a `PerformanceObserver` on `'gc'` entries, supports on-demand heap
+  snapshots, and ships a parser for `--trace-deopt` output (nothing captures that
+  output automatically yet).
 
 ---
 
@@ -193,7 +197,9 @@ We're building the full version, so these forks are decided up front rather than
 discovered mid-implementation. These are recommended defaults; flip any of them
 deliberately, but don't leave them implicit.
 
-- **Minimum Node.js version: Node 22 LTS as the floor** (24 fine too). This is
+- **Minimum Node.js version: Node 22.18.0 as the floor** (`engines.node` `>=22.18.0`,
+  `.nvmrc` `22.18.0`; 24 fine too). 22.18 is the lowest version the full test suite
+  passes on (it loads `.ts` workers through type stripping). This is
   the lever for the Permission Model and `node:` imports — confirm the exact
   permission flag name/stability for the version you pin before relying on it in
   the plugin runner.

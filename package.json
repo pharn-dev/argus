@@ -116,6 +116,8 @@
     "check:exports": "node scripts/check-exports.mjs",
     "check:package": "node scripts/check-package.mts",
     "check:pins": "node scripts/check-action-pins.mjs",
+    "bench": "node bench/overhead.mjs",
+    "soak": "node bench/soak.mjs",
     "prepack": "npm run build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
