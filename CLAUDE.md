@@ -129,9 +129,10 @@ These aren't bolted on — each is load-bearing in the design:
   `isolated-vm` with a hard memory limit and timeout. The Node Permission Model
   (`--permission`, stable since Node 22.13; older 22.x used
   `--experimental-permission`) constrains what the agent itself may do.
-- **V8 performance / memory** → exposes `v8.getHeapSpaceStatistics()`, surfaces
-  `--trace-gc` events via a custom hook, supports on-demand heap snapshots, and
-  detects deoptimizations by parsing `--trace-deopt` output.
+- **V8 performance / memory** → exposes `v8.getHeapSpaceStatistics()`, surfaces GC
+  events through a `PerformanceObserver` on `'gc'` entries, supports on-demand heap
+  snapshots, and ships a parser for `--trace-deopt` output (nothing captures that
+  output automatically yet).
 
 ---
 
