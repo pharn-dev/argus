@@ -1,0 +1,83 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "express-app-example",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "express-app-example",
+    "spec_content_hash": "470881cda3f5079bb539e8a36521b59e9bf62fe3c0e7827ee00d51a8b23a3235"
+  },
+  "mapping": {
+    "path": "pharn/features/express-app-example/AC-TESTS.md",
+    "sha256": "51ddd820b650ef21ca5a6bbc4391a85000490fbdc1b7db263866c97195ca3568"
+  },
+  "files": [
+    {
+      "path": "src/dashboard/example-express-app.ac1.integration.test.ts",
+      "sha256": "0144e1c15330a1612044e336b8ab26f1729098b8d9751ceb84181ae53ac2eebc"
+    },
+    {
+      "path": "src/dashboard/example-express-app.ac2.integration.test.ts",
+      "sha256": "8ddeeacb34e7285d6a8c8a3f28efc3fb8cb8d85864682455ac02fddfb7a49a86"
+    },
+    {
+      "path": "src/dashboard/example-express-app.ac3.integration.test.ts",
+      "sha256": "4b71b176ef74841669c346f6a08af9409e561cf97a5782d3a31fe8b139a88530"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "da9b6f5b09298ac009c5242a852b50e28e7636667444cdcd9938e50d8eec31ff",
+    "files_sha256": "57ffa027e328493f43461775ac8048fee0c71a2a2b496839e92a25d7f01d5bc0",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "5c75ab88db7842adce5cdba8e5737d4cb5d9cf34eae004571ec3cbce2de3a615"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/dashboard/example-express-app.ac1.integration.test.ts::examples/express-app: requests reach the dashboard as span events › AC-1: the fast, slow and error routes answer 200, 200 and 500 and the SSE stream delivers one span per request with the matching name and statusCode"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/dashboard/example-express-app.ac2.integration.test.ts::examples/express-app: the slow route shows up as event-loop lag in a window event › AC-2: after a request to the slow route the SSE stream delivers a window event with eventLoop.max of at least 50 ms"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/dashboard/example-express-app.ac3.integration.test.ts::examples/express-app: clean shutdown and dependency-free sources › AC-3: on SIGTERM the example exits with code 0 within a bounded time and its stderr has no agent-disabled line",
+          "src/dashboard/example-express-app.ac3.integration.test.ts::examples/express-app: clean shutdown and dependency-free sources › AC-3: the example imports Argus only through bare argus/<subpath> specifiers, never express, and its README documents build, run and Express"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}
