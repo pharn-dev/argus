@@ -102,7 +102,7 @@ afterAll(() => {
   }
 });
 
-/** The child's env: the parent's minus every ARGUS_* name (the loader rejects unknown ones). */
+/** The child's env: the parent's minus every ARGUS_* name (an unknown one warns on stderr). */
 function childEnv(extra: Record<string, string>): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
   for (const [name, value] of Object.entries(process.env)) {
