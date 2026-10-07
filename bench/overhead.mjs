@@ -8,7 +8,7 @@
 //
 // Every cell (workload x variant x round) gets a fresh target process; variants are interleaved
 // within each round and the order rotates between rounds. See bench/README.md.
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -76,9 +76,9 @@ function parseCli() {
     variants: parseList('variants', values.variants, VARIANTS),
     out:
       values.out === undefined
-        ? path.join(
-            os.tmpdir(),
-            `argus-bench-${new Date().toISOString().replace(/[:.]/g, '-')}.json`,
+        ? path.resolve(
+            'bench-results',
+            `overhead-${new Date().toISOString().replace(/[:.]/g, '-')}.json`,
           )
         : path.resolve(values.out),
     nodeArgs: values['node-arg'],
@@ -307,7 +307,9 @@ async function main() {
     summary,
     cells,
   };
-  await writeFile(opts.out, `${JSON.stringify(result, null, 2)}\n`);
+  // Exclusive create, owner-only: never follow or overwrite an existing file or symlink.
+  await mkdir(path.dirname(opts.out), { recursive: true });
+  await writeFile(opts.out, `${JSON.stringify(result, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
   process.stdout.write(
     `Argus agent overhead — node ${process.version}, ${result.platform}, ${result.cpus.count} × ${result.cpus.model}\n` +
       `${opts.connections} connections, ${opts.durationMs / 1000} s measured after ${opts.warmupMs / 1000} s warm-up, ` +

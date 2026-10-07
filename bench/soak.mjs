@@ -12,7 +12,7 @@
 // end in either process, if any Worker thread or child process outlives its owner's close(), if
 // dashboard clients are left behind, if a request fails, or if a process does not exit on its own.
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
@@ -369,6 +369,8 @@ async function main() {
     }
   }
   if (opts.out !== undefined) {
+    // Exclusive create, owner-only: never follow or overwrite an existing file or symlink.
+    await mkdir(path.dirname(opts.out), { recursive: true });
     await writeFile(
       opts.out,
       `${JSON.stringify(
@@ -388,6 +390,7 @@ async function main() {
         null,
         2,
       )}\n`,
+      { flag: 'wx', mode: 0o600 },
     );
     process.stdout.write(`\nJSON: ${opts.out}\n`);
   }
