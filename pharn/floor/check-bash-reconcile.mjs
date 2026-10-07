@@ -10,7 +10,8 @@
 //
 // THE CLAIM, and it is deliberately this narrow (P0):
 //   "A NON-ADVERSARIAL write to a path the active writes-scope would have DENIED is DETECTED, and fails
-//    the stage."
+//    the stage." — unless (6.52.0) the path's bytes are exactly the upstream bytes HEAD merged in during the
+//   window: it is then classified `merged`, reported, and does not fail the stage (THE `merged` CLASSIFICATION).
 //
 //   "Non-adversarial" is load-bearing, not hedging — see bound 5. The baseline is unauthenticated state
 //   inside the writable tree, so a writer who also rewrites it defeats detection on ordinary paths. This
@@ -93,7 +94,11 @@
 //     baseline present" exists to keep it caught.
 //
 //     BUT THE CLAIM MUST BE NARROWED FURTHER, AND THIS IS THE MOST IMPORTANT SENTENCE IN THIS HEADER:
-//     that argument holds ONLY for the always-reconciled control surface. For an ORDINARY path the
+//     that argument holds ONLY for the always-reconciled control surface — since 6.53.0 the guard files and
+//     pharn/floor/ + .dev/floor/, PLUS the human-only surface (the four trusted docs, CODEOWNERS at its three
+//     locations, pharn.spec-template.md) and the memory-bank canon subtrees, an added untracked file included.
+//     Before 6.53.0 a forged baseline entry cleared a Bash edit of LIMITS.md (audit 2026-10-07). For an ORDINARY
+//     path the
 //     baseline IS the reference, the baseline lives under `.pharn/` — which Bash reaches — and nothing
 //     authenticates it. So a writer who edits a denied file AND rewrites that file's baseline entry to
 //     the new hash gets a SILENT `CLEAN`: no escape, no warning, no INCONCLUSIVE. Therefore:
@@ -107,7 +112,9 @@
 //     category as the OS sandbox in LIMITS.md §6, and just as absent. Raised in review; the accepted
 //     remedy offered there was "narrow the documented guarantee", and this is that narrowing.
 //  6. A COMMITTED change moves HEAD too, so the control-surface fallback cannot see it. The backstop
-//     there is Code-Owner review, which is where CODEOWNERS already sits.
+//     there is Code-Owner review, which is where CODEOWNERS already sits. (The baseline comparison DOES see a
+//     committed change; since 6.52.0 it is classified `merged` rather than an escape only when the committed
+//     bytes are upstream's — a commit the build makes itself stays an escape. See THE `merged` CLASSIFICATION.)
 //  7. THIS FILE CANNOT VOUCH FOR ITSELF. /pharn-*verify runs the WORKTREE copy of this checker through
 //     Bash, so a modified checker can print `CLEAN` without reconciling anything. `pharn/floor/` is in
 //     `always_reconciled`, which means a modified checker is detected — BY ITSELF, which is circular and
@@ -129,13 +136,16 @@
 //   pharn/floor/check-lessons-index.mjs takes for COLD. /verify passes --require-baseline because a
 //   build DID run, so there an absent baseline is a real refusal.
 
+import "./runtime-floor.mjs";
 import { readFileSync, writeFileSync, existsSync, statSync, mkdtempSync, mkdirSync, copyFileSync } from "node:fs";
 import { resolve, join, dirname, basename } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { enumerate, hashFile, RECORD_VERSION, RECORD_PATH } from "./reconcile-baseline.mjs";
 import { openRun } from "./run-marker.mjs";
+import { WIDENED_REASON, ESCAPE_REASONS } from "./reconcile-detail-core.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const IGNORE_DATA_PATH = join(HERE, "reconcile-ignore.json");
@@ -172,6 +182,8 @@ export function loadIgnoreData(path = IGNORE_DATA_PATH) {
   const exempt = (raw.exempt?.paths ?? []).map((e) => String(e.path));
   const neverExempt = (raw.never_exempt?.paths ?? []).map(String);
   const alwaysExact = (raw.always_reconciled?.exact ?? []).map(String);
+  const humanOnly = (raw.always_reconciled?.human_only ?? []).map(String);
+  const humanOnlyPrefixes = (raw.always_reconciled?.human_only_prefixes ?? []).map(String);
   const alwaysPrefixes = (raw.always_reconciled?.prefixes ?? []).map(String);
   // A `never_exempt` member may NEVER be exempted, whatever `exempt` says. Enforced here (not only in a
   // test) so a bad edit fails closed at RUN time rather than only under `npm test`.
@@ -180,7 +192,7 @@ export function loadIgnoreData(path = IGNORE_DATA_PATH) {
     return { ok: false, reason: `reconcile-ignore.json exempts a never_exempt path: ${offenders.join(", ")}` };
   }
   const pipelineNames = (raw.pipeline_artifacts?.names ?? []).map(String);
-  return { ok: true, exempt, neverExempt, alwaysExact, alwaysPrefixes, pipelineNames };
+  return { ok: true, exempt, neverExempt, alwaysExact, humanOnly, humanOnlyPrefixes, alwaysPrefixes, pipelineNames };
 }
 
 // --- A stage's OWN pipeline artifact (lessons-learned L17). `pharn/features/<slug>/<NAME>` or the same under
@@ -214,8 +226,40 @@ export function isPipelineArtifact(rel, data, activeSlug = null) {
   return /^lenses\/[A-Za-z0-9._-]+\/findings\.json$/.test(tail);
 }
 
+// The human-only half (6.53.0): the four trusted docs, CODEOWNERS at its three locations, the project SPEC template,
+// and the whole memory-bank canon subtree, dev and product. Listed in reconcile-ignore.json, pinned to the hook.
+export function isHumanOnly(rel, data) {
+  return (data.humanOnly ?? []).includes(rel) || (data.humanOnlyPrefixes ?? []).some((p) => rel.startsWith(p));
+}
+
 export function isAlwaysReconciled(rel, data) {
-  return data.alwaysExact.includes(rel) || data.alwaysPrefixes.some((p) => rel.startsWith(p));
+  return data.alwaysExact.includes(rel) || data.alwaysPrefixes.some((p) => rel.startsWith(p)) || isHumanOnly(rel, data);
+}
+
+// The one-line remedy a human-only escape carries (6.53.0, GATE-1 addition). Reconcile has no attribution
+// (lessons-learned L68), so a maintainer's own uncommitted edit of a trusted doc, CODEOWNERS, the SPEC template or
+// canon reads exactly like a stray Bash write; this tells them what to do instead of how to silence it.
+export const HUMAN_ONLY_REMEDY =
+  "if this is a human's own edit: commit it before running the gates, or land it outside the build's anchor->verify window (lessons-learned L68) — never re-anchor or edit the baseline to clear it";
+
+// The closed `reason` enum an escape may carry (6.54.0). Absent on every other escape. Since 6.55.0 its ONE copy lives
+// in reconcile-detail-core.mjs, which the two report renderers also read (L35); re-exported here under the same names.
+export { WIDENED_REASON, ESCAPE_REASONS };
+export const WIDENED_REMEDY =
+  "this path was added to the plan's `## Files` after the build anchored, and the anchored plan does not authorize it: declare every path in `## Files` BEFORE the build's Step 0 (the only widening that stays clean), or, if the human approves the widened plan, accept this at the post-review gate — never re-anchor or edit the baseline to clear it";
+
+// `set_by` as git and the setter would spell it: `/` separators, no leading `./`. Untrusted data, compared only.
+export function normalizeSetBy(setBy) {
+  return String(setBy ?? "")
+    .replace(/\\/g, "/")
+    .replace(/^(?:\.\/)+/, "");
+}
+
+// A stage command file: EXACTLY one path segment under `.claude/commands/`, ending `.md` (GATE-2 A1). A prefix test
+// admitted `.claude/commands/../../x/PLAN.md`, a plan dressed as a command; `..` and `.` cannot be a segment here.
+export function isCommandOrigin(setBy) {
+  const m = /^\.claude\/commands\/([^/]+\.md)$/.exec(normalizeSetBy(setBy));
+  return m !== null && m[1] !== ".." && !m[1].startsWith("..");
 }
 
 // --- EXECUTE a hook against one candidate path and read its exit code. -----------------------------
@@ -309,6 +353,190 @@ export function makeDefaultProbeSandbox(root) {
   return dir;
 }
 
+// ================================ THE `merged` CLASSIFICATION (6.52.0) ================================
+//
+// WHY (P7 — measured, audit 2026-10-07 P3-L): a `git merge` of upstream into the worktree moves bytes without
+// any write tool, so every path upstream changed differs from its baseline entry and — being outside the
+// build's scope — read as "a write reached it outside the guarded tool surface". On the maintainer's checkout a
+// day-old baseline reported 9 such escapes, all legitimate merges (two dependency bumps, a docs PR that touched
+// trusted docs); a ship agent that merges origin/main mid-run met the same RED at verify. That is
+// lessons-learned L17's failure class: a changed-since-anchor fact reported as a wrote-outside-scope claim.
+//
+// WHAT: a path that WOULD be an escape is classified `merged` instead — reported in `merged[]` and named in a
+// warning, never silently dropped (L48) — iff ALL of these hold. Each is an object-id / byte equality or a git
+// exit code (ARCHITECTURE §2 primitives #2 and #3); ANY git failure leaves the path an escape (fail-closed, P5):
+//   (a) the baseline records `anchored_head` X, and HEAD H resolves and differs from X;
+//   (b) X is an ancestor of H — the change lies in the commits X..H (a rebase, a reset elsewhere: no class);
+//   (c) the upstream resolves: the symbolic ref refs/remotes/origin/HEAD, to a commit U, and HEAD and U have a
+//       merge base M (`git merge-base H U`) — the newest upstream commit HEAD contains — that X does NOT
+//       contain, so at least one upstream commit entered HEAD inside the window;
+//   (d) the path's ANCHORED bytes are X's blob (or it is absent from both baseline and X) — so the epoch opened
+//       on exactly the committed state, and no uncommitted edit at anchor time is folded in;
+//   (e) its CURRENT bytes are H's blob — no uncommitted edit on top of the merge;
+//   (f) H's blob equals M's blob, same object id and same mode — THE ANTI-LAUNDERING CONDITION. M is reachable
+//       from upstream, and a commit the build makes itself during the window is not, so a path the build changed
+//       and committed has a blob at H that differs from M's and stays an escape; committing an escape does not
+//       clear it. M rather than U so that a later fetch, which moves U past the merged commit, does not undo the
+//       classification (U's newer bytes for the path are not HEAD's; M's still are).
+// The digest of a blob is the baseline's own rule: SHA-256 of its bytes, or of `symlink\0` + bytes for mode
+// 120000. Only modes 100644 / 100755 / 120000 qualify; a gitlink or a tree is never classified.
+//
+// WHY ONLY WOULD-BE ESCAPES: an authorized path is never re-labelled, and a CLEAN run makes no extra git call.
+// It applies to every escape KIND — a trusted doc or canon (protect-trusted-paths.cjs), the control surface,
+// an ordinary path — because the condition is about where the bytes came from, not which guard denied them.
+//
+// BOUNDS, stated (P0). This buys PRECISION (fewer false REDs), never strength (L42's bound):
+//   • Bytes equal to upstream's are classified `merged` whoever wrote them — `git checkout origin/main -- p`
+//     or a Bash write that happens to produce upstream's exact bytes included. That is the class's meaning.
+//   • refs/remotes/origin/HEAD and the ref it names are local, Bash-movable aliases (L32). A STALE fetch only
+//     makes the classification miss, so the RED stays — the loud direction. Moving the ref with Bash, or pushing
+//     the build's own commit to the upstream branch and fetching it back, is outside the non-adversarial claim
+//     the reconciliation contract already states. HEAD and the upstream are read NOW; only X was recorded THEN
+//     (L42, L58), and every read is safe in its direction because each one can only withhold the class.
+//   • A clone made by `git init` + `git remote add` has no refs/remotes/origin/HEAD; the class is then inert and
+//     the warning names `git remote set-head origin --auto`. A remote not named `origin` is not consulted.
+//   • A conflict resolved by hand yields a blob equal to neither side, so (f) fails and an out-of-scope path stays
+//     an escape. Line-ending or filter conversion (`.gitattributes` eol, LFS) makes (e) fail the same way.
+//   • A shallow clone can lack the history (b) needs; that reads as "could not decide", never as an ancestor.
+const MERGEABLE_MODES = new Set(["100644", "100755", "120000"]);
+// A full git object id: SHA-1 (40 hex) or SHA-256 (64 hex). Every commit operand passed to git matches it first.
+const OBJECT_ID_RE = /^[0-9a-f]{40}(?:[0-9a-f]{24})?$/;
+
+// Every pathspec is LITERAL (GIT_LITERAL_PATHSPECS, the env form of `--literal-pathspecs`): a filename is an
+// untrusted operand, never a pattern. Measured (GATE-2 A2): `ls-tree` already reads `*` and `?` literally, but it
+// honours pathspec MAGIC — `:(top)dep.json` names `dep.json` — and the env switches that off. argv only — no shell
+// parses a path.
+const GIT_ENV = { ...process.env, GIT_LITERAL_PATHSPECS: "1" };
+
+function git(root, args, encoding = "utf8") {
+  return execFileSync("git", args, {
+    cwd: root,
+    encoding,
+    env: GIT_ENV,
+    maxBuffer: 1 << 28,
+    stdio: ["ignore", "pipe", "ignore"],
+  });
+}
+
+// git's one-line answer, trimmed, or null on a non-zero exit or an empty answer.
+function gitLine(root, args) {
+  try {
+    return git(root, args).trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+function gitOk(root, args) {
+  const r = spawnSync("git", args, { cwd: root, env: GIT_ENV, stdio: "ignore", maxBuffer: 1 << 20 });
+  return r.error ? null : r.status;
+}
+
+// One path's entry in one commit: { absent: true } | { mode, oid, digest } | null (unusable — fail closed).
+function blobAt(root, commit, rel) {
+  let out;
+  try {
+    out = git(root, ["ls-tree", "-z", "--full-tree", commit, "--", rel]);
+  } catch {
+    return null;
+  }
+  const rows = out.split("\0").filter(Boolean);
+  const hit = rows.map((row) => /^(\d{6}) (\w+) ([0-9a-f]{40,64})\t([\s\S]*)$/.exec(row)).filter((m) => m && m[4] === rel);
+  if (hit.length === 0) return rows.length === 0 ? { absent: true } : null;
+  const [, mode, type, oid] = hit[0];
+  if (type !== "blob" || !MERGEABLE_MODES.has(mode)) return null;
+  let bytes;
+  try {
+    bytes = git(root, ["cat-file", "blob", oid], "buffer");
+  } catch {
+    return null;
+  }
+  const h = createHash("sha256");
+  if (mode === "120000") h.update("symlink\0");
+  return { mode, oid, digest: h.update(bytes).digest("hex") };
+}
+
+function revCommit(root, rev) {
+  try {
+    const out = git(root, ["rev-parse", "--verify", "-q", `${rev}^{commit}`]).trim();
+    return OBJECT_ID_RE.test(out) ? out : null;
+  } catch {
+    return null;
+  }
+}
+
+// Exported for the tests. Returns { merged: [rel…], warnings: [string…] }. `files` are the would-be escapes.
+export function classifyMerged(root, baseline, files) {
+  const merged = [];
+  const warnings = [];
+  if (files.length === 0) return { merged, warnings };
+  // The baseline is unauthenticated state, so anchored_head is an untrusted operand: shape-checked as a full
+  // object id BEFORE it reaches git, where a value starting with `-` would parse as an option (GATE-2 A1).
+  const raw = baseline?.anchored_head;
+  const x = typeof raw === "string" && OBJECT_ID_RE.test(raw) ? raw : null;
+  const h = revCommit(root, "HEAD");
+  if (x === null) {
+    warnings.push(
+      raw === undefined || raw === null
+        ? "merged classification unavailable: the baseline records no anchored_head (anchored before 6.52.0, or on an unborn HEAD) — the next anchor records it"
+        : "merged classification unavailable: the baseline's anchored_head is not a full object id — refused, never passed to git"
+    );
+    return { merged, warnings };
+  }
+  if (h === null || h === x) return { merged, warnings }; // HEAD did not move: nothing was merged in the window
+  const anc = gitOk(root, ["merge-base", "--is-ancestor", x, h]);
+  if (anc !== 0) {
+    warnings.push(
+      anc === 1
+        ? `merged classification unavailable: HEAD moved since the anchor (${x.slice(0, 12)} -> ${h.slice(0, 12)}) but the anchored commit is not its ancestor (a rebase or a reset) — every changed path is judged as a write`
+        : `merged classification unavailable: HEAD moved since the anchor (${x.slice(0, 12)} -> ${h.slice(0, 12)}) and git could not decide ancestry (a shallow clone, or a missing object)`
+    );
+    return { merged, warnings };
+  }
+  const upstreamRef = gitLine(root, ["symbolic-ref", "-q", "refs/remotes/origin/HEAD"]);
+  const u = upstreamRef ? revCommit(root, upstreamRef) : null;
+  if (u === null) {
+    warnings.push(
+      `merged classification unavailable: HEAD moved since the anchor (${x.slice(0, 12)} -> ${h.slice(0, 12)}) but refs/remotes/origin/HEAD does not resolve — run \`git remote set-head origin --auto\` to name the upstream`
+    );
+    return { merged, warnings };
+  }
+  const m = gitLine(root, ["merge-base", h, u]);
+  if (!m || !OBJECT_ID_RE.test(m)) {
+    warnings.push(
+      `merged classification unavailable: HEAD moved since the anchor (${x.slice(0, 12)} -> ${h.slice(0, 12)}) but HEAD and ${upstreamRef} share no merge base`
+    );
+    return { merged, warnings };
+  }
+  // M must be NEW since the anchor: if the anchored commit already contained it, no upstream commit entered
+  // HEAD in the window, so no change here is explained by a merge — HEAD moved only by the build's own commits.
+  const mInX = gitOk(root, ["merge-base", "--is-ancestor", m, x]);
+  if (mInX !== 1) {
+    if (mInX !== 0) {
+      warnings.push(`merged classification unavailable: git could not decide whether ${m.slice(0, 12)} is in the anchored commit`);
+    }
+    return { merged, warnings };
+  }
+  for (const rel of files) {
+    const atH = blobAt(root, h, rel);
+    if (!atH || atH.absent) continue;
+    const atM = blobAt(root, m, rel);
+    if (!atM || atM.absent || atM.oid !== atH.oid || atM.mode !== atH.mode) continue; // (f)
+    if (hashFile(resolve(root, rel)) !== atH.digest) continue; // (e)
+    const atX = blobAt(root, x, rel);
+    if (!atX) continue;
+    const before = Object.hasOwn(baseline.entries, rel) ? baseline.entries[rel] : undefined;
+    if (atX.absent ? before !== undefined : before !== atX.digest) continue; // (d)
+    merged.push(rel);
+  }
+  if (merged.length) {
+    warnings.push(
+      `HEAD moved since the anchor (${x.slice(0, 12)} -> ${h.slice(0, 12)}); ${merged.length} path(s) classified merged — each one's anchored bytes are its blob at the anchored commit, its bytes now are its blob at HEAD, and that blob is its blob at ${m.slice(0, 12)}, the merge base of HEAD and ${upstreamRef}`
+    );
+  }
+  return { merged, warnings };
+}
+
 function emit(obj, code) {
   console.log(JSON.stringify(obj, null, 2));
   process.exit(code);
@@ -380,13 +608,27 @@ function main(argv) {
   // surface to `HEAD` instead anchors it in something the monitored channel cannot rewrite in place.
   // This is the difference between the guarantee this file CLAIMS and the one an earlier draft
   // implemented, and it was caught in review rather than by a test.
+  //
+  // ADDED FILES TOO (6.53.0). `git diff HEAD` lists tracked paths only, so a control path ABSENT at HEAD — no
+  // pharn.spec-template.md yet, a new pharn/floor/x.mjs — could be created through Bash, have its baseline entry
+  // forged, and read CLEAN (or NO_BASELINE with no baseline at all). The untracked-not-ignored control paths are
+  // therefore added from git's own `--others --exclude-standard` listing, filtered to the control surface ONLY, so
+  // an untracked file anywhere else is still judged by the baseline alone, exactly as before. BOUND: a git-ignored
+  // control path is invisible — including one ignored only through .git/info/exclude — as every ignored path is.
   function controlSurfaceChanges() {
     try {
-      const out = execFileSync("git", ["diff", "--name-only", "HEAD", "--"], { cwd: root, encoding: "utf8", maxBuffer: 1 << 26 });
-      return out
-        .split("\n")
-        .filter(Boolean)
-        .filter((rel) => isAlwaysReconciled(rel, data));
+      // NUL-separated (6.53.0, GATE-2 R2): newline-split output is QUOTED by git's default core.quotePath for any
+      // non-ASCII name ("\303\274"), so such a control path failed isAlwaysReconciled and was missed silently.
+      // `-z` prints names verbatim. `--no-renames`: with rename detection on, a staged `git mv` of a control file
+      // lists only the NEW name, so the control path it left was missed the same way.
+      const out = execFileSync("git", ["diff", "--name-only", "-z", "--no-renames", "HEAD", "--"], {
+        cwd: root,
+        encoding: "utf8",
+        maxBuffer: 1 << 26,
+      });
+      const tracked = out.split("\0").filter(Boolean);
+      const untracked = git(root, ["ls-files", "-z", "--others", "--exclude-standard"]).split("\0").filter(Boolean);
+      return [...new Set([...tracked, ...untracked])].filter((rel) => isAlwaysReconciled(rel, data));
     } catch {
       warnings.push("control-surface blob-id reconciliation unavailable (no git HEAD) — baseline comparison only");
       return null;
@@ -459,10 +701,27 @@ function main(argv) {
   // Residual, stated: a RE-POINTED link that no recorded scope names still gets the uniform "would have DENIED"
   // sentence below. The guards cannot see a re-point at all (a Write writes through the link), so for a link
   // re-pointed to an in-scope target that sentence describes this scope match, not a decision a guard made.
-  const authorizingScope = (rel) => recordedScopes.find((s) => matchesAny(rel, s.scope)) ?? null;
+  //
+  // A PLAN-ORIGIN AMENDMENT AUTHORIZES NOTHING THE SNAPSHOT DID NOT (6.54.0, audit P2-I). The plan is model-authored,
+  // so Bash-editing PLAN.md's `## Files`, re-running the setter and `--amend-scope` used to make any write CLEAN:
+  // the union above took every recorded scope at face value (lessons-learned L48's silent direction). An amendment is
+  // now trusted to authorize NEW paths only when its `set_by` is a stage command file (`.claude/commands/*.md` — the
+  // only `--from-frontmatter` origins, each narrowed to that stage's own artifacts by `--target`; the promote canon
+  // write, L42's F3, is one). Any other origin is a plan re-derivation: it may re-authorize what the opening snapshot
+  // already covered, and a path ONLY it covers is an escape with the closed reason `plan-widened-after-anchor`. The
+  // test is the origin, not "equal set_by + strict superset": a plan copied to a new path, or a re-plan that adds one
+  // path and drops another, is the same widening. COST, accepted at GATE 1 (option A): a LEGITIMATE mid-build re-plan
+  // is reported too — the reconciler cannot tell an Edit-tool PLAN edit from a Bash one — so it reds verify and is a
+  // STOP_TERMINAL in /pharn-loop; the human decides. BOUND: the opening snapshot is itself unauthenticated (bound 5),
+  // and a Bash-written scope record claiming a command `set_by` is outside the non-adversarial claim.
+  const commandOrigin = (s) => isCommandOrigin(s.set_by);
+  const authorizing = [scopeSnapshot, ...amendments.filter(commandOrigin)].filter((s) => s && Array.isArray(s.scope));
+  const planAmendments = amendments.filter((s) => s && Array.isArray(s.scope) && !commandOrigin(s));
+  const authorizingScope = (rel) => authorizing.find((s) => matchesAny(rel, s.scope)) ?? null;
+  const widenedBy = (rel) => planAmendments.find((s) => matchesAny(rel, s.scope)) ?? null;
 
   let sandbox = null;
-  const escapes = [];
+  let escapes = [];
   for (const rel of candidates) {
     const auth = authorizingScope(rel);
     const p = askHook(protectHook, rel, root);
@@ -492,11 +751,12 @@ function main(argv) {
     // tell a build-scope write from an amendment's without opening the baseline.
     if (recordedScopes.length > 0) {
       if (auth === null) {
-        escapes.push({
-          file: rel,
-          denied_by: "writes-scope (snapshot)",
-          scope_set_by: (scopeSnapshot ?? recordedScopes[0]).set_by,
-        });
+        const widened = widenedBy(rel);
+        escapes.push(
+          widened
+            ? { file: rel, denied_by: "writes-scope (snapshot)", reason: WIDENED_REASON, scope_set_by: widened.set_by }
+            : { file: rel, denied_by: "writes-scope (snapshot)", scope_set_by: (scopeSnapshot ?? recordedScopes[0]).set_by }
+        );
       }
       continue;
     }
@@ -518,6 +778,21 @@ function main(argv) {
     if (d.denied) escapes.push({ file: rel, denied_by: "writes-scope (fail-closed default)" });
   }
 
+  // --- merged: a would-be escape whose change is exactly upstream's, merged into HEAD (see the section above).
+  // Only with a baseline — without one there is no anchored commit, and the control-surface-vs-HEAD candidates
+  // are uncommitted by construction, so (e) could never hold.
+  let merged = [];
+  if (baseline && escapes.length) {
+    const m = classifyMerged(
+      root,
+      baseline,
+      escapes.map((e) => e.file)
+    );
+    merged = m.merged;
+    warnings.push(...m.warnings);
+    escapes = escapes.filter((e) => !merged.includes(e.file));
+  }
+
   const base = {
     verdict: baseline ? (escapes.length ? "ESCAPE" : "CLEAN") : escapes.length ? "ESCAPE" : "NO_BASELINE",
     epoch: baseline?.epoch ?? null,
@@ -525,6 +800,7 @@ function main(argv) {
     reconciled: candidates.length,
     escapes,
     exempted,
+    merged,
     warnings,
   };
   if (escapes.length) {
@@ -533,7 +809,10 @@ function main(argv) {
       rule_id: "P0",
       severity: "blocking",
       file: e.file,
-      problem: `'${e.file}' changed since the reconciliation anchor, and the write guards would have DENIED a write to it (${e.denied_by}) — a write reached it outside the guarded tool surface`,
+      problem:
+        `'${e.file}' changed since the reconciliation anchor, and the write guards would have DENIED a write to it (${e.denied_by}) — a write reached it outside the guarded tool surface` +
+        (isHumanOnly(e.file, data) ? `; ${HUMAN_ONLY_REMEDY}` : "") +
+        (e.reason === WIDENED_REASON ? ` [${WIDENED_REASON}]; ${WIDENED_REMEDY}` : ""),
     }));
   }
   emit(base, escapes.length ? 1 : 0);
