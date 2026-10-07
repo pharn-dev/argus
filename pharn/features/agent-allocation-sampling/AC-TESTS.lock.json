@@ -1,0 +1,83 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "agent-allocation-sampling",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "agent-allocation-sampling",
+    "spec_content_hash": "63025b8f5b9b93838148e7b6a281c8c67b387d9d9a0daa7a336fcf9ebbdca15c"
+  },
+  "mapping": {
+    "path": "pharn/features/agent-allocation-sampling/AC-TESTS.md",
+    "sha256": "9a85055576c19df66b9a2c4b2f7e5032642958ffba7d65fdaa9998b756ca30ba"
+  },
+  "files": [
+    {
+      "path": "src/agent/allocation-sampling.ac1.integration.test.ts",
+      "sha256": "68f85513b59bab7f08bf899bef924c867413e6d012ef0ef804e42dd77e5d3016"
+    },
+    {
+      "path": "src/agent/allocation-sampling.ac2.integration.test.ts",
+      "sha256": "0e3910b9acd3570f1da4078d5bd30cd822a0e4f5f73fa6188a10d329a18dd9c9"
+    },
+    {
+      "path": "src/agent/allocation-sampling.ac3.test.ts",
+      "sha256": "922ca0ce6757671ab7915887ffc13dd826219003999ac28f4fb44741eacf2a25"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "6a49c1a3f863114d6773d2189e011df327d56ad9efba530a75402a3494f73034",
+    "files_sha256": "52a8e75a257cbe5c1f03ee2f47c9673bee485a0c72696b56cbe6d49ca246f29b",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "7af970f4d17896b1652a28e4aae48740eba2cdb0a48ad43faf35f3a2379206b4"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/agent/allocation-sampling.ac1.integration.test.ts::agent allocation sampling — AC-1 › AC-1: sampleAllocations resolves with non-empty integer-sized sites ordered largest first, including the allocating test function"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/agent/allocation-sampling.ac2.integration.test.ts::agent allocation sampling — AC-2 › AC-2: a second same-tick sampleAllocations call rejects as already in progress, and a later call resolves"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/agent/allocation-sampling.ac3.test.ts::agent allocation sampling — AC-3 › AC-3: invalid samplingInterval or durationMs rejects with an Error naming the option, and a later valid call resolves"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration",
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}
