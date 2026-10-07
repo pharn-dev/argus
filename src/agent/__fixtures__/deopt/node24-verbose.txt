@@ -1,0 +1,309 @@
+[bailout (kind: deopt-eager, reason: Insufficient type feedback for call): begin. deoptimizing 0x27538f3a4151 <JSFunction (sfi = 0x311030f94e61)>, 0x3c1acb041219 <Code MAGLEV>, opt id 4, bytecode offset 48, deopt exit 6, FP to SP delta 160, caller SP 0x00016d421770, pc 0x00012be42954]
+            ;;; deoptimize at </app/deopt.js:3:1>
+  reading input frame  => bytecode_offset=48, args=6, height=14, retval=0(#0); inputs:
+      0: 0x27538f3a4151 ;  [fp -  16]  0x27538f3a4151 <JSFunction (sfi = 0x311030f94e61)>
+      1: 0x27538f3a2769 ;  [fp +  16]  0x27538f3a2769 <Object map = 0x618ff20c639>
+      2: 0x27538f3a2769 ;  [fp +  24]  0x27538f3a2769 <Object map = 0x618ff20c639>
+      3: 0x27538f3a4499 ;  [fp +  32]  0x27538f3a4499 <JSFunction require (sfi = 0x14bb6f6ad0b9)>
+      4: 0x27538f3a2519 ;  [fp +  40]  0x27538f3a2519 <Module map = 0x311030f95719>
+      5: 0x27538f39fc59 ;  [fp +  48]  0x27538f39fc59 <String[120]: >"/app/deopt.js">
+      6: 0x27538f3a4421 ;  [fp +  56]  0x27538f3a4421 <String[111]: "/app">
+      7: 0x0618ff200109 ;  [fp -   8]  0x0618ff200109 <NativeContext[302]>
+      8: 0x27538f3a4af9 ;  [fp -  56]  0x27538f3a4af9 <JSFunction add (sfi = 0x311030f94ed1)>
+      9: (optimized out)
+     10: 0x27538f3a4b39 ;  [fp -  72]  0x27538f3a4b39 <JSFunction getX (sfi = 0x311030f94f19)>
+     11: 0x27538f3a4b79 ;  [fp -  80]  0x27538f3a4b79 <JSFunction arr (sfi = 0x311030f94f61)>
+     12: (optimized out)
+     13: (optimized out)
+     14: (optimized out)
+     15: (optimized out)
+     16: (optimized out)
+     17: (optimized out)
+     18: 0x2c83f64456f9 ; (literal  6) 0x2c83f64456f9 <String[1]: #x>
+     19: 0x2c83f6445711 ; (literal  7) 0x2c83f6445711 <String[1]: #y>
+     20: (optimized out)
+     21: (optimized out)
+     22: (optimized out)
+  translating interpreted frame  => bytecode_offset=48, variable_frame_size=128, frame_size=240
+    0x00016d421768: [top + 232] <- 0x27538f3a4421 <String[111]: "/app"> ;  stack parameter (input #6)
+    0x00016d421760: [top + 224] <- 0x27538f39fc59 <String[120]: >"/app/deopt.js"> ;  stack parameter (input #5)
+    0x00016d421758: [top + 216] <- 0x27538f3a2519 <Module map = 0x311030f95719> ;  stack parameter (input #4)
+    0x00016d421750: [top + 208] <- 0x27538f3a4499 <JSFunction require (sfi = 0x14bb6f6ad0b9)> ;  stack parameter (input #3)
+    0x00016d421748: [top + 200] <- 0x27538f3a2769 <Object map = 0x618ff20c639> ;  stack parameter (input #2)
+    0x00016d421740: [top + 192] <- 0x27538f3a2769 <Object map = 0x618ff20c639> ;  stack parameter (input #1)
+    -------------------------
+    0x00016d421738: [top + 184] <- 0x000103958bec ;  bottommost caller's pc
+    0x00016d421730: [top + 176] <- 0x00016d421830 ;  caller's fp
+    0x00016d421728: [top + 168] <- 0x0618ff200109 <NativeContext[302]> ;  context (input #7)
+    0x00016d421720: [top + 160] <- 0x27538f3a4151 <JSFunction (sfi = 0x311030f94e61)> ;  function (input #0)
+    0x00016d421718: [top + 152] <- 0x000000000006 ;  actual argument count
+    0x00016d421710: [top + 144] <- 0x3c989c4416d9 <BytecodeArray[219]> ;  bytecode array
+    0x00016d421708: [top + 136] <- 0x006f00000000 <Smi 111> ;  bytecode offset
+    0x00016d421700: [top + 128] <- 0x2c83f6448e81 <arguments_marker> ;  feedback vector    -------------------------
+    0x00016d4216f8: [top + 120] <- 0x27538f3a4af9 <JSFunction add (sfi = 0x311030f94ed1)> ;  stack parameter (input #8)
+    0x00016d4216f0: [top + 112] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #9)
+    0x00016d4216e8: [top + 104] <- 0x27538f3a4b39 <JSFunction getX (sfi = 0x311030f94f19)> ;  stack parameter (input #10)
+    0x00016d4216e0: [top +  96] <- 0x27538f3a4b79 <JSFunction arr (sfi = 0x311030f94f61)> ;  stack parameter (input #11)
+    0x00016d4216d8: [top +  88] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #12)
+    0x00016d4216d0: [top +  80] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #13)
+    0x00016d4216c8: [top +  72] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #14)
+    0x00016d4216c0: [top +  64] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #15)
+    0x00016d4216b8: [top +  56] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #16)
+    0x00016d4216b0: [top +  48] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #17)
+    0x00016d4216a8: [top +  40] <- 0x2c83f64456f9 <String[1]: #x> ;  stack parameter (input #18)
+    0x00016d4216a0: [top +  32] <- 0x2c83f6445711 <String[1]: #y> ;  stack parameter (input #19)
+    0x00016d421698: [top +  24] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #20)
+    0x00016d421690: [top +  16] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #21)
+    0x00016d421688: [top +   8] <- 0x2c83f6440d31 <the_hole_value> ;  padding
+    0x00016d421680: [top +   0] <- 0x2c83f6448eb1 <optimized_out> ;  accumulator (input #22)
+[bailout end. took 1.708 ms]
+[bailout (kind: deopt-eager, reason: not a Smi): begin. deoptimizing 0x27538f3a4af9 <JSFunction add (sfi = 0x311030f94ed1)>, 0x3c1acb040941 <Code MAGLEV>, opt id 1, bytecode offset 2, deopt exit 0, FP to SP delta 32, caller SP 0x00016d421688, pc 0x00012be817a4]
+            ;;; deoptimize at </app/deopt.js:1:31>
+  reading input frame add => bytecode_offset=2, args=3, height=0, retval=0(#0); inputs:
+      0: 0x27538f3a4af9 ; (literal  1) 0x27538f3a4af9 <JSFunction add (sfi = 0x311030f94ed1)>
+      1: 0x0618ff200059 ;  [fp +  16]  0x0618ff200059 <JSGlobalProxy>
+      2: 0x2c83f64456f9 ;  [fp +  24]  0x2c83f64456f9 <String[1]: #x>
+      3: 0x2c83f6445711 ;  [fp +  32]  0x2c83f6445711 <String[1]: #y>
+      4: 0x0618ff200109 ; (literal  2) 0x0618ff200109 <NativeContext[302]>
+      5: 0x2c83f6445711 ;  [fp +  32]  0x2c83f6445711 <String[1]: #y>
+  translating interpreted frame add => bytecode_offset=2, variable_frame_size=16, frame_size=104
+    0x00016d421680: [top +  96] <- 0x2c83f6445711 <String[1]: #y> ;  stack parameter (input #3)
+    0x00016d421678: [top +  88] <- 0x2c83f64456f9 <String[1]: #x> ;  stack parameter (input #2)
+    0x00016d421670: [top +  80] <- 0x0618ff200059 <JSGlobalProxy> ;  stack parameter (input #1)
+    -------------------------
+    0x00016d421668: [top +  72] <- 0x0001039596e0 ;  bottommost caller's pc
+    0x00016d421660: [top +  64] <- 0x00016d421730 ;  caller's fp
+    0x00016d421658: [top +  56] <- 0x0618ff200109 <NativeContext[302]> ;  context (input #4)
+    0x00016d421650: [top +  48] <- 0x27538f3a4af9 <JSFunction add (sfi = 0x311030f94ed1)> ;  function (input #0)
+    0x00016d421648: [top +  40] <- 0x000000000003 ;  actual argument count
+    0x00016d421640: [top +  32] <- 0x3c989c441869 <BytecodeArray[6]> ;  bytecode array
+    0x00016d421638: [top +  24] <- 0x004100000000 <Smi 65> ;  bytecode offset
+    0x00016d421630: [top +  16] <- 0x2c83f6448e81 <arguments_marker> ;  feedback vector    -------------------------
+    0x00016d421628: [top +   8] <- 0x2c83f6440d31 <the_hole_value> ;  padding
+    0x00016d421620: [top +   0] <- 0x2c83f6445711 <String[1]: #y> ;  accumulator (input #5)
+[bailout end. took 0.334 ms]
+[bailout (kind: deopt-eager, reason: Insufficient type feedback for compare operation): begin. deoptimizing 0x27538f3a4151 <JSFunction (sfi = 0x311030f94e61)>, 0x3c1acb041799 <Code MAGLEV>, opt id 6, bytecode offset 115, deopt exit 4, FP to SP delta 160, caller SP 0x00016d421770, pc 0x00012be83264]
+            ;;; deoptimize at </app/deopt.js:7:19>
+  reading input frame  => bytecode_offset=115, args=6, height=14, retval=0(#0); inputs:
+      0: 0x27538f3a4151 ;  [fp -  16]  0x27538f3a4151 <JSFunction (sfi = 0x311030f94e61)>
+      1: 0x27538f3a2769 ;  [fp +  16]  0x27538f3a2769 <Object map = 0x618ff20c639>
+      2: 0x27538f3a2769 ;  [fp +  24]  0x27538f3a2769 <Object map = 0x618ff20c639>
+      3: 0x27538f3a4499 ;  [fp +  32]  0x27538f3a4499 <JSFunction require (sfi = 0x14bb6f6ad0b9)>
+      4: 0x27538f3a2519 ;  [fp +  40]  0x27538f3a2519 <Module map = 0x311030f95719>
+      5: 0x27538f39fc59 ;  [fp +  48]  0x27538f39fc59 <String[120]: >"/app/deopt.js">
+      6: 0x27538f3a4421 ;  [fp +  56]  0x27538f3a4421 <String[111]: "/app">
+      7: 0x0618ff200109 ;  [fp -   8]  0x0618ff200109 <NativeContext[302]>
+      8: (optimized out)
+      9: 0x27538f3a4bf1 ;  [fp - 112]  0x27538f3a4bf1 <JSFunction P (sfi = 0x311030f94fa9)>
+     10: 0x27538f3a4b39 ;  [fp -  72]  0x27538f3a4b39 <JSFunction getX (sfi = 0x311030f94f19)>
+     11: 0x27538f3a4b79 ;  [fp -  80]  0x27538f3a4b79 <JSFunction arr (sfi = 0x311030f94f61)>
+     12: (optimized out)
+     13: (optimized out)
+     14: 0x000000000000 ; (literal  3) 0
+     15: (optimized out)
+     16: (optimized out)
+     17: (optimized out)
+     18: (optimized out)
+     19: (optimized out)
+     20: (optimized out)
+     21: (optimized out)
+     22: 0x30d4000000000 ; (literal  2) 200000
+  translating interpreted frame  => bytecode_offset=115, variable_frame_size=128, frame_size=240
+    0x00016d421768: [top + 232] <- 0x27538f3a4421 <String[111]: "/app"> ;  stack parameter (input #6)
+    0x00016d421760: [top + 224] <- 0x27538f39fc59 <String[120]: >"/app/deopt.js"> ;  stack parameter (input #5)
+    0x00016d421758: [top + 216] <- 0x27538f3a2519 <Module map = 0x311030f95719> ;  stack parameter (input #4)
+    0x00016d421750: [top + 208] <- 0x27538f3a4499 <JSFunction require (sfi = 0x14bb6f6ad0b9)> ;  stack parameter (input #3)
+    0x00016d421748: [top + 200] <- 0x27538f3a2769 <Object map = 0x618ff20c639> ;  stack parameter (input #2)
+    0x00016d421740: [top + 192] <- 0x27538f3a2769 <Object map = 0x618ff20c639> ;  stack parameter (input #1)
+    -------------------------
+    0x00016d421738: [top + 184] <- 0x000103958bec ;  bottommost caller's pc
+    0x00016d421730: [top + 176] <- 0x00016d421830 ;  caller's fp
+    0x00016d421728: [top + 168] <- 0x0618ff200109 <NativeContext[302]> ;  context (input #7)
+    0x00016d421720: [top + 160] <- 0x27538f3a4151 <JSFunction (sfi = 0x311030f94e61)> ;  function (input #0)
+    0x00016d421718: [top + 152] <- 0x000000000006 ;  actual argument count
+    0x00016d421710: [top + 144] <- 0x3c989c4416d9 <BytecodeArray[219]> ;  bytecode array
+    0x00016d421708: [top + 136] <- 0x00b200000000 <Smi 178> ;  bytecode offset
+    0x00016d421700: [top + 128] <- 0x2c83f6448e81 <arguments_marker> ;  feedback vector    -------------------------
+    0x00016d4216f8: [top + 120] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #8)
+    0x00016d4216f0: [top + 112] <- 0x27538f3a4bf1 <JSFunction P (sfi = 0x311030f94fa9)> ;  stack parameter (input #9)
+    0x00016d4216e8: [top + 104] <- 0x27538f3a4b39 <JSFunction getX (sfi = 0x311030f94f19)> ;  stack parameter (input #10)
+    0x00016d4216e0: [top +  96] <- 0x27538f3a4b79 <JSFunction arr (sfi = 0x311030f94f61)> ;  stack parameter (input #11)
+    0x00016d4216d8: [top +  88] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #12)
+    0x00016d4216d0: [top +  80] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #13)
+    0x00016d4216c8: [top +  72] <- 0x000000000000 <Smi 0> ;  stack parameter (input #14)
+    0x00016d4216c0: [top +  64] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #15)
+    0x00016d4216b8: [top +  56] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #16)
+    0x00016d4216b0: [top +  48] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #17)
+    0x00016d4216a8: [top +  40] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #18)
+    0x00016d4216a0: [top +  32] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #19)
+    0x00016d421698: [top +  24] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #20)
+    0x00016d421690: [top +  16] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #21)
+    0x00016d421688: [top +   8] <- 0x2c83f6440d31 <the_hole_value> ;  padding
+    0x00016d421680: [top +   0] <- 0x30d4000000000 <Smi 200000> ;  accumulator (input #22)
+[bailout end. took 1.000 ms]
+[bailout (kind: deopt-eager, reason: Insufficient type feedback for object literal): begin. deoptimizing 0x311030f982a9 <JSFunction (sfi = 0x311030f94e61)>, 0x3c1acb041cd1 <Code MAGLEV>, opt id 8, bytecode offset 141, deopt exit 7, FP to SP delta 160, caller SP 0x00016d421770, pc 0x00012be838c0]
+            ;;; deoptimize at </app/deopt.js:8:1>
+  reading input frame  => bytecode_offset=141, args=6, height=14, retval=0(#0); inputs:
+      0: 0x311030f982a9 ;  [fp -  16]  0x311030f982a9 <JSFunction (sfi = 0x311030f94e61)>
+      1: 0x311030f982e9 ;  [fp +  16]  0x311030f982e9 <Object map = 0x618ff20c639>
+      2: 0x311030f982e9 ;  [fp +  24]  0x311030f982e9 <Object map = 0x618ff20c639>
+      3: 0x311030f98321 ;  [fp +  32]  0x311030f98321 <JSFunction require (sfi = 0x14bb6f6ad0b9)>
+      4: 0x311030f98361 ;  [fp +  40]  0x311030f98361 <Module map = 0x311030f95719>
+      5: 0x311030f94009 ;  [fp +  48]  0x311030f94009 <String[120]: #/app/deopt.js>
+      6: 0x311030f983f1 ;  [fp +  56]  0x311030f983f1 <String[111]: "/app">
+      7: 0x0618ff200109 ;  [fp -   8]  0x0618ff200109 <NativeContext[302]>
+      8: (optimized out)
+      9: (optimized out)
+     10: 0x311030f98229 ;  [fp -  72]  0x311030f98229 <JSFunction getX (sfi = 0x311030f94f19)>
+     11: 0x311030f98269 ;  [fp -  80]  0x311030f98269 <JSFunction arr (sfi = 0x311030f94f61)>
+     12: (optimized out)
+     13: (optimized out)
+     14: (optimized out)
+     15: (optimized out)
+     16: (optimized out)
+     17: (optimized out)
+     18: (optimized out)
+     19: (optimized out)
+     20: (optimized out)
+     21: (optimized out)
+     22: (optimized out)
+  translating interpreted frame  => bytecode_offset=141, variable_frame_size=128, frame_size=240
+    0x00016d421768: [top + 232] <- 0x311030f983f1 <String[111]: "/app"> ;  stack parameter (input #6)
+    0x00016d421760: [top + 224] <- 0x311030f94009 <String[120]: #/app/deopt.js> ;  stack parameter (input #5)
+    0x00016d421758: [top + 216] <- 0x311030f98361 <Module map = 0x311030f95719> ;  stack parameter (input #4)
+    0x00016d421750: [top + 208] <- 0x311030f98321 <JSFunction require (sfi = 0x14bb6f6ad0b9)> ;  stack parameter (input #3)
+    0x00016d421748: [top + 200] <- 0x311030f982e9 <Object map = 0x618ff20c639> ;  stack parameter (input #2)
+    0x00016d421740: [top + 192] <- 0x311030f982e9 <Object map = 0x618ff20c639> ;  stack parameter (input #1)
+    -------------------------
+    0x00016d421738: [top + 184] <- 0x000103958bec ;  bottommost caller's pc
+    0x00016d421730: [top + 176] <- 0x00016d421830 ;  caller's fp
+    0x00016d421728: [top + 168] <- 0x0618ff200109 <NativeContext[302]> ;  context (input #7)
+    0x00016d421720: [top + 160] <- 0x311030f982a9 <JSFunction (sfi = 0x311030f94e61)> ;  function (input #0)
+    0x00016d421718: [top + 152] <- 0x000000000006 ;  actual argument count
+    0x00016d421710: [top + 144] <- 0x3c989c4416d9 <BytecodeArray[219]> ;  bytecode array
+    0x00016d421708: [top + 136] <- 0x00cc00000000 <Smi 204> ;  bytecode offset
+    0x00016d421700: [top + 128] <- 0x2c83f6448e81 <arguments_marker> ;  feedback vector    -------------------------
+    0x00016d4216f8: [top + 120] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #8)
+    0x00016d4216f0: [top + 112] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #9)
+    0x00016d4216e8: [top + 104] <- 0x311030f98229 <JSFunction getX (sfi = 0x311030f94f19)> ;  stack parameter (input #10)
+    0x00016d4216e0: [top +  96] <- 0x311030f98269 <JSFunction arr (sfi = 0x311030f94f61)> ;  stack parameter (input #11)
+    0x00016d4216d8: [top +  88] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #12)
+    0x00016d4216d0: [top +  80] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #13)
+    0x00016d4216c8: [top +  72] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #14)
+    0x00016d4216c0: [top +  64] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #15)
+    0x00016d4216b8: [top +  56] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #16)
+    0x00016d4216b0: [top +  48] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #17)
+    0x00016d4216a8: [top +  40] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #18)
+    0x00016d4216a0: [top +  32] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #19)
+    0x00016d421698: [top +  24] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #20)
+    0x00016d421690: [top +  16] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #21)
+    0x00016d421688: [top +   8] <- 0x2c83f6440d31 <the_hole_value> ;  padding
+    0x00016d421680: [top +   0] <- 0x2c83f6448eb1 <optimized_out> ;  accumulator (input #22)
+[bailout end. took 1.542 ms]
+[bailout (kind: deopt-eager, reason: wrong map): begin. deoptimizing 0x311030f98229 <JSFunction getX (sfi = 0x311030f94f19)>, 0x3c1acb041e91 <Code MAGLEV>, opt id 10, bytecode offset 0, deopt exit 0, FP to SP delta 32, caller SP 0x00016d421690, pc 0x00012be83a6c]
+            ;;; deoptimize at </app/deopt.js:6:29>
+  reading input frame getX => bytecode_offset=0, args=2, height=0, retval=0(#0); inputs:
+      0: 0x311030f98229 ; (literal  1) 0x311030f98229 <JSFunction getX (sfi = 0x311030f94f19)>
+      1: 0x0618ff200059 ;  [fp +  16]  0x0618ff200059 <JSGlobalProxy>
+      2: 0x05f52278fc31 ; x0 0x05f52278fc31 <Object map = 0x311030fa5dd9>
+      3: 0x0618ff200109 ; (literal  2) 0x0618ff200109 <NativeContext[302]>
+      4: (optimized out)
+  translating interpreted frame getX => bytecode_offset=0, variable_frame_size=16, frame_size=96
+    0x00016d421688: [top +  88] <- 0x05f52278fc31 <Object map = 0x311030fa5dd9> ;  stack parameter (input #2)
+    0x00016d421680: [top +  80] <- 0x0618ff200059 <JSGlobalProxy> ;  stack parameter (input #1)
+    -------------------------
+    0x00016d421678: [top +  72] <- 0x0001039596e0 ;  bottommost caller's pc
+    0x00016d421670: [top +  64] <- 0x00016d421730 ;  caller's fp
+    0x00016d421668: [top +  56] <- 0x0618ff200109 <NativeContext[302]> ;  context (input #3)
+    0x00016d421660: [top +  48] <- 0x311030f98229 <JSFunction getX (sfi = 0x311030f94f19)> ;  function (input #0)
+    0x00016d421658: [top +  40] <- 0x000000000002 ;  actual argument count
+    0x00016d421650: [top +  32] <- 0x3c989c442789 <BytecodeArray[5]> ;  bytecode array
+    0x00016d421648: [top +  24] <- 0x003f00000000 <Smi 63> ;  bytecode offset
+    0x00016d421640: [top +  16] <- 0x2c83f6448e81 <arguments_marker> ;  feedback vector    -------------------------
+    0x00016d421638: [top +   8] <- 0x2c83f6440d31 <the_hole_value> ;  padding
+    0x00016d421630: [top +   0] <- 0x2c83f6448eb1 <optimized_out> ;  accumulator (input #4)
+[bailout end. took 0.875 ms]
+[bailout (kind: deopt-eager, reason: Insufficient type feedback for call): begin. deoptimizing 0x311030f982a9 <JSFunction (sfi = 0x311030f94e61)>, 0x3c1acb042671 <Code MAGLEV>, opt id 13, bytecode offset 200, deopt exit 7, FP to SP delta 160, caller SP 0x00016d421770, pc 0x00012be84118]
+            ;;; deoptimize at </app/deopt.js:13:1>
+  reading input frame  => bytecode_offset=200, args=6, height=14, retval=0(#0); inputs:
+      0: 0x311030f982a9 ;  [fp -  16]  0x311030f982a9 <JSFunction (sfi = 0x311030f94e61)>
+      1: 0x311030f982e9 ;  [fp +  16]  0x311030f982e9 <Object map = 0x618ff20c639>
+      2: 0x311030f982e9 ;  [fp +  24]  0x311030f982e9 <Object map = 0x618ff20c639>
+      3: 0x311030f98321 ;  [fp +  32]  0x311030f98321 <JSFunction require (sfi = 0x14bb6f6ad0b9)>
+      4: 0x311030f98361 ;  [fp +  40]  0x311030f98361 <Module map = 0x311030f95719>
+      5: 0x311030f94009 ;  [fp +  48]  0x311030f94009 <String[120]: #/app/deopt.js>
+      6: 0x311030f983f1 ;  [fp +  56]  0x311030f983f1 <String[111]: "/app">
+      7: 0x0618ff200109 ;  [fp -   8]  0x0618ff200109 <NativeContext[302]>
+      8: (optimized out)
+      9: (optimized out)
+     10: (optimized out)
+     11: 0x311030f98269 ;  [fp -  80]  0x311030f98269 <JSFunction arr (sfi = 0x311030f94f61)>
+     12: 0x05f52278ffe1 ;  [fp -  88]  0x05f52278ffe1 <JSArray[3]>
+     13: (optimized out)
+     14: (optimized out)
+     15: (optimized out)
+     16: (optimized out)
+     17: (optimized out)
+     18: (optimized out)
+     19: 0x000a00000000 ; (literal  6) 10
+     20: (optimized out)
+     21: (optimized out)
+     22: (optimized out)
+  translating interpreted frame  => bytecode_offset=200, variable_frame_size=128, frame_size=240
+    0x00016d421768: [top + 232] <- 0x311030f983f1 <String[111]: "/app"> ;  stack parameter (input #6)
+    0x00016d421760: [top + 224] <- 0x311030f94009 <String[120]: #/app/deopt.js> ;  stack parameter (input #5)
+    0x00016d421758: [top + 216] <- 0x311030f98361 <Module map = 0x311030f95719> ;  stack parameter (input #4)
+    0x00016d421750: [top + 208] <- 0x311030f98321 <JSFunction require (sfi = 0x14bb6f6ad0b9)> ;  stack parameter (input #3)
+    0x00016d421748: [top + 200] <- 0x311030f982e9 <Object map = 0x618ff20c639> ;  stack parameter (input #2)
+    0x00016d421740: [top + 192] <- 0x311030f982e9 <Object map = 0x618ff20c639> ;  stack parameter (input #1)
+    -------------------------
+    0x00016d421738: [top + 184] <- 0x000103958bec ;  bottommost caller's pc
+    0x00016d421730: [top + 176] <- 0x00016d421830 ;  caller's fp
+    0x00016d421728: [top + 168] <- 0x0618ff200109 <NativeContext[302]> ;  context (input #7)
+    0x00016d421720: [top + 160] <- 0x311030f982a9 <JSFunction (sfi = 0x311030f94e61)> ;  function (input #0)
+    0x00016d421718: [top + 152] <- 0x000000000006 ;  actual argument count
+    0x00016d421710: [top + 144] <- 0x3c989c4416d9 <BytecodeArray[219]> ;  bytecode array
+    0x00016d421708: [top + 136] <- 0x010700000000 <Smi 263> ;  bytecode offset
+    0x00016d421700: [top + 128] <- 0x2c83f6448e81 <arguments_marker> ;  feedback vector    -------------------------
+    0x00016d4216f8: [top + 120] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #8)
+    0x00016d4216f0: [top + 112] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #9)
+    0x00016d4216e8: [top + 104] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #10)
+    0x00016d4216e0: [top +  96] <- 0x311030f98269 <JSFunction arr (sfi = 0x311030f94f61)> ;  stack parameter (input #11)
+    0x00016d4216d8: [top +  88] <- 0x05f52278ffe1 <JSArray[3]> ;  stack parameter (input #12)
+    0x00016d4216d0: [top +  80] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #13)
+    0x00016d4216c8: [top +  72] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #14)
+    0x00016d4216c0: [top +  64] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #15)
+    0x00016d4216b8: [top +  56] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #16)
+    0x00016d4216b0: [top +  48] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #17)
+    0x00016d4216a8: [top +  40] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #18)
+    0x00016d4216a0: [top +  32] <- 0x000a00000000 <Smi 10> ;  stack parameter (input #19)
+    0x00016d421698: [top +  24] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #20)
+    0x00016d421690: [top +  16] <- 0x2c83f6448eb1 <optimized_out> ;  stack parameter (input #21)
+    0x00016d421688: [top +   8] <- 0x2c83f6440d31 <the_hole_value> ;  padding
+    0x00016d421680: [top +   0] <- 0x2c83f6448eb1 <optimized_out> ;  accumulator (input #22)
+[bailout end. took 0.708 ms]
+[bailout (kind: deopt-eager, reason: out of bounds): begin. deoptimizing 0x311030f98269 <JSFunction arr (sfi = 0x311030f94f61)>, 0x3c1acb0420c9 <Code MAGLEV>, opt id 12, bytecode offset 2, deopt exit 1, FP to SP delta 32, caller SP 0x00016d421688, pc 0x00012be83c68]
+            ;;; deoptimize at </app/deopt.js:10:30>
+  reading input frame arr => bytecode_offset=2, args=3, height=0, retval=0(#0); inputs:
+      0: 0x311030f98269 ; (literal  1) 0x311030f98269 <JSFunction arr (sfi = 0x311030f94f61)>
+      1: 0x0618ff200059 ;  [fp +  16]  0x0618ff200059 <JSGlobalProxy>
+      2: 0x05f52278ffe1 ; x0 0x05f52278ffe1 <JSArray[3]>
+      3: 0x000a00000000 ; x2 10
+      4: 0x0618ff200109 ; (literal  2) 0x0618ff200109 <NativeContext[302]>
+      5: 0x000a00000000 ; x2 10
+  translating interpreted frame arr => bytecode_offset=2, variable_frame_size=16, frame_size=104
+    0x00016d421680: [top +  96] <- 0x000a00000000 <Smi 10> ;  stack parameter (input #3)
+    0x00016d421678: [top +  88] <- 0x05f52278ffe1 <JSArray[3]> ;  stack parameter (input #2)
+    0x00016d421670: [top +  80] <- 0x0618ff200059 <JSGlobalProxy> ;  stack parameter (input #1)
+    -------------------------
+    0x00016d421668: [top +  72] <- 0x0001039596e0 ;  bottommost caller's pc
+    0x00016d421660: [top +  64] <- 0x00016d421730 ;  caller's fp
+    0x00016d421658: [top +  56] <- 0x0618ff200109 <NativeContext[302]> ;  context (input #4)
+    0x00016d421650: [top +  48] <- 0x311030f98269 <JSFunction arr (sfi = 0x311030f94f61)> ;  function (input #0)
+    0x00016d421648: [top +  40] <- 0x000000000003 ;  actual argument count
+    0x00016d421640: [top +  32] <- 0x3c989c442f09 <BytecodeArray[6]> ;  bytecode array
+    0x00016d421638: [top +  24] <- 0x004100000000 <Smi 65> ;  bytecode offset
+    0x00016d421630: [top +  16] <- 0x2c83f6448e81 <arguments_marker> ;  feedback vector    -------------------------
+    0x00016d421628: [top +   8] <- 0x2c83f6440d31 <the_hole_value> ;  padding
+    0x00016d421620: [top +   0] <- 0x000a00000000 <Smi 10> ;  accumulator (input #5)
+[bailout end. took 0.291 ms]

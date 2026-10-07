@@ -89,6 +89,14 @@
     "access": "public",
     "provenance": true
   },
+  "peerDependencies": {
+    "isolated-vm": "^6.1.0"
+  },
+  "peerDependenciesMeta": {
+    "isolated-vm": {
+      "optional": true
+    }
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -109,6 +117,7 @@
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.13.0",
     "happy-dom": "^20.14.5",
+    "isolated-vm": "^6.2.0",
     "prettier": "^3.9.9",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.71.0",

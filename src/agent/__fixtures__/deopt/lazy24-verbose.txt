@@ -1,0 +1,106 @@
+[bailout (kind: deopt-eager, reason: Insufficient type feedback for call): begin. deoptimizing 0x01027c1a4109 <JSFunction (sfi = 0xe2b9c8d4ee1)>, 0x3876149c22e9 <Code MAGLEV>, opt id 7, bytecode offset 122, deopt exit 16, FP to SP delta 128, caller SP 0x00016b6d57c0, pc 0x00012a682e84]
+            ;;; deoptimize at </app/lazy.js:14:1>
+  reading input frame  => bytecode_offset=122, args=6, height=9, retval=0(#0); inputs:
+      0: 0x01027c1a4109 ;  [fp -  16]  0x01027c1a4109 <JSFunction (sfi = 0xe2b9c8d4ee1)>
+      1: 0x01027c1a2759 ;  [fp +  16]  0x01027c1a2759 <Object map = 0x3bec661cc639>
+      2: 0x01027c1a2759 ;  [fp +  24]  0x01027c1a2759 <Object map = 0x3bec661cc639>
+      3: 0x01027c1a4461 ;  [fp +  32]  0x01027c1a4461 <JSFunction require (sfi = 0x254b55fed0b9)>
+      4: 0x01027c1a2509 ;  [fp +  40]  0x01027c1a2509 <Module map = 0xe2b9c8d5771>
+      5: 0x01027c19fc59 ;  [fp +  48]  0x01027c19fc59 <String[119]: >"/app/lazy.js">
+      6: 0x01027c1a43e9 ;  [fp +  56]  0x01027c1a43e9 <String[111]: "/app">
+      7: 0x01027c1a4ac1 ; x0 0x01027c1a4ac1 <FunctionContext[8]>
+      8: 0x01027c1a4bd1 ;  [fp -  56]  0x01027c1a4bd1 <JSFunction outer (sfi = 0xe2b9c8d5041)>
+      9: (optimized out)
+     10: (optimized out)
+     11: (optimized out)
+     12: 0x00c800000000 ; (literal  8) 200
+     13: (optimized out)
+     14: (optimized out)
+     15: (optimized out)
+     16: (optimized out)
+     17: (optimized out)
+  translating interpreted frame  => bytecode_offset=122, variable_frame_size=96, frame_size=208
+    0x00016b6d57b8: [top + 200] <- 0x01027c1a43e9 <String[111]: "/app"> ;  stack parameter (input #6)
+    0x00016b6d57b0: [top + 192] <- 0x01027c19fc59 <String[119]: >"/app/lazy.js"> ;  stack parameter (input #5)
+    0x00016b6d57a8: [top + 184] <- 0x01027c1a2509 <Module map = 0xe2b9c8d5771> ;  stack parameter (input #4)
+    0x00016b6d57a0: [top + 176] <- 0x01027c1a4461 <JSFunction require (sfi = 0x254b55fed0b9)> ;  stack parameter (input #3)
+    0x00016b6d5798: [top + 168] <- 0x01027c1a2759 <Object map = 0x3bec661cc639> ;  stack parameter (input #2)
+    0x00016b6d5790: [top + 160] <- 0x01027c1a2759 <Object map = 0x3bec661cc639> ;  stack parameter (input #1)
+    -------------------------
+    0x00016b6d5788: [top + 152] <- 0x0001056a4bec ;  bottommost caller's pc
+    0x00016b6d5780: [top + 144] <- 0x00016b6d5880 ;  caller's fp
+    0x00016b6d5778: [top + 136] <- 0x01027c1a4ac1 <FunctionContext[8]> ;  context (input #7)
+    0x00016b6d5770: [top + 128] <- 0x01027c1a4109 <JSFunction (sfi = 0xe2b9c8d4ee1)> ;  function (input #0)
+    0x00016b6d5768: [top + 120] <- 0x000000000006 ;  actual argument count
+    0x00016b6d5760: [top + 112] <- 0x2cde9c3016f9 <BytecodeArray[128]> ;  bytecode array
+    0x00016b6d5758: [top + 104] <- 0x00b900000000 <Smi 185> ;  bytecode offset
+    0x00016b6d5750: [top +  96] <- 0x3d12a3c88e81 <arguments_marker> ;  feedback vector    -------------------------
+    0x00016b6d5748: [top +  88] <- 0x01027c1a4bd1 <JSFunction outer (sfi = 0xe2b9c8d5041)> ;  stack parameter (input #8)
+    0x00016b6d5740: [top +  80] <- 0x3d12a3c88eb1 <optimized_out> ;  stack parameter (input #9)
+    0x00016b6d5738: [top +  72] <- 0x3d12a3c88eb1 <optimized_out> ;  stack parameter (input #10)
+    0x00016b6d5730: [top +  64] <- 0x3d12a3c88eb1 <optimized_out> ;  stack parameter (input #11)
+    0x00016b6d5728: [top +  56] <- 0x00c800000000 <Smi 200> ;  stack parameter (input #12)
+    0x00016b6d5720: [top +  48] <- 0x3d12a3c88eb1 <optimized_out> ;  stack parameter (input #13)
+    0x00016b6d5718: [top +  40] <- 0x3d12a3c88eb1 <optimized_out> ;  stack parameter (input #14)
+    0x00016b6d5710: [top +  32] <- 0x3d12a3c88eb1 <optimized_out> ;  stack parameter (input #15)
+    0x00016b6d5708: [top +  24] <- 0x3d12a3c88eb1 <optimized_out> ;  stack parameter (input #16)
+    0x00016b6d5700: [top +  16] <- 0x3d12a3c80d31 <the_hole_value> ;  padding
+    0x00016b6d56f8: [top +   8] <- 0x3d12a3c80d31 <the_hole_value> ;  padding
+    0x00016b6d56f0: [top +   0] <- 0x3d12a3c88eb1 <optimized_out> ;  accumulator (input #17)
+[bailout end. took 0.834 ms]
+[bailout (kind: deopt-eager, reason: Insufficient type feedback for call): begin. deoptimizing 0x01027c1a4bd1 <JSFunction outer (sfi = 0xe2b9c8d5041)>, 0x2cde9c301e51 <Code TURBOFAN_JS>, opt id 6, bytecode offset 4, deopt exit 4, FP to SP delta 64, caller SP 0x00016b6d5700, pc 0x00012a6830f4]
+            ;;; deoptimize at </app/lazy.js:5:44> inlined at </app/lazy.js:9:45>
+  reading input frame outer => bytecode_offset=27, args=2, height=4, retval=0(#0); inputs:
+      0: 0x01027c1a4bd1 ;  [fp -  16]  0x01027c1a4bd1 <JSFunction outer (sfi = 0xe2b9c8d5041)>
+      1: 0x3bec661c0059 ;  [fp +  16]  0x3bec661c0059 <JSGlobalProxy>
+      2: 0x00c800000000 ; x4 200
+      3: 0x01027c1a4ac1 ;  [fp -  32]  0x01027c1a4ac1 <FunctionContext[8]>
+      4: 102 ; x5 (int32)
+      5: 50 ; x2 (int32)
+      6: (optimized out)
+      7: (optimized out)
+      8: (optimized out)
+  reading input frame maybeTweak => bytecode_offset=4, args=2, height=1, retval=0(#0); inputs:
+      0: 0x01027c1a4b51 ; (literal  5) 0x01027c1a4b51 <JSFunction maybeTweak (sfi = 0xe2b9c8d4fb1)>
+      1: 0x3bec661c0059 ; (literal  6) 0x3bec661c0059 <JSGlobalProxy>
+      2: 50 ; x2 (int32)
+      3: 0x01027c1a4ac1 ; (literal  7) 0x01027c1a4ac1 <FunctionContext[8]>
+      4: (optimized out)
+      5: 0x003200000000 ; x3 50
+  translating interpreted frame outer => bytecode_offset=27, variable_frame_size=32, frame_size=112
+    0x00016b6d56f8: [top + 104] <- 0x00c800000000 <Smi 200> ;  stack parameter (input #2)
+    0x00016b6d56f0: [top +  96] <- 0x3bec661c0059 <JSGlobalProxy> ;  stack parameter (input #1)
+    -------------------------
+    0x00016b6d56e8: [top +  88] <- 0x0001056a56e0 ;  bottommost caller's pc
+    0x00016b6d56e0: [top +  80] <- 0x00016b6d5780 ;  caller's fp
+    0x00016b6d56d8: [top +  72] <- 0x01027c1a4ac1 <FunctionContext[8]> ;  context (input #3)
+    0x00016b6d56d0: [top +  64] <- 0x01027c1a4bd1 <JSFunction outer (sfi = 0xe2b9c8d5041)> ;  function (input #0)
+    0x00016b6d56c8: [top +  56] <- 0x000000000002 ;  actual argument count
+    0x00016b6d56c0: [top +  48] <- 0x2cde9c301859 <BytecodeArray[43]> ;  bytecode array
+    0x00016b6d56b8: [top +  40] <- 0x005a00000000 <Smi 90> ;  bytecode offset
+    0x00016b6d56b0: [top +  32] <- 0x3d12a3c88e81 <arguments_marker> ;  feedback vector    -------------------------
+    0x00016b6d56a8: [top +  24] <- 0x006600000000 <Smi 102> ;  stack parameter (input #4)
+    0x00016b6d56a0: [top +  16] <- 0x003200000000 <Smi 50> ;  stack parameter (input #5)
+    0x00016b6d5698: [top +   8] <- 0x3d12a3c88eb1 <optimized_out> ;  stack parameter (input #6)
+    0x00016b6d5690: [top +   0] <- 0x3d12a3c88eb1 <optimized_out> ;  stack parameter (input #7)
+  translating interpreted frame maybeTweak => bytecode_offset=4, variable_frame_size=32, frame_size=112
+    0x00016b6d5688: [top + 104] <- 0x003200000000 <Smi 50> ;  stack parameter (input #2)
+    0x00016b6d5680: [top +  96] <- 0x3bec661c0059 <JSGlobalProxy> ;  stack parameter (input #1)
+    -------------------------
+    0x00016b6d5678: [top +  88] <- 0x0001056a5720 ;  caller's pc
+    0x00016b6d5670: [top +  80] <- 0x00016b6d56e0 ;  caller's fp
+    0x00016b6d5668: [top +  72] <- 0x01027c1a4ac1 <FunctionContext[8]> ;  context (input #3)
+    0x00016b6d5660: [top +  64] <- 0x01027c1a4b51 <JSFunction maybeTweak (sfi = 0xe2b9c8d4fb1)> ;  function (input #0)
+    0x00016b6d5658: [top +  56] <- 0x000000000002 ;  actual argument count
+    0x00016b6d5650: [top +  48] <- 0x2cde9c301a09 <BytecodeArray[17]> ;  bytecode array
+    0x00016b6d5648: [top +  40] <- 0x004300000000 <Smi 67> ;  bytecode offset
+    0x00016b6d5640: [top +  32] <- 0x3d12a3c88e81 <arguments_marker> ;  feedback vector    -------------------------
+    0x00016b6d5638: [top +  24] <- 0x3d12a3c88eb1 <optimized_out> ;  stack parameter (input #4)
+    0x00016b6d5630: [top +  16] <- 0x3d12a3c80d31 <the_hole_value> ;  padding
+    0x00016b6d5628: [top +   8] <- 0x3d12a3c80d31 <the_hole_value> ;  padding
+    0x00016b6d5620: [top +   0] <- 0x003200000000 <Smi 50> ;  accumulator (input #5)
+[bailout end. took 0.541 ms]
+[marking dependent code 0x2cde9c302359 <Code TURBOFAN_JS> (0x0e2b9c8d4ee1 <SharedFunctionInfo>) (opt id 8) for deoptimization, reason: dependent field type constness changed]
+[marking dependent code 0x3876149c22e9 <Code MAGLEV> (0x0e2b9c8d4ee1 <SharedFunctionInfo>) (opt id 7) for deoptimization, reason: dependent field type constness changed]
+[marking dependent code 0x3876149c12a1 <Code MAGLEV> (0x0e2b9c8d5041 <SharedFunctionInfo outer>) (opt id 5) for deoptimization, reason: dependent field type constness changed]
+[marking dependent code 0x141ad08c11c1 <Code MAGLEV> (0x0e2b9c8d4ff9 <SharedFunctionInfo hot>) (opt id 4) for deoptimization, reason: dependent field type constness changed]
