@@ -160,7 +160,7 @@ describe('dashboard UI — AC-1', () => {
       const tags = parseTags(page.body);
 
       // No inline script content and no inline event-handler attribute.
-      for (const match of page.body.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)) {
+      for (const match of page.body.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\b[^>]*>/gi)) {
         expect((match[1] ?? '').trim(), 'inline script content').toBe('');
       }
       const scriptTags = tags.filter((tag) => tag.name === 'script');
