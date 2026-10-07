@@ -24,9 +24,10 @@ type SymbolizeOptions = {
    */
   roots?: readonly string[];
   /**
-   * Largest built file or source map read, in bytes. Default 64 MiB. A larger built file is left
-   * unsymbolized; a larger source map is reported as malformed. The pool's workers need an old
-   * generation of at least 8x this value (`resourceLimits.maxOldGenerationSizeMb`).
+   * Largest built file or source map read, in bytes. Default 64 MiB, lowered to 1/8 of the
+   * pool's `resourceLimits.maxOldGenerationSizeMb` when that is smaller. A larger built file is
+   * left unsymbolized; a larger source map is reported as malformed. An explicit value needs a
+   * worker old generation of at least 8x itself, or the call rejects with a RangeError.
    */
   maxFileBytes?: number;
 };
@@ -97,25 +98,29 @@ function checkRoots(roots: readonly string[] | undefined): string[] | undefined 
   });
 }
 
-function checkMaxFileBytes(value: number | undefined): number {
-  const maxFileBytes = value ?? DEFAULT_MAX_SOURCE_FILE_BYTES;
-  if (!Number.isSafeInteger(maxFileBytes) || maxFileBytes <= 0) {
+/**
+ * The file cap for this call. Reading a file and JSON.parse-ing a map are native operations that
+ * V8 cannot interrupt near the worker's heap limit (an overrun aborts the whole process), so the
+ * cap must leave the worker heap a wide margin over the largest file.
+ */
+function checkMaxFileBytes(value: number | undefined, pool: WorkerPool | undefined): number {
+  const heapMb = pool === undefined ? undefined : pool.resourceLimits?.maxOldGenerationSizeMb;
+  const fitsHeap =
+    heapMb === undefined ? undefined : Math.floor((heapMb * MIB) / HEAP_PER_FILE_BYTE);
+  if (value === undefined) {
+    return Math.max(1, Math.min(DEFAULT_MAX_SOURCE_FILE_BYTES, fitsHeap ?? Infinity));
+  }
+  if (!Number.isSafeInteger(value) || value <= 0) {
     throw new RangeError('maxFileBytes must be a positive safe integer');
   }
-  return maxFileBytes;
-}
-
-/** Refuses a file cap the pool's worker heap cannot parse safely (a native overrun aborts V8). */
-function checkHeapFits(pool: WorkerPool | undefined, maxFileBytes: number): void {
-  const heapMb = pool === undefined ? undefined : pool.resourceLimits?.maxOldGenerationSizeMb;
-  if (heapMb === undefined) return;
-  const neededMb = Math.ceil((maxFileBytes * HEAP_PER_FILE_BYTE) / MIB);
-  if (heapMb < neededMb) {
+  if (heapMb !== undefined && fitsHeap !== undefined && value > fitsHeap) {
+    const neededMb = Math.ceil((value * HEAP_PER_FILE_BYTE) / MIB);
     throw new RangeError(
-      `maxFileBytes ${String(maxFileBytes)} needs a symbolization worker heap of at least ` +
+      `maxFileBytes ${String(value)} needs a symbolization worker heap of at least ` +
         `${String(neededMb)} MiB (resourceLimits.maxOldGenerationSizeMb is ${String(heapMb)})`,
     );
   }
+  return value;
 }
 
 async function runTask(payload: unknown, options: SymbolizeOptions): Promise<unknown> {
@@ -136,8 +141,7 @@ export async function symbolizeStackFrames(
 ): Promise<SymbolizedFrame[]> {
   checkFrames(frames);
   const roots = checkRoots(options.roots);
-  const maxFileBytes = checkMaxFileBytes(options.maxFileBytes);
-  checkHeapFits(options.pool, maxFileBytes);
+  const maxFileBytes = checkMaxFileBytes(options.maxFileBytes, options.pool);
   const payload = {
     frames: frames.map(({ url, line, column }) => ({ url, line, column })),
     maxFileBytes,

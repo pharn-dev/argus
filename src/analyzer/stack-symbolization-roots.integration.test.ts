@@ -113,9 +113,15 @@ describe('symbolizer roots and caps (F-15)', () => {
   it('refuses a file cap the worker heap cannot parse, and validates roots', async () => {
     const small = createSymbolizationPool({ resourceLimits: { maxOldGenerationSizeMb: 64 } });
     try {
-      await expect(symbolizeStackFrames([], { pool: small })).rejects.toThrow(/heap of at least/);
+      // The default cap shrinks to fit a small heap; an explicit cap that does not fit is refused.
       await expect(
-        symbolizeStackFrames([], { pool: small, maxFileBytes: 4 * 1024 * 1024 }),
+        symbolizeStackFrames([frame(join(root, 'dist', 'app.js'))], { pool: small }),
+      ).resolves.toHaveLength(1);
+      await expect(
+        symbolizeStackFrames([], { pool: small, maxFileBytes: 64 * 1024 * 1024 }),
+      ).rejects.toThrow(/heap of at least 512 MiB/);
+      await expect(
+        symbolizeStackFrames([], { pool: small, maxFileBytes: 8 * 1024 * 1024 }),
       ).resolves.toEqual([]);
     } finally {
       await small.close();
