@@ -3,6 +3,8 @@ import type { BoundedQueue } from './bounded-queue.js';
 
 export type TraceSpan = {
   traceId: string;
+  spanId: string;
+  name: string;
   method: string;
   path: string;
   statusCode: number;

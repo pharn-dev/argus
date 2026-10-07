@@ -1,0 +1,83 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "span-export-wiring",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "span-export-wiring",
+    "spec_content_hash": "b249ff75b583009f23599bcc4b067903286ae8d5a600d01e59e3e9ea52b47b0d"
+  },
+  "mapping": {
+    "path": "pharn/features/span-export-wiring/AC-TESTS.md",
+    "sha256": "ac545aa363d53ad65d0b44ef8b18b77f73576429f60c0e58851fa9eeb168526b"
+  },
+  "files": [
+    {
+      "path": "src/agent/span-export-wiring.ac1.integration.test.ts",
+      "sha256": "cee488fc68d8d9e9c5e046d400b882355ac9f448003ec739b17f6fd77289e138"
+    },
+    {
+      "path": "src/collector/span-export-wiring.ac2.test.ts",
+      "sha256": "f380195fe161120378601aee0cc7f5e254e1b120ecc85abcb0d23a97e6ef13e6"
+    },
+    {
+      "path": "src/dashboard/span-export-wiring.ac3.integration.test.ts",
+      "sha256": "cf0afc2efe186776934f700223f855a689e9bec04d779885fe531f1d84be57ed"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "e8b25a9f43235a7ac413143e2362e804fc5dc20e6fe4eeeaa50c8f048ddd1b6f",
+    "files_sha256": "67c4ee536c520d47c9087e82c58d872167d71f420a251216d8a90bffb7db9bfb",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "8af1991475800e4020d61039802716b33665c47d216df9fc2b45d7160541e916"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/agent/span-export-wiring.ac1.integration.test.ts::agent span export over NDJSON — AC-1 › AC-1: node --import argus/agent writes one span line per HTTP request to the ARGUS_OUTPUT file, beside unchanged sample lines"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/collector/span-export-wiring.ac2.test.ts::collector span ring — AC-2 › AC-2: a collector with spanCapacity 2 keeps the last two spans, notifies a subscriber of all four in order, and its windows and alerts match a samples-only collector"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/dashboard/span-export-wiring.ac3.integration.test.ts::dashboard span events — AC-3 › AC-3: an authorized SSE client receives one span event per recorded span, in order; a tokenless client gets 401 and no span event"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration",
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}

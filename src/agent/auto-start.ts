@@ -1,7 +1,9 @@
 /// <reference types="node" />
 import { openAgentOutput } from './agent-output.js';
 import { loadAgentConfig } from './config.js';
+import { enable as enableTracing, disable as disableTracing, drainSpans } from './http-tracing.js';
 import { createNdjsonExporter } from './ndjson-exporter.js';
+import { createSpanExport } from './span-export.js';
 import { createSamplerController } from './sampler-controller.js';
 
 const AGENT_KEY = Symbol.for('argus.agent');
@@ -32,11 +34,30 @@ async function start(): Promise<void> {
   }
   const destination = openAgentOutput(config.output);
   const exporter = createNdjsonExporter(destination, { queueBound: config.queueBound });
+  enableTracing();
+  const spans = createSpanExport(drainSpans, (record) => exporter.export(record));
+  let disable = (err: unknown): void => {
+    reportOnce(err);
+  };
+  const flushSpans = (): void => {
+    try {
+      spans.flush();
+    } catch (err) {
+      disable(err);
+    }
+  };
+  const onBeforeExit = (): void => {
+    flushSpans();
+  };
+  process.once('beforeExit', onBeforeExit);
   const controller = createSamplerController((sample) => {
     exporter.export(sample);
+    flushSpans();
   });
-  const disable = (err: unknown): void => {
+  disable = (err: unknown): void => {
     controller.stop();
+    disableTracing();
+    process.off('beforeExit', onBeforeExit);
     reportOnce(err);
   };
   // pipeline() does not settle while the exporter's source is idle, so listen on the destination too.
