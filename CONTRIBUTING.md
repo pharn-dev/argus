@@ -4,18 +4,20 @@ Thanks for your interest in Argus — _all-seeing runtime diagnostics for Node.j
 
 ## Project shape
 
-Argus is a single npm package. Its five modules live under `src/` (`agent`, `collector`,
-`analyzer`, `dashboard`, `plugin-runner`) and are exposed as subpath exports such as
+Argus is a single npm package. Its six modules live under `src/` (`agent`, `collector`,
+`analyzer`, `dashboard`, `plugin-runner`, `otel`) and are exposed as subpath exports such as
 `argus/agent`. See `ARCHITECTURE.md` for how they fit together and `CLAUDE.md` for the hard rules.
 
 ## Getting set up
 
-Argus uses **npm**. Use the Node version in `.nvmrc`.
+Argus uses **npm**. Use the Node version in `.nvmrc` (22.18.0, the supported floor; `engines.node`
+is `>=22.18.0`).
 
 ```bash
 npm install
 npm run build           # dual build into dist/: ESM (dist/esm) + CJS (dist/cjs)
 npm run check:exports   # after build: every `exports` subpath loads via import and require
+npm run check:package   # after build: tarball contents, source maps, and engines.node == .nvmrc
 npm run typecheck       # tsc --noEmit over src/ and the repo's own scripts and configs
 npm test
 npm run lint
@@ -38,18 +40,24 @@ npm run format        # or format:check in CI
 
 Every PR runs these as separate jobs, and all of them are required status checks on `main`:
 
-| Job          | Command                                             |
-| ------------ | --------------------------------------------------- |
-| Format check | `npm run format:check`                              |
-| Lint         | `npm run lint`                                      |
-| Typecheck    | `npm run typecheck`                                 |
-| Test         | `npm test`                                          |
-| Build        | `npm run build` then `npm run check:exports`        |
-| Action pins  | `npm run check:pins` (every Action pinned to a SHA) |
+| Job          | Command                                                                |
+| ------------ | ---------------------------------------------------------------------- |
+| Format check | `npm run format:check`                                                 |
+| Lint         | `npm run lint`                                                         |
+| Typecheck    | `npm run typecheck`                                                    |
+| Test         | `npm test`                                                             |
+| Build        | `npm run build`, `npm run check:exports`, then `npm run check:package` |
+| Action pins  | `npm run check:pins` (every Action pinned to a SHA)                    |
+
+Every required job runs on the Node version in `.nvmrc`, which is the `engines` floor.
 
 CodeQL (`Analyze (javascript-typescript)`) and `gitleaks` run as well. A separate, non-required
-`node-latest` workflow smoke-tests the newest Node. The job names are a contract with the branch
-ruleset: renaming one means updating the ruleset too.
+`node-latest` workflow smoke-tests Node 24. The job names are a contract with the branch ruleset:
+renaming one means updating the ruleset too.
+
+A `nightly` workflow, not a PR check, runs `node bench/overhead.mjs` (agent-on versus agent-off;
+informational, tables in the job summary) and `node bench/soak.mjs` (fails on heap growth or leaked
+workers and child processes). See `bench/README.md`.
 
 ## Threat model and limits
 
@@ -71,8 +79,9 @@ is written or sent, or parsing of untrusted input needs a row in the threat mode
 - Every stream / worker / plugin execution has explicit error handling. No silent
   failures.
 - Counter aggregation uses integer math.
-- The agent must not measurably slow the monitored process — include a benchmark
-  note for anything in the hot path.
+- The agent must not measurably slow the monitored process. A PR that touches a hot path (the
+  HTTP `emit` wrapper, the stream `write` wrappers, the samplers, the NDJSON exporter) includes
+  before and after tables from `node bench/overhead.mjs` (run `npm run build` first).
 
 ## Commits & releases
 

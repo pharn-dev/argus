@@ -8,12 +8,19 @@ dashboard has anything to show. That's all the ordering means.
 
 Calendar is yours to set; the ordering is the point.
 
+**Status:** S0 to S7 are implemented on `main`. S8 (first npm release and launch) is on hold.
+Where the built code differs from a step's wording below:
+
+- S1: GC events come from a `PerformanceObserver`, not a `--trace-gc` hook.
+- S3: the dashboard has no backpressure view and no time-range scrubbing yet (see `FEATURES.md`).
+- S5: `--trace-deopt` support is a parser; nothing captures that output.
+
 ---
 
 ## S0 — Scaffold
 
 - Single npm package, `tsconfig.base.json` (strict), shared eslint config.
-- Skeleton of the 5 modules under `src/` with correct `exports` subpaths (dual
+- Skeleton of the 5 modules under `src/` (a sixth, `otel`, came with S7) with correct `exports` subpaths (dual
   CJS+ESM) and an import-boundary lint rule for the agent.
 - CI: GitHub Actions running build + typecheck + lint + test on PRs.
 - Release process in place (`docs/RELEASING.md`, `publish.yml`); publishing goes live at S8.
