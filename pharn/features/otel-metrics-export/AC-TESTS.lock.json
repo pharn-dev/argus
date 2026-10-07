@@ -1,0 +1,85 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "otel-metrics-export",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "otel-metrics-export",
+    "spec_content_hash": "d8534eba08d336eefefb5cc774418212ecf85c913cd566e3d2249764ff355a78"
+  },
+  "mapping": {
+    "path": "pharn/features/otel-metrics-export/AC-TESTS.md",
+    "sha256": "90e87d6369d2a839d40d9f77a6894ebc743d11e9664d959ae333ba1e23b92089"
+  },
+  "files": [
+    {
+      "path": "src/otel/otel-metrics-export.ac1.test.ts",
+      "sha256": "815d27b97c9999a3dce265a3a4c775daa24218c46c048b3fef4ce9307a18eca6"
+    },
+    {
+      "path": "src/otel/otel-metrics-export.ac2.integration.test.ts",
+      "sha256": "adeb1b8bd2e21d5931e2203d128b22a082466d5424f5fe4a68dd7aec38aa027c"
+    },
+    {
+      "path": "src/otel/otel-metrics-export.ac3.integration.test.ts",
+      "sha256": "dde73357ddd5e675a41806a337b5397202ac15c29affe39f521ed992324913f2"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "5bc5e3e13c8b7e14bf470e14d8520c03fbc254382fd524558e9310a5d2cc7bb4",
+    "files_sha256": "335756df5e0b246ff749a030c4a5872a7d95a3c03df57331f237ef74573a157f",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "929d041dd294f233ddbc95fa48eb478f0c7b934ea2dec7ed81a0ac127cd6c580"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/otel/otel-metrics-export.ac1.test.ts::otel metrics export — AC-1 › AC-1: converts one aggregated window into OTLP JSON gauges and a delta GC sum with exact nanosecond strings"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/otel/otel-metrics-export.ac2.integration.test.ts::otel metrics export — AC-2 › AC-2: exports one batch of two windows as a single JSON POST with the caller headers"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/otel/otel-metrics-export.ac3.integration.test.ts::otel metrics export — AC-3 › AC-3: reports a 500 response to the error callback without throwing or rejecting",
+          "src/otel/otel-metrics-export.ac3.integration.test.ts::otel metrics export — AC-3 › AC-3: reports a connection error to the error callback without throwing or rejecting",
+          "src/otel/otel-metrics-export.ac3.integration.test.ts::otel metrics export — AC-3 › AC-3: with queue capacity 1 and the first request held open, drops the third batch and sends two"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration",
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}
