@@ -1,0 +1,82 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "plugin-runner-sandbox",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "plugin-runner-sandbox",
+    "spec_content_hash": "76472e01a4855b1dd01f7431f05eb385416f2c8115d1f75f35fe5c43e409e83d"
+  },
+  "mapping": {
+    "path": "pharn/features/plugin-runner-sandbox/AC-TESTS.md",
+    "sha256": "2692ca16699f6a706c731019c83a56614b033b76437005b633b75a6b9aa5e4b4"
+  },
+  "files": [
+    {
+      "path": "src/plugin-runner/plugin-runner-sandbox.ac1.integration.test.ts",
+      "sha256": "f9147ffe13c03223c1a624a73e5adfb5dfac33027d0bfe173fde398d4348def1"
+    },
+    {
+      "path": "src/plugin-runner/plugin-runner-sandbox.ac2.integration.test.ts",
+      "sha256": "a6977501f118997b810582fb4c3332447ecc057caf4b8a36f5a42ae59a9c04f3"
+    },
+    {
+      "path": "src/plugin-runner/plugin-runner-sandbox.ac3.integration.test.ts",
+      "sha256": "0f4f00f249e83e2989dc2ec2457f5408b9df06061f97a3a14032e3b1569b65a9"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "8b0260d62baa5a629cd3796eed288b4a6ae85f9d957776f4d6a37aaf373354d8",
+    "files_sha256": "97331de6b3c8aa884b594a52805b315c655002c3ca6cb6a6c4df067a90b014ab",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "69e1b713016c37b307581afb22404929d01a2de64bb63ffe8190a843dddf9ab9"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/plugin-runner/plugin-runner-sandbox.ac1.integration.test.ts::plugin runner sandbox — AC-1 › AC-1: a rule run against three windows returns exactly one JSON-serializable finding for the second window"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/plugin-runner/plugin-runner-sandbox.ac2.integration.test.ts::plugin runner sandbox — AC-2 › AC-2: throwing, looping, allocating and invalid rules each resolve a typed failure without blocking the host, and the runner still works afterwards"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/plugin-runner/plugin-runner-sandbox.ac3.integration.test.ts::plugin runner sandbox — AC-3 › AC-3: a sandbox that cannot load isolated-vm resolves a typed failure naming how to install it, and the host keeps running"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}
