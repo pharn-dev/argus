@@ -2,8 +2,10 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import type { AddressInfo } from 'node:net';
 import type { Collector } from '../collector/index.js';
 import { isLoopbackHost, presentedToken, tokensMatch } from './auth.js';
+import { STATIC_SECURITY_HEADERS } from './security-headers.js';
 import { createSseClient, type SseClient } from './sse-client.js';
 import { formatEvent } from './sse-format.js';
+import { createStaticAssets, type StaticAsset } from './static-assets.js';
 
 export type DashboardServerOptions = {
   collector: Collector;
@@ -31,6 +33,10 @@ function requirePositiveInteger(name: string, value: number): void {
   if (!Number.isSafeInteger(value) || value <= 0) {
     throw new RangeError(`${name} must be a positive safe integer`);
   }
+}
+
+function isDisconnect(error: NodeJS.ErrnoException): boolean {
+  return error.code === 'ECONNRESET' || error.message === 'aborted';
 }
 
 function plain(
@@ -71,6 +77,28 @@ export async function createDashboardServer(
       // A throwing handler falls through to the warning below.
     }
     process.emitWarning(`dashboard server error: ${error.message}`);
+  };
+
+  const assets = createStaticAssets(token);
+
+  const serveAsset = (req: IncomingMessage, res: ServerResponse, asset: StaticAsset): void => {
+    const fail = (error: NodeJS.ErrnoException): void => {
+      if (!isDisconnect(error)) {
+        report(error);
+      }
+    };
+    req.once('error', fail);
+    res.once('error', fail);
+    res.once('close', () => {
+      req.off('error', fail);
+      res.off('error', fail);
+    });
+    res.writeHead(200, {
+      ...STATIC_SECURITY_HEADERS,
+      'content-type': asset.contentType,
+      'content-length': String(asset.body.byteLength),
+    });
+    res.end(asset.body);
   };
 
   let dropped = 0;
@@ -126,7 +154,7 @@ export async function createDashboardServer(
     cleanups.add(cleanup);
     const fail = (error: NodeJS.ErrnoException): void => {
       // An ordinary client disconnect is cleanup, not an error worth a warning.
-      if (error.code !== 'ECONNRESET' && error.message !== 'aborted') {
+      if (!isDisconnect(error)) {
         report(error);
       }
       cleanup();
@@ -150,6 +178,15 @@ export async function createDashboardServer(
     if (url.pathname === '/events') {
       if (req.method === 'GET') {
         handleSse(req, res);
+      } else {
+        plain(res, 405, 'method not allowed\n', { allow: 'GET' });
+      }
+      return;
+    }
+    const asset = assets.get(url.pathname);
+    if (asset !== undefined) {
+      if (req.method === 'GET') {
+        serveAsset(req, res, asset);
       } else {
         plain(res, 405, 'method not allowed\n', { allow: 'GET' });
       }

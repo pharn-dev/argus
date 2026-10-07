@@ -1,0 +1,84 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "agent-permission-model",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "agent-permission-model",
+    "spec_content_hash": "529e2e6294f821961c22f5ebaafac10898d1070e5b84133b1425849df25a47b5"
+  },
+  "mapping": {
+    "path": "pharn/features/agent-permission-model/AC-TESTS.md",
+    "sha256": "1e98145bb87b5e19f2270b23a93df3bd1892a1bea18abacc10f105808c2747d8"
+  },
+  "files": [
+    {
+      "path": "src/agent/permission-model.ac1.test.ts",
+      "sha256": "69ad99507442568256d624dbba795c46d67efbe57c3aef6e26096d64a4bd2c58"
+    },
+    {
+      "path": "src/agent/permission-model.ac2.integration.test.ts",
+      "sha256": "5917ced6ce342a453a88e1ee831713dd981c213e346c8e5e85f857cd3e778d31"
+    },
+    {
+      "path": "src/agent/permission-model.ac3.integration.test.ts",
+      "sha256": "a9ef436416ca596a0697956bde7a995cfd9a4a2e70565a047204057824119ef7"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "5429dea2dfaa227da3e8073423d1e9b82a48889f84e0b783ee5d2686c6a70284",
+    "files_sha256": "ef8adda9b9539c6087b5aac5efe1174e23d4592e4faa6bcc6d96829036220e08",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "9a1d88f2f4bcf142313be288ee09d07befae1ae5c3af3dc59f66c6afa1abd365"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/agent/permission-model.ac1.test.ts::agent permission helper — AC-1 › AC-1: the typed permission error from the agent entrypoint is an Error exposing the denied scope and resource as given",
+          "src/agent/permission-model.ac1.test.ts::agent permission helper — AC-1 › AC-1: without the permission model the helper reports it inactive and the check is allowed; with a denying stub it is active, has() gets the scope and the absolute path, and the check is denied"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/agent/permission-model.ac2.integration.test.ts::argus/agent NDJSON file export under --permission — AC-2 › AC-2: with an fs-write grant the NDJSON file gets JSON lines and the agent stays enabled; without it no file is written, exactly one \"[argus] agent disabled:\" stderr line appears, the app still prints its marker and exits 0"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/agent/permission-model.ac3.integration.test.ts::argus/agent takeHeapSnapshot under --permission — AC-3 › AC-3: with an fs-write grant for the directory the snapshot is written inside it; without one the call rejects with the typed permission error (scope fs.write, absolute resource inside the directory), no .heapsnapshot is left and the child exits 0"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration",
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}
