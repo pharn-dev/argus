@@ -80,6 +80,16 @@
         "default": "./dist/cjs/plugin-runner/index.js"
       }
     },
+    "./otel": {
+      "import": {
+        "types": "./dist/esm/otel/index.d.ts",
+        "default": "./dist/esm/otel/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/otel/index.d.ts",
+        "default": "./dist/cjs/otel/index.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [

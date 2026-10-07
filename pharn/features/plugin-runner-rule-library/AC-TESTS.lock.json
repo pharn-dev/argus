@@ -1,0 +1,83 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "plugin-runner-rule-library",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "plugin-runner-rule-library",
+    "spec_content_hash": "2a6a43fac113477b6067e76af3f3c22eba584fdbf43ceb203ffb14945a660e35"
+  },
+  "mapping": {
+    "path": "pharn/features/plugin-runner-rule-library/AC-TESTS.md",
+    "sha256": "d69fd087d1a829d12e2b8bb971af6eae4c2d9a904318a7037b8f3f077f86e631"
+  },
+  "files": [
+    {
+      "path": "src/plugin-runner/plugin-runner-rule-library.ac1.integration.test.ts",
+      "sha256": "f7e53998da4897718c31920595202c758ce68a3f245f18f3a680df01c22f767e"
+    },
+    {
+      "path": "src/plugin-runner/plugin-runner-rule-library.ac2.integration.test.ts",
+      "sha256": "d9a21d82f975c842b213d6154644604d34cab9a9033ae0304746d084ee851b26"
+    },
+    {
+      "path": "src/plugin-runner/plugin-runner-rule-library.ac3.integration.test.ts",
+      "sha256": "6cb989a1b3c52cf324973dd762e4b730f882cc97336eb91d2083fc725e7f8cb0"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "6bcf613da3365bc2b71dab2e92597e45a917fd6a83adf6a21f460dcb944bb61a",
+    "files_sha256": "060d8a1d9f9f01db4649c227d91e1f599db529a736b3addc3f5ebad05389f3a9",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "a122b0b83d28520d0d8b465470e8321e711611f77945539c5d79d6a2ca1e7fef"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/plugin-runner/plugin-runner-rule-library.ac1.integration.test.ts::plugin-runner rule library — AC-1 › AC-1: explicitly given parameters reach the built-in rules and change which windows they cover",
+          "src/plugin-runner/plugin-runner-rule-library.ac1.integration.test.ts::plugin-runner rule library — AC-1 › AC-1: the three built-in rules with default parameters flag exactly the covered windows, and match nothing in quiet windows"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/plugin-runner/plugin-runner-rule-library.ac2.integration.test.ts::plugin-runner rule library — AC-2 › AC-2: an invalid built-in rule parameter throws a typed invalid-parameter error naming the rule id and the parameter, and no sandbox run starts"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/plugin-runner/plugin-runner-rule-library.ac3.integration.test.ts::plugin-runner rule library — AC-3 › AC-3: user rules loaded from a directory run alongside the built-ins, each failure stays its own typed result, and no user file runs in the host"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}
