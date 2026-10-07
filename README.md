@@ -67,7 +67,7 @@ A slow dashboard never slows your app.
 | `analyzer`       | `argus/analyzer`      | Heap-snapshot and stack-trace analysis in Worker Threads.         |
 | `dashboard`      | `argus/dashboard`     | Lightweight UI and SSE server.                                    |
 | `plugin-runner`  | `argus/plugin-runner` | Optional sandbox for user-written diagnostic rules.               |
-| `otel`           | `argus/otel`          | Opt-in OTLP/HTTP JSON metrics export. Node core only.             |
+| `otel`           | `argus/otel`          | Opt-in OTLP/HTTP JSON metrics and trace export. Node core only.   |
 
 Argus is one npm package: the modules are subpath exports, shipped as both ESM and CommonJS.
 

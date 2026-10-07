@@ -77,7 +77,7 @@ browser.
 - `src/analyzer` — Worker Threads only; pure CPU work, no app coupling.
 - `src/dashboard` — SSE server + static UI; reads from collector output.
 - `src/plugin-runner` — isolated-vm sandbox; reads aggregated data only.
-- `src/otel` (`argus/otel`) — opt-in OTLP/HTTP JSON metrics export; Node core only,
+- `src/otel` (`argus/otel`) — opt-in OTLP/HTTP JSON metrics and trace export; Node core only,
   reads collector output. The agent never imports it.
 
 `async_hooks` is imported in exactly one file: `src/agent/context.ts`.

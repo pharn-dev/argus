@@ -1,0 +1,85 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "otel-trace-export",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "otel-trace-export",
+    "spec_content_hash": "39d01c6e421d3dd37f716247848d64e40fcdeaacc15f6208ad430a9aea777587"
+  },
+  "mapping": {
+    "path": "pharn/features/otel-trace-export/AC-TESTS.md",
+    "sha256": "4b85d2eed620ce139c8731f3fbb85781602ebe3d01e81f9a23f8038cb176bdaa"
+  },
+  "files": [
+    {
+      "path": "src/otel/otel-trace-export.ac1.test.ts",
+      "sha256": "2176c977b99ac2978144b647f17d0778185d2f1d73b08986407197e7e642804e"
+    },
+    {
+      "path": "src/otel/otel-trace-export.ac2.integration.test.ts",
+      "sha256": "76dd2354f88413ee940048e8996eb507576829a455d6908e6850d0e4e7fcfaa8"
+    },
+    {
+      "path": "src/otel/otel-trace-export.ac3.integration.test.ts",
+      "sha256": "dc4047d416d20ca98c1b5bb751a9293963a543ae9ab552f2cb86403ca9ff7ef0"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "3d4b38af3e4aae06d65addcb1829c6c610d432e048f91a9d275acf9d0257c805",
+    "files_sha256": "bc036a209dd64e487380bc84d5936c4a3799ee532ab96c6187b8f1af0a3b3ce5",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "47632e5e0e3c462489d8f5b9af75b931c673afcb23e98f842ed4e5efbbafc11c"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/otel/otel-trace-export.ac1.test.ts::otel trace export — AC-1 › AC-1: converts two span records into one resourceSpans entry holding two SERVER spans"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/otel/otel-trace-export.ac2.integration.test.ts::otel trace export — AC-2 › AC-2: a subscribed exporter POSTs the collector span records to /v1/traces with the caller headers"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/otel/otel-trace-export.ac3.integration.test.ts::otel trace export — AC-3 › AC-3: reports a 500 response to the error callback without throwing or rejecting",
+          "src/otel/otel-trace-export.ac3.integration.test.ts::otel trace export — AC-3 › AC-3: reports a connection error to the error callback without throwing or rejecting",
+          "src/otel/otel-trace-export.ac3.integration.test.ts::otel trace export — AC-3 › AC-3: with queue capacity 1 and the first request held open, drops the third batch and sends two"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration",
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}
