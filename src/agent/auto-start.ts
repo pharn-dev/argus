@@ -30,11 +30,11 @@ function reportOnce(err: unknown): void {
 async function start(): Promise<void> {
   const config = await loadAgentConfig(process.cwd(), process.env);
   if (!config.enabled || config.output === 'none') {
+    disableTracing();
     return;
   }
   const destination = openAgentOutput(config.output);
   const exporter = createNdjsonExporter(destination, { queueBound: config.queueBound });
-  enableTracing();
   const spans = createSpanExport(drainSpans, (record) => exporter.export(record));
   let disable = (err: unknown): void => {
     reportOnce(err);
@@ -66,6 +66,17 @@ async function start(): Promise<void> {
   controller.start(config.intervalMs);
 }
 
+/** A failed start switches tracing back off and reports once; it never throws. */
+function failStart(err: unknown): void {
+  try {
+    disableTracing();
+  } catch (disableError) {
+    reportOnce(new AggregateError([err, disableError], 'start failed and tracing stayed on'));
+    return;
+  }
+  reportOnce(err);
+}
+
 /** Start the agent once per process (shared across ESM/CJS copies via globalThis). Never throws. */
 export function startAgentOnce(): void {
   try {
@@ -74,8 +85,11 @@ export function startAgentOnce(): void {
       return;
     }
     g[AGENT_KEY] = true;
-    start().catch(reportOnce);
+    // Trace from the first tick: requests that arrive while the config loads still get spans.
+    // The buffer is bounded, and tracing is switched off again if the agent ends up disabled.
+    enableTracing();
+    start().catch(failStart);
   } catch (err) {
-    reportOnce(err);
+    failStart(err);
   }
 }
