@@ -64,10 +64,8 @@ workers and child processes). See `bench/README.md`.
 Argus's own security design is in [`docs/THREAT-MODEL.md`](./docs/THREAT-MODEL.md) and its
 limits in [`docs/LIMITS.md`](./docs/LIMITS.md). A change that adds a network listener, a place data
 is written or sent, or parsing of untrusted input needs a row in the threat model in the same PR.
-(The `THREAT-MODEL.md` and `LIMITS.md` at the repo root belong to the PHARN development tooling,
-not to Argus. They stay at the root because the PHARN installer, its write-guard hook and its drift
-records expect them there; `.gitattributes` marks them, `pharn/` and `.claude/` as vendored, and
-none of it ships in the package.)
+(PHARN, the owner's development tooling, keeps its own threat model and limits in `pharn/`;
+`.gitattributes` marks `pharn/` and `.claude/` as vendored, and none of it ships in the package.)
 
 ## The rules that PRs are checked against
 

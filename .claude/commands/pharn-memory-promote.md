@@ -9,7 +9,7 @@ reads:
   [
     "pharn/CONSTITUTION.md",
     "pharn/ARCHITECTURE.md",
-    "THREAT-MODEL.md",
+    "pharn/THREAT-MODEL.md",
     "memory-bank/lessons-learned.md",
     "memory-bank/pattern-library.md",
     "pharn/features/<name>/REVIEW.md",

@@ -77,8 +77,8 @@
       "memory-bank/pattern-library.md",
       "pharn/CONSTITUTION.md",
       "pharn/ARCHITECTURE.md",
-      "THREAT-MODEL.md",
-      "LIMITS.md",
+      "pharn/THREAT-MODEL.md",
+      "pharn/LIMITS.md",
       "CODEOWNERS"
     ],
     "reason": "Memory-bank canon is what THREAT-MODEL.md §2 #3 calls the worst persistence vector, and the four trusted docs plus CODEOWNERS are the human-only surface. A Bash write to any of them is precisely the class this checker exists to surface, so exempting one would hollow out the increment."
