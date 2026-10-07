@@ -1,9 +1,12 @@
-import { open, readFile, rename, rm, type FileHandle } from 'node:fs/promises';
+import { open, readFile, rename, rm, stat, type FileHandle } from 'node:fs/promises';
 import { createRingBuffer } from './ring-buffer.js';
 import type { AggregatedWindow } from './window.js';
 import { parseWindowLine, serializeWindow } from './window-codec.js';
 
 export type PersistOptions = { path: string; maxBytes: number };
+
+/** Mode for files the store creates (owner read/write only); existing files keep their mode. */
+const FILE_MODE = 0o600;
 
 export type WindowStore = {
   readonly path: string;
@@ -12,8 +15,12 @@ export type WindowStore = {
   readonly restored: number;
   readonly bytes: number;
   restore(): Promise<AggregatedWindow[]>;
+  /** Appends one window. Rejects after `close()`, and never reopens the file then. */
   append(window: AggregatedWindow): Promise<void>;
+  /** Closes the file handle after queued appends; a later `append()` reopens it. */
   release(): Promise<void>;
+  /** Releases and latches the store closed: every later `append()` rejects. Idempotent. */
+  close(): Promise<void>;
 };
 
 export function createWindowStore(options: PersistOptions & { capacity: number }): WindowStore {
@@ -31,6 +38,7 @@ export function createWindowStore(options: PersistOptions & { capacity: number }
   let bytes = 0;
   let needsNewline = false;
   let handle: FileHandle | undefined;
+  let closed = false;
   let chain: Promise<void> = Promise.resolve();
 
   function enqueue(task: () => Promise<void>): Promise<void> {
@@ -52,8 +60,18 @@ export function createWindowStore(options: PersistOptions & { capacity: number }
     await closeHandle();
     const content = ring.snapshot().map(serializeWindow).join('');
     try {
-      const tmp = await open(tmpPath, 'w');
+      // The rewrite replaces the file, so carry its current mode over (0600 when the store made it).
+      let mode = FILE_MODE;
       try {
+        mode = (await stat(path)).mode & 0o777;
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+          throw error;
+        }
+      }
+      const tmp = await open(tmpPath, 'w', FILE_MODE);
+      try {
+        await tmp.chmod(mode);
         await tmp.writeFile(content);
         await tmp.datasync();
       } finally {
@@ -119,8 +137,13 @@ export function createWindowStore(options: PersistOptions & { capacity: number }
       return out;
     },
     append(window: AggregatedWindow): Promise<void> {
+      if (closed) {
+        return Promise.reject(
+          new Error(`window store ${path} is closed; the window was not persisted`),
+        );
+      }
       return enqueue(async () => {
-        handle ??= await open(path, 'a');
+        handle ??= await open(path, 'a', FILE_MODE);
         const line = `${needsNewline ? '\n' : ''}${serializeWindow(window)}`;
         await handle.appendFile(line);
         needsNewline = false;
@@ -132,6 +155,10 @@ export function createWindowStore(options: PersistOptions & { capacity: number }
       });
     },
     release(): Promise<void> {
+      return enqueue(closeHandle);
+    },
+    close(): Promise<void> {
+      closed = true;
       return enqueue(closeHandle);
     },
   };

@@ -5,8 +5,9 @@ import type { Alert } from './alert-evaluator.js';
  *
  * Contract: `send()` never rejects for a delivery failure. A failure increments `failed`
  * and is reported through the sink's error handler. `close()` waits for queued and
- * in-flight deliveries to settle. `send()` after `close()` resolves immediately and
- * counts as `dropped`.
+ * in-flight deliveries to settle; a sink that talks to the network bounds that wait (the
+ * webhook sink aborts what is still in flight after its `closeTimeoutMs`, counting it as
+ * `failed`). `send()` after `close()` resolves immediately and counts as `dropped`.
  */
 export type AlertSink = {
   readonly type: string;

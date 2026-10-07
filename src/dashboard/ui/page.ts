@@ -1,28 +1,18 @@
-function escapeAttribute(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
 /**
- * The dashboard page. `tokenQuery` is `''` or `'?token=<encoded token>'`; it is appended to the
- * relative asset and SSE URLs so each request is authorized the way `/events` already is.
+ * The dashboard page. Its asset and SSE URLs are plain relative paths: the page carries no
+ * credential, the browser's session cookie authorizes each request.
  */
-export function renderPage(tokenQuery: string): string {
-  const q = escapeAttribute(tokenQuery);
+export function renderPage(): string {
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta name="argus-events" content="events${q}">
+<meta name="argus-events" content="events">
 <title>Argus</title>
-<link rel="stylesheet" href="app.css${q}">
-<script src="app.js${q}" defer></script>
+<link rel="stylesheet" href="app.css">
+<script src="app.js" defer></script>
 </head>
 <body>
 <header>

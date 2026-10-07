@@ -20,13 +20,64 @@ export type SamplerController = {
   stop(): void;
 };
 
+export type SamplerControllerOptions = {
+  /**
+   * Called when a tick fails (taking a sample or `onSample` threw). The controller keeps ticking.
+   * Defaults to a process warning (`ArgusSamplerWarning`) on the first failure of each run of
+   * consecutive failures.
+   */
+  onError?: (error: unknown) => void;
+};
+
+function warn(error: unknown): void {
+  const message = error instanceof Error ? error.message : String(error);
+  process.emitWarning(`sampler tick failed: ${message}`, 'ArgusSamplerWarning');
+}
+
 export function createSamplerController(
   onSample: (sample: AgentSample) => void,
+  options: SamplerControllerOptions = {},
 ): SamplerController {
+  const { onError } = options;
   const eventLoop = createEventLoopSampler();
   const gc = createGcSampler();
   const backpressure = createBackpressureProbe();
   let timer: NodeJS.Timeout | undefined;
+  let failing = false;
+
+  const reportFailure = (error: unknown): void => {
+    let unreported = error;
+    if (onError !== undefined) {
+      try {
+        onError(error);
+        return;
+      } catch (handlerError) {
+        unreported = handlerError;
+      }
+    }
+    // Warn once per run of consecutive failures, so a tick that keeps failing does not flood stderr.
+    if (!failing) {
+      warn(unreported);
+    }
+  };
+
+  // A tick never throws: an uncaught exception from a timer would take the host process down.
+  const tick = (): void => {
+    try {
+      onSample({
+        timestamp: Date.now(),
+        eventLoop: eventLoop.sample(),
+        memory: sampleMemory(),
+        heapSpaces: sampleHeapSpaces(),
+        gc: gc.sample(),
+        backpressure: backpressure.sample(),
+      });
+      failing = false;
+    } catch (error) {
+      reportFailure(error);
+      failing = true;
+    }
+  };
 
   return {
     start(intervalMs: number): void {
@@ -38,19 +89,11 @@ export function createSamplerController(
       if (timer !== undefined) {
         return;
       }
+      failing = false;
       eventLoop.enable();
       gc.enable();
       backpressure.enable();
-      timer = setInterval(() => {
-        onSample({
-          timestamp: Date.now(),
-          eventLoop: eventLoop.sample(),
-          memory: sampleMemory(),
-          heapSpaces: sampleHeapSpaces(),
-          gc: gc.sample(),
-          backpressure: backpressure.sample(),
-        });
-      }, intervalMs);
+      timer = setInterval(tick, intervalMs);
       timer.unref();
     },
     stop(): void {

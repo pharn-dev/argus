@@ -9,13 +9,12 @@ function asset(contentType: string, text: string): StaticAsset {
 }
 
 /**
- * The page and its two assets, keyed by pathname. The token is fixed for the server's life, so the
- * page is rendered once, with the configured token (never a presented one) in its URLs.
+ * The page and its two assets, keyed by pathname. None of them carries a credential: the browser
+ * authenticates every request with the session cookie the `?token=` exchange set.
  */
-export function createStaticAssets(token: string | undefined): ReadonlyMap<string, StaticAsset> {
-  const tokenQuery = token === undefined ? '' : `?token=${encodeURIComponent(token)}`;
+export function createStaticAssets(): ReadonlyMap<string, StaticAsset> {
   return new Map<string, StaticAsset>([
-    ['/', asset('text/html; charset=utf-8', renderPage(tokenQuery))],
+    ['/', asset('text/html; charset=utf-8', renderPage())],
     ['/app.css', asset('text/css; charset=utf-8', APP_STYLE)],
     ['/app.js', asset('text/javascript; charset=utf-8', APP_SCRIPT)],
   ]);

@@ -38,10 +38,56 @@ function parse(name: string, key: AgentConfigKey, text: string): unknown {
   }
 }
 
-/** Map ARGUS_* variables to config keys. Other variables are ignored; unknown ARGUS_ names throw. */
+/** Edit distance between two short strings (variable names), two-row dynamic programming. */
+function editDistance(a: string, b: string): number {
+  let previous = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i += 1) {
+    const current = [i];
+    for (let j = 1; j <= b.length; j += 1) {
+      const substitution = (previous[j - 1] ?? 0) + (a[i - 1] === b[j - 1] ? 0 : 1);
+      current[j] = Math.min((previous[j] ?? 0) + 1, (current[j - 1] ?? 0) + 1, substitution);
+    }
+    previous = current;
+  }
+  return previous[b.length] ?? 0;
+}
+
+const SUGGESTION_MAX_DISTANCE = 3;
+
+/** The closest known variable to an unknown ARGUS_* name, when it is plausibly a typo. */
+function suggest(name: string): string | undefined {
+  const typed = name.slice('ARGUS_'.length);
+  let best: string | undefined;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const known of Object.keys(VARIABLES)) {
+    const distance = editDistance(typed, known.slice('ARGUS_'.length));
+    if (distance < bestDistance) {
+      best = known;
+      bestDistance = distance;
+    }
+  }
+  // Short names are only "close" when most of the name survives the edit.
+  return bestDistance <= SUGGESTION_MAX_DISTANCE && bestDistance * 2 < typed.length
+    ? best
+    : undefined;
+}
+
+/** The warning text for an ignored, unknown ARGUS_* variable. */
+export function unknownVariableWarning(name: string): string {
+  const suggestion = suggest(name);
+  return `ignoring unknown environment variable ${name}${
+    suggestion === undefined ? '' : ` (did you mean ${suggestion}?)`
+  }`;
+}
+
+/**
+ * Map ARGUS_* variables to config keys. Other variables are ignored. An unknown ARGUS_ name is
+ * reported once through `warn` and ignored; an invalid value for a known name throws.
+ */
 export function readConfigEnv(
   env: Readonly<Record<string, string | undefined>>,
   cwd: string,
+  warn: (message: string) => void,
 ): Partial<AgentConfig> {
   const result: Record<string, unknown> = {};
   for (const [name, text] of Object.entries(env)) {
@@ -49,7 +95,8 @@ export function readConfigEnv(
       continue;
     }
     if (!Object.hasOwn(VARIABLES, name)) {
-      throw new ArgusConfigError(name, undefined, 'unknown variable');
+      warn(unknownVariableWarning(name));
+      continue;
     }
     const key = VARIABLES[name] as AgentConfigKey;
     const value = parse(name, key, text);
