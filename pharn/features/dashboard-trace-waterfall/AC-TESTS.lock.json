@@ -1,0 +1,84 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "dashboard-trace-waterfall",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "dashboard-trace-waterfall",
+    "spec_content_hash": "4c3d8ea4310c324116ae32048f7c6a110cba5ee9fe058ef8fcebd0e9967a1891"
+  },
+  "mapping": {
+    "path": "pharn/features/dashboard-trace-waterfall/AC-TESTS.md",
+    "sha256": "958ffcdad8ffc2404e0b05d53c6bea8ecdf840f74e3789e3af59c8ef13dfc561"
+  },
+  "files": [
+    {
+      "path": "src/dashboard/dashboard-trace-waterfall.ac1.test.ts",
+      "sha256": "b83f858e6a1b4e586b8f7890e8853f8e7b04d838281d517fb973ad7e3cded506"
+    },
+    {
+      "path": "src/dashboard/dashboard-trace-waterfall.ac2.test.ts",
+      "sha256": "7ab61bd81b725181c3f0e7b005800d7c3c23f84b45950ba1b0d022eb096b25fb"
+    },
+    {
+      "path": "src/dashboard/dashboard-trace-waterfall.ac3.integration.test.ts",
+      "sha256": "7faf1fe01cab84f8586212936540cdc416b8036ca6dd68e2aed00af4d47c6bba"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "0a58136fb816dbd3065384c89957733f98e7e50615fac0d72b909cc9eca84139",
+    "files_sha256": "a481e8f16b20ca6568972f5b066b1ce377053911e1daea2f230af42a8cc1165d",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "08e1aa6eda29aac4f6951484f89c44f392a12af579d8bfc7653022c69d3ee348"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/dashboard/dashboard-trace-waterfall.ac1.test.ts::dashboard trace waterfall — AC-1 › AC-1: groups rows by trace id, one row per span, with offset and width proportional to start and duration in the visible range, a method/path/status/duration label, and only the 5xx row flagged as an error"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/dashboard/dashboard-trace-waterfall.ac2.test.ts::dashboard trace waterfall — AC-2 › AC-2: counts traces, not spans — with two spans per trace it keeps exactly the N newest traces, each with all its spans",
+          "src/dashboard/dashboard-trace-waterfall.ac2.test.ts::dashboard trace waterfall — AC-2 › AC-2: given spans from more than N traces arriving in start order, returns exactly the N most recently started traces and none of the older ones"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/dashboard/dashboard-trace-waterfall.ac3.integration.test.ts::dashboard trace waterfall — AC-3 › AC-3: the page names a trace waterfall, holds no inline script or style, keeps the exact pre-feature CSP, and its served script handles span events"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration",
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}

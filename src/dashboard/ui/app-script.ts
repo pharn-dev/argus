@@ -1,14 +1,24 @@
+import { buildWaterfall } from './waterfall-model.js';
+
 /**
  * The dashboard client, served verbatim as one classic script (no import/export). Vanilla JS with
- * string concatenation only: this is a String.raw template, so it must hold no backtick and no
- * dollar-brace sequence.
+ * string concatenation only: the String.raw templates must hold no backtick and no dollar-brace
+ * sequence. The waterfall layout function is embedded as its own compiled text, so the unit-tested
+ * function is the one the browser runs.
  */
-export const APP_SCRIPT: string = String.raw`(function () {
+export const APP_SCRIPT: string =
+  String.raw`(function () {
   'use strict';
 
   var MAX_ALERTS = 20;
+  var MAX_TRACES = 20;
+  var MAX_SPANS = 500;
   var BACKOFF_START_MS = 1000;
   var BACKOFF_CAP_MS = 30000;
+
+  ` +
+  buildWaterfall.toString() +
+  String.raw`
 
   function formatMs(ns) {
     return (ns / 1e6).toFixed(1) + ' ms';
@@ -74,8 +84,20 @@ export const APP_SCRIPT: string = String.raw`(function () {
     var gcEl = document.getElementById('gc');
     var alertsEl = document.getElementById('alerts');
     var emptyEl = document.getElementById('alerts-empty');
+    var waterfallEl = document.getElementById('waterfall');
+    var waterfallEmptyEl = document.getElementById('waterfall-empty');
 
-    if (!meta || !statusEl || !lagEl || !memoryEl || !gcEl || !alertsEl || !emptyEl) {
+    if (
+      !meta ||
+      !statusEl ||
+      !lagEl ||
+      !memoryEl ||
+      !gcEl ||
+      !alertsEl ||
+      !emptyEl ||
+      !waterfallEl ||
+      !waterfallEmptyEl
+    ) {
       console.error('argus dashboard: the page is missing an expected element');
       if (statusEl) {
         statusEl.textContent = 'error: the page is incomplete';
@@ -136,18 +158,75 @@ export const APP_SCRIPT: string = String.raw`(function () {
       emptyEl.hidden = false;
     }
 
+    var spans = [];
+
+    function renderWaterfall(model) {
+      while (waterfallEl.firstChild) {
+        waterfallEl.removeChild(waterfallEl.firstChild);
+      }
+      for (var t = 0; t < model.traces.length; t += 1) {
+        var trace = model.traces[t];
+        var item = document.createElement('li');
+        item.className = 'trace';
+        for (var r = 0; r < trace.rows.length; r += 1) {
+          var row = trace.rows[r];
+          var rowEl = document.createElement('div');
+          rowEl.className = row.isError ? 'row row-error' : 'row';
+          var labelEl = document.createElement('span');
+          labelEl.className = 'row-label';
+          labelEl.textContent = (row.isError ? 'error ' : '') + row.label;
+          var trackEl = document.createElement('span');
+          trackEl.className = 'track';
+          var barEl = document.createElement('span');
+          barEl.className = 'bar';
+          barEl.style.left = row.offsetPct + '%';
+          barEl.style.width = row.widthPct + '%';
+          trackEl.appendChild(barEl);
+          rowEl.appendChild(labelEl);
+          rowEl.appendChild(trackEl);
+          item.appendChild(rowEl);
+        }
+        waterfallEl.appendChild(item);
+      }
+      waterfallEmptyEl.hidden = model.traces.length > 0;
+    }
+
+    function clearWaterfall() {
+      spans = [];
+      renderWaterfall({ rangeStartMs: 0, rangeEndMs: 0, traces: [] });
+    }
+
+    function addSpan(span) {
+      spans.push(span);
+      if (spans.length > MAX_SPANS) {
+        spans = spans.slice(spans.length - MAX_SPANS);
+      }
+      var model = buildWaterfall(spans, MAX_TRACES);
+      var kept = [];
+      for (var t = 0; t < model.traces.length; t += 1) {
+        var rows = model.traces[t].rows;
+        for (var r = 0; r < rows.length; r += 1) {
+          kept.push(rows[r]);
+        }
+      }
+      spans = kept;
+      renderWaterfall(model);
+    }
+
     function handleFrame(frame) {
       var parsed = parseFrame(frame);
       if (parsed === null) {
         return;
       }
-      if (parsed.event !== 'window' && parsed.event !== 'alert') {
+      if (parsed.event !== 'window' && parsed.event !== 'alert' && parsed.event !== 'span') {
         return;
       }
       try {
         var payload = JSON.parse(parsed.data);
         if (parsed.event === 'window') {
           renderWindow(payload);
+        } else if (parsed.event === 'span') {
+          addSpan(payload);
         } else {
           addAlert(payload);
         }
@@ -210,6 +289,7 @@ export const APP_SCRIPT: string = String.raw`(function () {
           }
           backoffMs = BACKOFF_START_MS;
           clearAlerts();
+          clearWaterfall();
           setStatus('live', 'live');
           return readLoop(response.body.getReader(), new TextDecoder(), '').then(function () {
             onDisconnect(null);

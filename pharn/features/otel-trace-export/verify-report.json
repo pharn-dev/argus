@@ -1,0 +1,102 @@
+{
+  "feature": "otel-trace-export",
+  "gates": {
+    "build": 0,
+    "format:check": 0,
+    "instruction-growth": 0,
+    "lint": 0,
+    "reconcile": 0,
+    "test": 0,
+    "typecheck": 0
+  },
+  "verdict": "PASS",
+  "failing_gates": [],
+  "gate_run": {
+    "stamp_sha256": "e3676855299ae12b7b288f92724ce671540e3cd030059b573e1fe1721752c173",
+    "source": "discover",
+    "fingerprint": {
+      "algo": "worktree-fingerprint/2+sha256",
+      "final": "bda2e0be3200e53bc2dda5a65dbbbb28a4b9eb1121e9f21e756b0948dffbe46c"
+    }
+  },
+  "ac_gate": {
+    "mode": "test-first",
+    "verdict": "PASS",
+    "reason": null,
+    "evidence": [],
+    "acs": [
+      {
+        "id": "AC-1",
+        "level": "unit",
+        "tests": [
+          "src/otel/otel-trace-export.ac1.test.ts::otel trace export — AC-1 › AC-1: converts two span records into one resourceSpans entry holding two SERVER spans"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-2",
+        "level": "integration",
+        "tests": [
+          "src/otel/otel-trace-export.ac2.integration.test.ts::otel trace export — AC-2 › AC-2: a subscribed exporter POSTs the collector span records to /v1/traces with the caller headers"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-3",
+        "level": "integration",
+        "tests": [
+          "src/otel/otel-trace-export.ac3.integration.test.ts::otel trace export — AC-3 › AC-3: reports a 500 response to the error callback without throwing or rejecting",
+          "src/otel/otel-trace-export.ac3.integration.test.ts::otel trace export — AC-3 › AC-3: reports a connection error to the error callback without throwing or rejecting",
+          "src/otel/otel-trace-export.ac3.integration.test.ts::otel trace export — AC-3 › AC-3: with queue capacity 1 and the first request held open, drops the third batch and sends two"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      }
+    ],
+    "unmapped_anomalies": [],
+    "note": "an AC is delivered = a locked, once-red test titled AC-<n>:, in a file mapped to AC-<n>, passed on this head run. PHARN does not judge whether that test fully captures the AC's intent."
+  },
+  "completeness": {
+    "plan": "pharn/features/otel-trace-export/PLAN.md",
+    "repoDir": ".",
+    "declared": [
+      "src/otel/otlp-exporter-options.ts",
+      "src/otel/otlp-batch-queue.ts",
+      "src/otel/otlp-exporter.ts",
+      "src/otel/otlp-trace-types.ts",
+      "src/otel/otlp-traces.ts",
+      "src/otel/otlp-trace-exporter.ts",
+      "src/otel/index.ts",
+      "ARCHITECTURE.md",
+      "README.md"
+    ],
+    "skipped": [],
+    "missing": [],
+    "complete": true,
+    "verdict": "complete"
+  },
+  "verifiers": {
+    "registered": 0,
+    "findings": []
+  },
+  "gate_reuse": {
+    "reused": []
+  },
+  "head_install": {
+    "state": "clean",
+    "why": null,
+    "family": "npm",
+    "lockfile": "package-lock.json",
+    "counts": {
+      "changed": 0,
+      "missing": 0,
+      "extraneous": 0,
+      "missing_unchecked": 24
+    }
+  }
+}
