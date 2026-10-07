@@ -101,6 +101,10 @@ jobs:
         run: npm run build
       - name: Check exports (ESM + CJS)
         run: npm run check:exports
+      # Tarball hygiene: no test fixtures, .ts sources or files outside dist/ ship, every source map
+      # carries its sources, every "exports" target ships, and engines.node matches .nvmrc.
+      - name: Check package contents and Node floor
+        run: npm run check:package
 
   action-pins:
     name: Action pins
