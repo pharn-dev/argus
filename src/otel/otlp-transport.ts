@@ -6,23 +6,98 @@ export type OtlpTarget = {
   timeoutMs: number;
 };
 
+/** Response body bytes read (and discarded) before the rest of the body is cancelled. */
+const MAX_RESPONSE_BODY_BYTES = 64 * 1024;
+
+/**
+ * Consumes a response body without buffering it: reads and discards at most `maxBytes`, then
+ * cancels the rest, so a large or endless body costs no memory and the connection is released.
+ * Rejects if reading fails (for example when the request signal aborts mid-body).
+ */
+async function discardResponseBody(response: Response, maxBytes: number): Promise<void> {
+  const body = response.body;
+  if (body === null) return;
+  const reader = body.getReader();
+  let read = 0;
+  try {
+    for (;;) {
+      const chunk = await reader.read();
+      if (chunk.done) return;
+      // fetch body chunks are Uint8Array; the platform typings declare the stream untyped, so
+      // anything else is treated as over the cap and cancels the body.
+      const value: unknown = chunk.value;
+      read += value instanceof Uint8Array ? value.byteLength : maxBytes + 1;
+      if (read > maxBytes) {
+        await reader.cancel();
+        return;
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+type RequestSignal = { readonly signal: AbortSignal; dispose(): void };
+
+/**
+ * A per-request signal that aborts with a `TimeoutError` after `timeoutMs`, or as soon as
+ * `parent` aborts. Call `dispose()` once the request (including its body) is done. Built by hand
+ * rather than with `AbortSignal.any`, so a long-lived `parent` never accumulates dependents.
+ */
+function createRequestSignal(timeoutMs: number, parent?: AbortSignal): RequestSignal {
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort(new DOMException('The operation was aborted due to timeout', 'TimeoutError'));
+  }, timeoutMs);
+  const onParentAbort = (): void => {
+    controller.abort(parent?.reason);
+  };
+  if (parent !== undefined) {
+    if (parent.aborted) onParentAbort();
+    else parent.addEventListener('abort', onParentAbort, { once: true });
+  }
+  return {
+    signal: controller.signal,
+    dispose(): void {
+      clearTimeout(timer);
+      parent?.removeEventListener('abort', onParentAbort);
+    },
+  };
+}
+
 /**
  * Sends one OTLP JSON body with a single POST. Never throws or rejects: it resolves `undefined`
  * on a 2xx response and an `Error` otherwise. Only the origin appears in messages, never the
- * path, query or headers, which may carry a credential.
+ * path, query or headers, which may carry a credential. A redirect is never followed (it is a
+ * failure, and the redirect target is never contacted) and the response body is never buffered.
+ * `abort`, when given, cancels the request early (used by a bounded `close()`).
  */
-export async function postOtlpJson(target: OtlpTarget, body: string): Promise<Error | undefined> {
+export async function postOtlpJson(
+  target: OtlpTarget,
+  body: string,
+  abort?: AbortSignal,
+): Promise<Error | undefined> {
+  const request = createRequestSignal(target.timeoutMs, abort);
   try {
     const response = await fetch(target.url, {
       method: 'POST',
       headers: { ...target.headers, 'content-type': 'application/json' },
       body,
-      signal: AbortSignal.timeout(target.timeoutMs),
+      redirect: 'manual',
+      signal: request.signal,
     });
-    await response.arrayBuffer();
+    await discardResponseBody(response, MAX_RESPONSE_BODY_BYTES);
     if (response.status >= 200 && response.status < 300) return undefined;
+    if (response.type === 'opaqueredirect' || (response.status >= 300 && response.status < 400)) {
+      return new Error(
+        `OTLP export to ${target.origin} failed: redirect (status ${String(response.status)}) not followed`,
+      );
+    }
     return new Error(`OTLP export to ${target.origin} failed: status ${String(response.status)}`);
   } catch (cause) {
+    if (abort?.aborted === true) {
+      return new Error(`OTLP export to ${target.origin} failed: aborted by close()`, { cause });
+    }
     const name = cause instanceof Error ? cause.name : '';
     if (name === 'TimeoutError' || name === 'AbortError') {
       return new Error(
@@ -32,5 +107,7 @@ export async function postOtlpJson(target: OtlpTarget, body: string): Promise<Er
     }
     const reason = cause instanceof Error ? cause.message : String(cause);
     return new Error(`OTLP export to ${target.origin} failed: ${reason}`, { cause });
+  } finally {
+    request.dispose();
   }
 }

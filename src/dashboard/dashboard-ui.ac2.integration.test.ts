@@ -93,11 +93,12 @@ describe('dashboard UI — AC-2', () => {
         token: 's3cret',
       });
       const base = `http://127.0.0.1:${server.port}`;
-      const pageUrl = `${base}/?token=s3cret`;
+      const pageUrl = `${base}/`;
+      const bearer = { authorization: 'Bearer s3cret' };
 
       // Given: the asset paths the authorized page references, and the authorized bodies.
-      const page = await httpGet(pageUrl);
-      expect(page.status, 'GET /?token=s3cret').toBe(200);
+      const page = await httpGet(pageUrl, bearer);
+      expect(page.status, 'GET / (Bearer s3cret)').toBe(200);
       const tags = parseTags(page.body);
       const assetUrls = [
         ...tags
@@ -116,7 +117,7 @@ describe('dashboard UI — AC-2', () => {
 
       const authorizedBodies: string[] = [page.body];
       for (const url of assetUrls) {
-        const asset = await httpGet(url.href);
+        const asset = await httpGet(url.href, bearer);
         expect(asset.status, `authorized GET ${url.pathname}${url.search}`).toBe(200);
         authorizedBodies.push(asset.body);
       }

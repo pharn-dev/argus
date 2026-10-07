@@ -6,7 +6,10 @@ export type SinkDispatcher = {
   deliver(alert: Alert): void;
   /** Resolves once every started delivery has settled. */
   settle(): Promise<void>;
-  /** Settles, then closes every sink; close failures are reported. */
+  /**
+   * Closes every sink, then settles. Each sink bounds its own shutdown, so this is as slow as the
+   * slowest sink's close, not the slowest retry sequence. Close failures are reported.
+   */
   close(): Promise<void>;
 };
 
@@ -38,13 +41,17 @@ export function createSinkDispatcher(
     },
     settle,
     async close(): Promise<void> {
-      await settle();
-      const results = await Promise.allSettled(sinks.map((sink) => sink.close()));
+      // `deliver()` calls `send()` from an already queued microtask; closing from a microtask
+      // queued after it guarantees every started delivery reaches its sink before the sink closes.
+      const results = await Promise.allSettled(
+        sinks.map((sink) => Promise.resolve().then(() => sink.close())),
+      );
       results.forEach((result, i) => {
         if (result.status === 'rejected') {
           reportSinkError(onError, toError(result.reason), sinks[i] as AlertSink);
         }
       });
+      await settle();
     },
   };
 }

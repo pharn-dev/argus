@@ -10,7 +10,11 @@ export type OtlpTraceExporter = {
   export(spans: SpanRecord | readonly SpanRecord[]): void;
   /** Resolves once the queue is empty and nothing is in flight. Never rejects for an export failure. */
   flush(): Promise<void>;
-  /** Stops accepting batches, then flushes. Idempotent. */
+  /**
+   * Stops accepting batches, then flushes for at most `closeTimeoutMs` (default `timeoutMs`);
+   * batches still queued then are dropped and reported, the request in flight is aborted.
+   * Idempotent.
+   */
   close(): Promise<void>;
   readonly droppedBatches: number;
   readonly failedBatches: number;
@@ -19,11 +23,13 @@ export type OtlpTraceExporter = {
 };
 
 export function createOtlpTraceExporter(options: OtlpTraceExporterOptions): OtlpTraceExporter {
-  const { target, serviceName, queueCapacity, onError } = resolveOtlpExporterOptions(options);
+  const { target, serviceName, queueCapacity, closeTimeoutMs, onError } =
+    resolveOtlpExporterOptions(options);
   const queue = createOtlpBatchQueue<SpanRecord>({
     capacity: queueCapacity,
     encode: (batch) => JSON.stringify(toOtlpTraces(batch, { serviceName })),
     target,
+    closeTimeoutMs,
     onError,
   });
 
