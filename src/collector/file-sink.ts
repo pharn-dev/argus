@@ -14,6 +14,9 @@ export type FileSinkOptions = {
   onError?: SinkErrorHandler;
 };
 
+/** Mode for a file the sink creates (owner read/write only); an existing file keeps its mode. */
+const FILE_MODE = 0o600;
+
 /** Appends each alert as one NDJSON line to a file (append mode; existing content is kept). */
 export function createFileSink(options: FileSinkOptions): AlertSink {
   const { path, name, onError } = options;
@@ -52,7 +55,7 @@ export function createFileSink(options: FileSinkOptions): AlertSink {
       }
       tail = tail.then(async () => {
         try {
-          handle ??= await open(path, 'a');
+          handle ??= await open(path, 'a', FILE_MODE);
         } catch (error) {
           fail('open', error);
           return;

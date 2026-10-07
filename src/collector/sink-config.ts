@@ -15,6 +15,7 @@ export type SinkConfig =
       retries?: number;
       backoffMs?: number;
       maxInFlight?: number;
+      closeTimeoutMs?: number;
     };
 
 export type SinkInput = AlertSink | SinkConfig;
@@ -52,6 +53,7 @@ function build(config: SinkConfig, onError: SinkErrorHandler | undefined): Alert
         ...(config.retries !== undefined ? { retries: config.retries } : {}),
         ...(config.backoffMs !== undefined ? { backoffMs: config.backoffMs } : {}),
         ...(config.maxInFlight !== undefined ? { maxInFlight: config.maxInFlight } : {}),
+        ...(config.closeTimeoutMs !== undefined ? { closeTimeoutMs: config.closeTimeoutMs } : {}),
       });
   }
 }
