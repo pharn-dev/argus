@@ -28,8 +28,9 @@ The example's own lines carry a `[worker-pool] ` prefix:
 [worker-pool] done
 ```
 
-The interleaved JSON lines are the agent's NDJSON samples. Set `ARGUS_OUTPUT=none` to silence them,
-or `ARGUS_OUTPUT=<file path>` to write them to a file instead.
+The interleaved JSON lines are the agent's NDJSON samples. Set `ARGUS_OUTPUT=<absolute file path>`
+to write them to a file instead. `ARGUS_OUTPUT=none` turns the agent off entirely, so no samples are
+collected at all.
 
 The tick count shows the main thread kept running while the analyzer worker parsed the snapshot.
 The process exits on its own with code 0; on any failure it prints `[worker-pool] failed: ...` to
