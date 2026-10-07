@@ -1,8 +1,6 @@
 import 'argus/agent';
-import { channel } from 'node:diagnostics_channel';
 import { createServer } from 'node:http';
 import { performance } from 'node:perf_hooks';
-import { setTimeout as sleep } from 'node:timers/promises';
 
 // The monitored app. The agent (loaded by the line above) writes NDJSON to this process's stdout,
 // so nothing else here may write to stdout. The parent (index.mjs) reads that stream.
@@ -51,24 +49,6 @@ function handle(req, res) {
   } else {
     text(res, 404, 'not found\n');
   }
-}
-
-// The agent starts asynchronously (it reads its config first) and turns HTTP tracing on only
-// afterwards. A request served before that would get no span, so the app waits until the agent
-// has subscribed to Node's HTTP response channel before it reports itself ready. If that never
-// happens (for example the agent is disabled by an argus.config file), serve anyway after a
-// bounded wait and say so on stderr.
-const AGENT_READY_TIMEOUT_MS = 10_000;
-const AGENT_POLL_MS = 5;
-
-async function agentIsTracing(isStopped) {
-  const finish = channel('http.server.response.finish');
-  const deadline = performance.now() + AGENT_READY_TIMEOUT_MS;
-  while (!finish.hasSubscribers) {
-    if (isStopped() || performance.now() >= deadline) return false;
-    await sleep(AGENT_POLL_MS);
-  }
-  return true;
 }
 
 function parsePort(value) {
@@ -132,11 +112,6 @@ if (port === undefined) {
   process.on('disconnect', shutdown);
   process.once('SIGTERM', shutdown);
   process.once('SIGINT', shutdown);
-
-  const tracing = await agentIsTracing(() => shuttingDown);
-  if (!tracing && !shuttingDown) {
-    logError('the agent is not tracing HTTP requests yet; serving without waiting for it');
-  }
 
   if (!shuttingDown) {
     server.listen(port, HOST, () => {
