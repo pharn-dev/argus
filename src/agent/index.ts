@@ -26,6 +26,8 @@ export type { NdjsonExporter, NdjsonExporterOptions } from './ndjson-exporter.js
 export { loadAgentConfig } from './config.js';
 export { defaultAgentConfig, ArgusConfigError } from './config-schema.js';
 export type { AgentConfig } from './config-schema.js';
+export { createDeoptParser, ANONYMOUS_FUNCTION, DEPENDENT_CODE_KIND } from './deopt-parser.js';
+export type { DeoptEvent, DeoptLocation, DeoptParser } from './deopt-parser.js';
 export { currentTraceId, runWithTrace } from './context.js';
 export { enable, disable, drainSpans, DEFAULT_SPAN_BUFFER_SIZE } from './http-tracing.js';
 export type { HttpTracingOptions } from './http-tracing.js';

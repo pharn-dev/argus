@@ -1,0 +1,53 @@
+[bailout (kind: deopt-eager, reason: Insufficient type feedback for call): begin. deoptimizing 0x35e2cc8a4ea9 <JSFunction outer (sfi = 0xa9540d5a0d1)>, 0x3f50a0f429a1 <Code TURBOFAN>, opt id 3, bytecode offset 4, deopt exit 4, FP to SP delta 64, caller SP 0x00016d1bd770, pc 0x00010e30ca14]
+            ;;; deoptimize at </app/lazy.js:6:18> inlined at </app/lazy.js:9:38>
+  reading input frame outer => bytecode_offset=27, args=2, height=4, retval=0(#0); inputs:
+      0: 0x35e2cc8a4ea9 ;  [fp -  16]  0x35e2cc8a4ea9 <JSFunction outer (sfi = 0xa9540d5a0d1)>
+      1: 0x1e799ffc1189 ;  [fp +  16]  0x1e799ffc1189 <JSGlobalProxy>
+      2: 0x00c800000000 ; x4 200
+      3: 0x35e2cc8a4d99 ;  [fp -  32]  0x35e2cc8a4d99 <FunctionContext[8]>
+      4: 102 ; x5 (int32)
+      5: 50 ; x2 (int32)
+      6: (optimized out)
+      7: (optimized out)
+      8: (optimized out)
+  reading input frame maybeTweak => bytecode_offset=4, args=2, height=1, retval=0(#0); inputs:
+      0: 0x35e2cc8a4e29 ; (literal  9) 0x35e2cc8a4e29 <JSFunction maybeTweak (sfi = 0xa9540d5a021)>
+      1: 0x1e799ffc1189 ; (literal 10) 0x1e799ffc1189 <JSGlobalProxy>
+      2: 50 ; x2 (int32)
+      3: 0x35e2cc8a4d99 ; (literal 11) 0x35e2cc8a4d99 <FunctionContext[8]>
+      4: (optimized out)
+      5: 0x003200000000 ; x3 50
+  translating interpreted frame outer => bytecode_offset=27, variable_frame_size=32, frame_size=112
+    0x00016d1bd768: [top + 104] <- 0x00c800000000 <Smi 200> ;  stack parameter (input #2)
+    0x00016d1bd760: [top +  96] <- 0x1e799ffc1189 <JSGlobalProxy> ;  stack parameter (input #1)
+    -------------------------
+    0x00016d1bd758: [top +  88] <- 0x00010e30c42c ;  bottommost caller's pc
+    0x00016d1bd750: [top +  80] <- 0x00016d1bd7f0 ;  caller's fp
+    0x00016d1bd748: [top +  72] <- 0x35e2cc8a4d99 <FunctionContext[8]> ;  context (input #3)
+    0x00016d1bd740: [top +  64] <- 0x35e2cc8a4ea9 <JSFunction outer (sfi = 0xa9540d5a0d1)> ;  function (input #0)
+    0x00016d1bd738: [top +  56] <- 0x000000000002 ;  actual argument count
+    0x00016d1bd730: [top +  48] <- 0x3f50a0f41f81 <BytecodeArray[43]> ;  bytecode array
+    0x00016d1bd728: [top +  40] <- 0x005a00000000 <Smi 90> ;  bytecode offset
+    0x00016d1bd720: [top +  32] <- 0x2900e2d48c09 <arguments_marker> ;  feedback vector    -------------------------
+    0x00016d1bd718: [top +  24] <- 0x006600000000 <Smi 102> ;  stack parameter (input #4)
+    0x00016d1bd710: [top +  16] <- 0x003200000000 <Smi 50> ;  stack parameter (input #5)
+    0x00016d1bd708: [top +   8] <- 0x2900e2d48c39 <optimized_out> ;  stack parameter (input #6)
+    0x00016d1bd700: [top +   0] <- 0x2900e2d48c39 <optimized_out> ;  stack parameter (input #7)
+  translating interpreted frame maybeTweak => bytecode_offset=4, variable_frame_size=32, frame_size=112
+    0x00016d1bd6f8: [top + 104] <- 0x003200000000 <Smi 50> ;  stack parameter (input #2)
+    0x00016d1bd6f0: [top +  96] <- 0x1e799ffc1189 <JSGlobalProxy> ;  stack parameter (input #1)
+    -------------------------
+    0x00016d1bd6e8: [top +  88] <- 0x000103951ea0 ;  caller's pc
+    0x00016d1bd6e0: [top +  80] <- 0x00016d1bd750 ;  caller's fp
+    0x00016d1bd6d8: [top +  72] <- 0x35e2cc8a4d99 <FunctionContext[8]> ;  context (input #3)
+    0x00016d1bd6d0: [top +  64] <- 0x35e2cc8a4e29 <JSFunction maybeTweak (sfi = 0xa9540d5a021)> ;  function (input #0)
+    0x00016d1bd6c8: [top +  56] <- 0x000000000002 ;  actual argument count
+    0x00016d1bd6c0: [top +  48] <- 0x3f50a0f42131 <BytecodeArray[17]> ;  bytecode array
+    0x00016d1bd6b8: [top +  40] <- 0x004300000000 <Smi 67> ;  bytecode offset
+    0x00016d1bd6b0: [top +  32] <- 0x2900e2d48c09 <arguments_marker> ;  feedback vector    -------------------------
+    0x00016d1bd6a8: [top +  24] <- 0x2900e2d48c39 <optimized_out> ;  stack parameter (input #4)
+    0x00016d1bd6a0: [top +  16] <- 0x2900e2d40c69 <the_hole_value> ;  padding
+    0x00016d1bd698: [top +   8] <- 0x2900e2d40c69 <the_hole_value> ;  padding
+    0x00016d1bd690: [top +   0] <- 0x003200000000 <Smi 50> ;  accumulator (input #5)
+[bailout end. took 2.167 ms]
+[marking dependent code 0x3f50a0f42679 <Code TURBOFAN> (0x0a9540d5a079 <SharedFunctionInfo hot>) (opt id 0) for deoptimization, reason: code dependencies]
