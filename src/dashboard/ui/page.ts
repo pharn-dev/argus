@@ -47,6 +47,11 @@ export function renderPage(tokenQuery: string): string {
 <ul id="alerts"></ul>
 <p id="alerts-empty">No alerts yet</p>
 </section>
+<section aria-labelledby="waterfall-heading">
+<h2 id="waterfall-heading">Recent requests</h2>
+<ol id="waterfall" aria-label="Trace waterfall"></ol>
+<p id="waterfall-empty">No requests yet</p>
+</section>
 </main>
 </body>
 </html>
