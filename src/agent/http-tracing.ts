@@ -91,43 +91,165 @@ function onFinish(message: unknown): void {
   }
 }
 
+// ---- Shared `emit` wrap ----------------------------------------------------------------------
+//
+// Each server's 'request' listeners run inside the trace the start channel assigned to that
+// request. The start channel publishes synchronously right before `emit('request', …)`, so the
+// request is already in `inflight` when the wrapper runs. `runInTrace` scopes the context to the
+// listeners and their async continuations only — nothing created earlier (a keep-alive socket)
+// inherits it.
+//
+// Safety rules, the same as the backpressure probe's `write` wrappers:
+//   - Each install captures its originals in a per-install record. Uninstalling marks the record
+//     inactive, which turns its wrapper into a transparent pass-through, so a wrapper someone
+//     stacked on top keeps working.
+//   - `emit` is restored only while the prototype still holds our wrapper (identity guard).
+//   - The install lives on `globalThis` under a `Symbol.for` key. A second copy of Argus (ESM + CJS)
+//     adds its own contributor (its own `inflight` map and trace context) to the existing wrapper
+//     instead of wrapping `emit` again.
+
 type Emit = (this: unknown, event: string | symbol, ...args: unknown[]) => boolean;
-type EmitPatch = { proto: object; own: PropertyDescriptor | undefined };
+/** Shared by every Argus copy that uses the v1 registry; change `EMIT_REGISTRY_KEY` if it changes. */
+type Contributor = (request: object, next: () => boolean) => boolean;
+type EmitPatch = {
+  readonly proto: object;
+  readonly own: PropertyDescriptor | undefined;
+  readonly original: Emit;
+  wrapper: Emit | undefined;
+  active: boolean;
+};
+type EmitSession = { readonly patches: EmitPatch[] };
+type EmitRegistry = { readonly contributors: Set<Contributor>; session: EmitSession | undefined };
 
-const emitPatches: EmitPatch[] = [];
+const EMIT_REGISTRY_KEY = Symbol.for('argus.http-tracing.emit.v1');
+/** Set on every wrapper; points at its install record so a later install can skip a dead layer. */
+const EMIT_WRAPPER_KEY = Symbol.for('argus.http-tracing.emit');
+const MAX_PEEL = 64;
 
-/**
- * Run each server's 'request' listeners inside the trace the start channel assigned to that
- * request. The start channel publishes synchronously right before `emit('request', …)`, so the
- * request is already in `inflight` here. `runInTrace` scopes the context to the listeners and
- * their async continuations only — nothing created earlier (a keep-alive socket) inherits it.
- */
-function patchEmit(proto: object): void {
-  const own = Object.getOwnPropertyDescriptor(proto, 'emit');
-  const original = (proto as { emit: Emit }).emit;
-  const wrapped: Emit = function (this: unknown, event, ...args) {
-    const request = args[0];
-    const entry = event === 'request' && isObject(request) ? inflight.get(request) : undefined;
-    if (entry === undefined) {
-      return original.call(this, event, ...args);
+function isEmitRegistry(value: unknown): value is EmitRegistry {
+  return isObject(value) && value.contributors instanceof Set && Object.hasOwn(value, 'session');
+}
+
+const emitRegistry: EmitRegistry = (() => {
+  const host = globalThis as unknown as Record<symbol, unknown>;
+  const existing = host[EMIT_REGISTRY_KEY];
+  if (isEmitRegistry(existing)) {
+    return existing;
+  }
+  const created: EmitRegistry = { contributors: new Set(), session: undefined };
+  if (existing === undefined) {
+    Object.defineProperty(host, EMIT_REGISTRY_KEY, { value: created, configurable: true });
+  }
+  return created;
+})();
+
+/** This copy's part of a traced 'request' emit: its own `inflight` entry and trace context. */
+const contribute: Contributor = (request, next) => {
+  const entry = inflight.get(request);
+  return entry === undefined ? next() : runInTrace(entry.traceId, next);
+};
+
+function createEmitWrapper(patch: EmitPatch): Emit {
+  const original = patch.original;
+  // The named parameter keeps `wrapper.length` at EventEmitter#emit's arity; `arguments` forwards
+  // exactly what the caller passed.
+  const wrapper = function emit(this: unknown, event: string | symbol): boolean {
+    // eslint-disable-next-line prefer-rest-params -- see above
+    const args = arguments;
+    const request: unknown = args[1];
+    if (
+      event !== 'request' ||
+      !patch.active ||
+      emitRegistry.contributors.size === 0 ||
+      !isObject(request)
+    ) {
+      return Reflect.apply(original, this, args) as boolean;
     }
-    return runInTrace(entry.traceId, () => original.call(this, event, ...args));
+    let call = (): boolean => Reflect.apply(original, this, args) as boolean;
+    for (const contributor of emitRegistry.contributors) {
+      const next = call;
+      call = () => contributor(request, next);
+    }
+    return call();
   };
-  Object.defineProperty(proto, 'emit', {
-    value: wrapped,
-    writable: true,
-    configurable: true,
-    enumerable: false,
-  });
-  emitPatches.push({ proto, own });
+  Object.defineProperty(wrapper, 'length', { value: original.length, configurable: true });
+  Object.defineProperty(wrapper, EMIT_WRAPPER_KEY, { value: patch });
+  return wrapper;
+}
+
+type DeadRecord = { active: false; original: Emit; own: PropertyDescriptor | undefined };
+
+function deadRecordOf(value: unknown): DeadRecord | undefined {
+  if (typeof value !== 'function') {
+    return undefined;
+  }
+  const record = (value as unknown as Record<symbol, unknown>)[EMIT_WRAPPER_KEY];
+  if (isObject(record) && record.active === false && typeof record.original === 'function') {
+    return record as DeadRecord;
+  }
+  return undefined;
+}
+
+function patchEmit(session: EmitSession, proto: object): void {
+  try {
+    let own = Object.getOwnPropertyDescriptor(proto, 'emit');
+    let original = (proto as { emit: Emit }).emit;
+    // Skip inactive Argus wrappers left on top (a third party restored one of them).
+    for (let i = 0; i < MAX_PEEL; i += 1) {
+      const dead = own === undefined ? undefined : deadRecordOf(own.value);
+      if (dead === undefined) {
+        break;
+      }
+      own = dead.own;
+      original = dead.original;
+    }
+    const patch: EmitPatch = { proto, own, original, wrapper: undefined, active: true };
+    const wrapper = createEmitWrapper(patch);
+    patch.wrapper = wrapper;
+    Object.defineProperty(proto, 'emit', {
+      value: wrapper,
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
+    session.patches.push(patch);
+  } catch (error) {
+    // A frozen prototype cannot be patched; requests on it are still timed, just not context-scoped.
+    warn(error);
+  }
+}
+
+function installEmits(): void {
+  if (emitRegistry.session !== undefined) {
+    return;
+  }
+  const session: EmitSession = { patches: [] };
+  emitRegistry.session = session;
+  patchEmit(session, HttpServer.prototype);
+  patchEmit(session, HttpsServer.prototype);
 }
 
 function restoreEmits(): void {
-  for (const { proto, own } of emitPatches.splice(0)) {
-    if (own === undefined) {
-      delete (proto as { emit?: Emit }).emit;
-    } else {
-      Object.defineProperty(proto, 'emit', own);
+  const session = emitRegistry.session;
+  if (session === undefined) {
+    return;
+  }
+  emitRegistry.session = undefined;
+  for (const patch of session.patches) {
+    // From here on the wrapper is a pass-through to `patch.original`, wherever it still sits.
+    patch.active = false;
+    try {
+      // Never clobber a wrapper someone else installed after ours.
+      if (Object.getOwnPropertyDescriptor(patch.proto, 'emit')?.value !== patch.wrapper) {
+        continue;
+      }
+      if (patch.own === undefined) {
+        delete (patch.proto as { emit?: Emit }).emit;
+      } else {
+        Object.defineProperty(patch.proto, 'emit', patch.own);
+      }
+    } catch (error) {
+      warn(error);
     }
   }
 }
@@ -141,8 +263,8 @@ export function enable(options: HttpTracingOptions = {}): void {
   if (spanBufferSize !== undefined && spanBufferSize !== buffer.capacity) {
     buffer = createSpanBuffer(spanBufferSize);
   }
-  patchEmit(HttpServer.prototype);
-  patchEmit(HttpsServer.prototype);
+  emitRegistry.contributors.add(contribute);
+  installEmits();
   subscribe(START_CHANNEL, onStart);
   subscribe(FINISH_CHANNEL, onFinish);
   enabled = true;
@@ -155,7 +277,10 @@ export function disable(): void {
   }
   unsubscribe(START_CHANNEL, onStart);
   unsubscribe(FINISH_CHANNEL, onFinish);
-  restoreEmits();
+  emitRegistry.contributors.delete(contribute);
+  if (emitRegistry.contributors.size === 0) {
+    restoreEmits();
+  }
   enabled = false;
 }
 

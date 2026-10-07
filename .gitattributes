@@ -1,0 +1,10 @@
+# PHARN development tooling: the owner's build pipeline, not part of Argus. Marked so GitHub leaves it
+# out of the language statistics and collapses it in pull request diffs. None of it is published:
+# package.json "files" ships dist/ only, and `npm run check:package` fails if anything else ships.
+pharn/** linguist-vendored
+.claude/** linguist-vendored
+pharn.*.json linguist-generated
+# PHARN's own threat model and limits (Argus's are docs/THREAT-MODEL.md and docs/LIMITS.md). They stay
+# at the root because the PHARN installer, its write-guard hook and its drift records expect them there.
+/THREAT-MODEL.md linguist-vendored
+/LIMITS.md linguist-vendored

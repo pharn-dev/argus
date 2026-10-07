@@ -1,4 +1,5 @@
 import type { ServerResponse } from 'node:http';
+import { createBoundedFifo } from './bounded-fifo.js';
 import { HEARTBEAT } from './sse-format.js';
 
 export type SseClientOptions = {
@@ -15,27 +16,19 @@ export type SseClient = {
 
 /** One SSE response with bounded pending output: the oldest chunk is dropped on overflow. */
 export function createSseClient(res: ServerResponse, options: SseClientOptions): SseClient {
-  let queue: string[] = [];
-  let head = 0;
+  // Bounded in memory, not just in count: dropped chunks are released even if the client never
+  // drains (a stalled reader would otherwise pin every event ever sent to it).
+  const queue = createBoundedFifo<string>(options.maxBufferedEvents);
   let blocked = false;
   let ended = false;
   let dropped = 0;
 
   const flush = (): void => {
-    while (head < queue.length) {
-      const chunk = queue[head] as string;
-      head += 1;
+    for (let chunk = queue.shift(); chunk !== undefined; chunk = queue.shift()) {
       if (!res.write(chunk)) {
         blocked = true;
         break;
       }
-    }
-    if (head >= queue.length) {
-      queue = [];
-      head = 0;
-    } else if (head > queue.length / 2) {
-      queue = queue.slice(head);
-      head = 0;
     }
   };
 
@@ -59,9 +52,7 @@ export function createSseClient(res: ServerResponse, options: SseClientOptions):
         }
         return;
       }
-      queue.push(chunk);
-      if (queue.length - head > options.maxBufferedEvents) {
-        head += 1;
+      if (queue.push(chunk)) {
         dropped += 1;
         options.onDrop();
       }
@@ -83,8 +74,7 @@ export function createSseClient(res: ServerResponse, options: SseClientOptions):
       }
       ended = true;
       res.off('drain', onDrain);
-      queue = [];
-      head = 0;
+      queue.clear();
       res.end();
     },
   };

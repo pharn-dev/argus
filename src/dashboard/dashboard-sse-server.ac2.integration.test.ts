@@ -155,16 +155,15 @@ describe('dashboard SSE server — AC-2', () => {
         await getOnce(bound, '/events', {}),
         await getOnce(bound, '/events', { authorization: 'Bearer wrong' }),
         await getOnce(bound, '/events?token=wrong', {}),
+        // The token is never accepted in the /events URL, even when it is right.
+        await getOnce(bound, '/events?token=s3cret', {}),
       ];
       for (const outcome of unauthorized) {
         expect(outcome.status).toBe(401);
         expect(outcome.body).not.toMatch(/^event:/m);
       }
 
-      const authorized = [
-        await getOnce(bound, '/events', { authorization: 'Bearer s3cret' }),
-        await getOnce(bound, '/events?token=s3cret', {}),
-      ];
+      const authorized = [await getOnce(bound, '/events', { authorization: 'Bearer s3cret' })];
       for (const outcome of authorized) {
         expect(outcome.status).toBe(200);
         expect(outcome.contentType).toMatch(/^text\/event-stream/);

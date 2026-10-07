@@ -3,6 +3,7 @@ dist/
 *.tsbuildinfo
 .tsbuildinfo
 .claude/settings.local.json
+.claude/worktrees/
 .pharn/
 .pharn-backup/
 runs/
