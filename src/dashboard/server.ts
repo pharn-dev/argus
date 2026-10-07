@@ -124,15 +124,20 @@ export async function createDashboardServer(
     // Snapshot and subscribe in one synchronous block: nothing is missed or duplicated.
     const windows = collector.windows.snapshot();
     const alerts = collector.alerts.snapshot();
+    const spans = collector.spans.snapshot();
     const unsubscribe = collector.subscribe({
       window: (w): void => client.send(formatEvent('window', w)),
       alert: (a): void => client.send(formatEvent('alert', a)),
+      span: (s): void => client.send(formatEvent('span', s)),
     });
     for (const w of windows) {
       client.send(formatEvent('window', w));
     }
     for (const a of alerts) {
       client.send(formatEvent('alert', a));
+    }
+    for (const s of spans) {
+      client.send(formatEvent('span', s));
     }
 
     let done = false;

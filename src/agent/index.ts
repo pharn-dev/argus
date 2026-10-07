@@ -43,3 +43,7 @@ export { currentTraceId, runWithTrace } from './context.js';
 export { enable, disable, drainSpans, DEFAULT_SPAN_BUFFER_SIZE } from './http-tracing.js';
 export type { HttpTracingOptions } from './http-tracing.js';
 export type { TraceSpan, SpanDrain } from './span-buffer.js';
+export { toSpanRecord, isSpanRecord, SPAN_RECORD_TYPE } from './span-record.js';
+export type { SpanRecord } from './span-record.js';
+export { createSpanExport } from './span-export.js';
+export type { SpanExport } from './span-export.js';

@@ -12,6 +12,17 @@ export function newTraceId(): string {
   return id;
 }
 
+const ALL_ZERO_SPAN_ID = '0'.repeat(16);
+
+/** A fresh W3C-shaped span id: 16 lowercase hex characters, never all zeros. */
+export function newSpanId(): string {
+  let id = randomBytes(8).toString('hex');
+  while (id === ALL_ZERO_SPAN_ID) {
+    id = randomBytes(8).toString('hex');
+  }
+  return id;
+}
+
 /**
  * Extract the trace id from a W3C `traceparent` header value. Returns the lowercased
  * trace id, or undefined when the value is absent, duplicated, malformed or all zeros.

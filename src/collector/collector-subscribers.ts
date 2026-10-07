@@ -1,3 +1,4 @@
+import type { SpanRecord } from '../agent/index.js';
 import type { Alert } from './alert-evaluator.js';
 import type { AggregatedWindow } from './window.js';
 
@@ -5,12 +6,14 @@ import type { AggregatedWindow } from './window.js';
 export type CollectorListener = {
   window?(window: AggregatedWindow): void;
   alert?(alert: Alert): void;
+  span?(span: SpanRecord): void;
 };
 
 export type SubscriberSet = {
   add(listener: CollectorListener): () => void;
   emitWindow(window: AggregatedWindow): void;
   emitAlert(alert: Alert): void;
+  emitSpan(span: SpanRecord): void;
 };
 
 function report(error: unknown): void {
@@ -40,6 +43,15 @@ export function createSubscriberSet(): SubscriberSet {
       for (const listener of [...listeners]) {
         try {
           listener.alert?.(alert);
+        } catch (error) {
+          report(error);
+        }
+      }
+    },
+    emitSpan(span: SpanRecord): void {
+      for (const listener of [...listeners]) {
+        try {
+          listener.span?.(span);
         } catch (error) {
           report(error);
         }

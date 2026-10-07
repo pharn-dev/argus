@@ -1,6 +1,7 @@
 import { Transform, type Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import type { AgentSample } from '../agent/index.js';
+import type { AgentSample, SpanRecord } from '../agent/index.js';
+import { createSpanRouter } from './span-router.js';
 import { createAlertEvaluator, type Alert } from './alert-evaluator.js';
 import { validateAlertRules, type AlertRule } from './alert-rules.js';
 import type { AlertSink, SinkErrorHandler } from './alert-sink.js';
@@ -12,9 +13,12 @@ import type { AggregatedWindow } from './window.js';
 import { createWindowAggregator } from './window-aggregator.js';
 import { createWindowStore, type PersistOptions } from './window-store.js';
 
+export const DEFAULT_SPAN_CAPACITY = 1024;
+
 export type CollectorOptions = {
   windowMs: number;
   capacity: number;
+  spanCapacity?: number;
   alerts?: readonly AlertRule[];
   sinks?: readonly SinkInput[];
   onSinkError?: SinkErrorHandler;
@@ -33,10 +37,11 @@ export type WindowPersistence = {
 export type Collector = {
   readonly windows: RingBuffer<AggregatedWindow>;
   readonly alerts: RingBuffer<Alert>;
+  readonly spans: RingBuffer<SpanRecord>;
   readonly sinks: readonly AlertSink[];
   readonly persistence: WindowPersistence | undefined;
   subscribe(listener: CollectorListener): () => void;
-  consume(source: Readable | AsyncIterable<AgentSample>): Promise<void>;
+  consume(source: Readable | AsyncIterable<AgentSample | SpanRecord>): Promise<void>;
   close(): Promise<void>;
 };
 
@@ -47,6 +52,7 @@ export function createCollector(options: CollectorOptions): Collector {
   createWindowAggregator({ windowMs });
   const windows = createRingBuffer<AggregatedWindow>(capacity);
   const alerts = createRingBuffer<Alert>(capacity);
+  const spans = createRingBuffer<SpanRecord>(options.spanCapacity ?? DEFAULT_SPAN_CAPACITY);
   validateAlertRules(rules);
   const sinks = createSinks(options.sinks ?? [], options.onSinkError);
   const dispatcher = createSinkDispatcher(sinks, options.onSinkError);
@@ -69,12 +75,17 @@ export function createCollector(options: CollectorOptions): Collector {
   return {
     windows,
     alerts,
+    spans,
     sinks,
     persistence: store,
     subscribe(listener: CollectorListener): () => void {
       return subscribers.add(listener);
     },
-    async consume(source: Readable | AsyncIterable<AgentSample>): Promise<void> {
+    async consume(source: Readable | AsyncIterable<AgentSample | SpanRecord>): Promise<void> {
+      const spanRouter = createSpanRouter((span) => {
+        spans.push(span);
+        subscribers.emitSpan(span);
+      });
       const aggregator = createWindowAggregator({ windowMs });
       const recordWindows = new Transform({
         objectMode: true,
@@ -107,6 +118,7 @@ export function createCollector(options: CollectorOptions): Collector {
         await restoreOnce();
         await pipeline(
           source,
+          spanRouter,
           aggregator,
           recordWindows,
           persistWindows,

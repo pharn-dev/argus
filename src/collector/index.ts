@@ -5,8 +5,11 @@ export type CollectorPlaceholder = ArgusAgentPlaceholder;
 
 export { createWindowAggregator, type WindowAggregatorOptions } from './window-aggregator.js';
 export { createRingBuffer, type RingBuffer } from './ring-buffer.js';
+export { createSpanRouter } from './span-router.js';
+export type { SpanRecord } from '../agent/index.js';
 export {
   createCollector,
+  DEFAULT_SPAN_CAPACITY,
   type Collector,
   type CollectorOptions,
   type WindowPersistence,
