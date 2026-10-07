@@ -1,0 +1,86 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "deopt-parsing",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "deopt-parsing",
+    "spec_content_hash": "5d64f0d2e6004d0dd168f8a42c0369b49dfee8f8851b21033b93ac3b47c6c822"
+  },
+  "mapping": {
+    "path": "pharn/features/deopt-parsing/AC-TESTS.md",
+    "sha256": "59c91466640a9ff8c84652afa2682291e6c9a25127caefccf1bdae9077b213ec"
+  },
+  "files": [
+    {
+      "path": "src/agent/deopt-parsing.ac1.test.ts",
+      "sha256": "a584cd37820a60193454eeab35522a731d3ef6d5da8fc4301ecdbf609f247cd6"
+    },
+    {
+      "path": "src/agent/deopt-parsing.ac2.test.ts",
+      "sha256": "d4f8d429cb2555dd853c9ccfdb3b15ab4e0bd58d5f3e7ec26006d417972a1ccb"
+    },
+    {
+      "path": "src/agent/deopt-parsing.ac3.test.ts",
+      "sha256": "2e01b384779da16d027663c4e6598ed68859cceff494da64f10a7c9f98c9179f"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "976b8a83cf938d5a58127b59213456d775ade25c5a83c7e693c9cca048971e46",
+    "files_sha256": "773269566fb59bcfaf69afb34bb08ed5a9a08e61494f315bc0fe53bc36040c4f",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "1fe0349f4fa86f6745cd8658eb57d1fabbd11645fe5f4903a699c7c5c8df7a7f"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/agent/deopt-parsing.ac1.test.ts::deopt parser — AC-1 (plain --trace-deopt captures) › AC-1: the Node 22 plain capture yields 6 eager bailout events with names, reasons, no location, and integer per-function counts",
+          "src/agent/deopt-parsing.ac1.test.ts::deopt parser — AC-1 (plain --trace-deopt captures) › AC-1: the Node 24 plain capture yields 5 eager bailout events with names, reasons, no location, and integer per-function counts"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/agent/deopt-parsing.ac2.test.ts::deopt parser — AC-2 (--trace-deopt-verbose captures) › AC-2: the Node 22 lazy capture takes the innermost position (6:18) and yields a hot dependent-code event",
+          "src/agent/deopt-parsing.ac2.test.ts::deopt parser — AC-2 (--trace-deopt-verbose captures) › AC-2: the Node 22 verbose capture yields one bailout per headline and locates add at /app/deopt.js:1:31",
+          "src/agent/deopt-parsing.ac2.test.ts::deopt parser — AC-2 (--trace-deopt-verbose captures) › AC-2: the Node 24 lazy capture yields outer and hot dependent-code events for field constness",
+          "src/agent/deopt-parsing.ac2.test.ts::deopt parser — AC-2 (--trace-deopt-verbose captures) › AC-2: the Node 24 verbose capture yields one bailout per headline and locates add at /app/deopt.js:1:31"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/agent/deopt-parsing.ac3.test.ts::deopt parser — AC-3 (unparseable input is counted, never thrown) › AC-3: malformed deopt-looking lines are counted (3), an empty string is not, and a following valid headline still parses"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}

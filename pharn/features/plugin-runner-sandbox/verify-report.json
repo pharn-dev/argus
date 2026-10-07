@@ -1,0 +1,100 @@
+{
+  "feature": "plugin-runner-sandbox",
+  "gates": {
+    "build": 0,
+    "format:check": 0,
+    "instruction-growth": 0,
+    "lint": 0,
+    "reconcile": 0,
+    "test": 0,
+    "typecheck": 0
+  },
+  "verdict": "PASS",
+  "failing_gates": [],
+  "gate_run": {
+    "stamp_sha256": "853c7419918c40c28ce7145e4b4676b61126c78396acea43562275eec624c56f",
+    "source": "discover",
+    "fingerprint": {
+      "algo": "worktree-fingerprint/2+sha256",
+      "final": "04341cb46fe82f150b639cfce4803f23e82b24c8d7a17aa97516351b8a367efc"
+    }
+  },
+  "ac_gate": {
+    "mode": "test-first",
+    "verdict": "PASS",
+    "reason": null,
+    "evidence": [],
+    "acs": [
+      {
+        "id": "AC-1",
+        "level": "integration",
+        "tests": [
+          "src/plugin-runner/plugin-runner-sandbox.ac1.integration.test.ts::plugin runner sandbox — AC-1 › AC-1: a rule run against three windows returns exactly one JSON-serializable finding for the second window"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-2",
+        "level": "integration",
+        "tests": [
+          "src/plugin-runner/plugin-runner-sandbox.ac2.integration.test.ts::plugin runner sandbox — AC-2 › AC-2: throwing, looping, allocating and invalid rules each resolve a typed failure without blocking the host, and the runner still works afterwards"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-3",
+        "level": "integration",
+        "tests": [
+          "src/plugin-runner/plugin-runner-sandbox.ac3.integration.test.ts::plugin runner sandbox — AC-3 › AC-3: a sandbox that cannot load isolated-vm resolves a typed failure naming how to install it, and the host keeps running"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      }
+    ],
+    "unmapped_anomalies": [],
+    "note": "an AC is delivered = a locked, once-red test titled AC-<n>:, in a file mapped to AC-<n>, passed on this head run. PHARN does not judge whether that test fully captures the AC's intent."
+  },
+  "completeness": {
+    "plan": "pharn/features/plugin-runner-sandbox/PLAN.md",
+    "repoDir": ".",
+    "declared": [
+      "src/plugin-runner/rule-result.ts",
+      "src/plugin-runner/sandbox-protocol.ts",
+      "src/plugin-runner/workers/sandbox-child.ts",
+      "src/plugin-runner/child-script.ts",
+      "src/plugin-runner/sandbox-process.ts",
+      "src/plugin-runner/plugin-runner.ts",
+      "src/plugin-runner/index.ts",
+      "package.json",
+      "package-lock.json"
+    ],
+    "skipped": [],
+    "missing": [],
+    "complete": true,
+    "verdict": "complete"
+  },
+  "verifiers": {
+    "registered": 0,
+    "findings": []
+  },
+  "gate_reuse": {
+    "reused": []
+  },
+  "head_install": {
+    "state": "clean",
+    "why": null,
+    "family": "npm",
+    "lockfile": "package-lock.json",
+    "counts": {
+      "changed": 0,
+      "missing": 0,
+      "extraneous": 0,
+      "missing_unchecked": 24
+    }
+  }
+}
