@@ -1,0 +1,95 @@
+{
+  "feature": "express-app-example",
+  "gates": {
+    "build": 0,
+    "format:check": 0,
+    "instruction-growth": 0,
+    "lint": 0,
+    "reconcile": 0,
+    "test": 0,
+    "typecheck": 0
+  },
+  "verdict": "PASS",
+  "failing_gates": [],
+  "gate_run": {
+    "stamp_sha256": "991ed0bb0ce5878f2e82394cbbb512e6a641518269539decff10d7537d3a350e",
+    "source": "discover",
+    "fingerprint": {
+      "algo": "worktree-fingerprint/2+sha256",
+      "final": "3abbe9c4b7037c32b7bae7533b19b6747d014f7d3f91329927ef4f4b18559ccb"
+    }
+  },
+  "ac_gate": {
+    "mode": "test-first",
+    "verdict": "PASS",
+    "reason": null,
+    "evidence": [],
+    "acs": [
+      {
+        "id": "AC-1",
+        "level": "integration",
+        "tests": [
+          "src/dashboard/example-express-app.ac1.integration.test.ts::examples/express-app: requests reach the dashboard as span events › AC-1: the fast, slow and error routes answer 200, 200 and 500 and the SSE stream delivers one span per request with the matching name and statusCode"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-2",
+        "level": "integration",
+        "tests": [
+          "src/dashboard/example-express-app.ac2.integration.test.ts::examples/express-app: the slow route shows up as event-loop lag in a window event › AC-2: after a request to the slow route the SSE stream delivers a window event with eventLoop.max of at least 50 ms"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-3",
+        "level": "integration",
+        "tests": [
+          "src/dashboard/example-express-app.ac3.integration.test.ts::examples/express-app: clean shutdown and dependency-free sources › AC-3: on SIGTERM the example exits with code 0 within a bounded time and its stderr has no agent-disabled line",
+          "src/dashboard/example-express-app.ac3.integration.test.ts::examples/express-app: clean shutdown and dependency-free sources › AC-3: the example imports Argus only through bare argus/<subpath> specifiers, never express, and its README documents build, run and Express"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      }
+    ],
+    "unmapped_anomalies": [],
+    "note": "an AC is delivered = a locked, once-red test titled AC-<n>:, in a file mapped to AC-<n>, passed on this head run. PHARN does not judge whether that test fully captures the AC's intent."
+  },
+  "completeness": {
+    "plan": "pharn/features/express-app-example/PLAN.md",
+    "repoDir": ".",
+    "declared": [
+      "examples/express-app/app.mjs",
+      "examples/express-app/index.mjs",
+      "examples/express-app/README.md"
+    ],
+    "skipped": [],
+    "missing": [],
+    "complete": true,
+    "verdict": "complete"
+  },
+  "verifiers": {
+    "registered": 0,
+    "findings": []
+  },
+  "gate_reuse": {
+    "reused": []
+  },
+  "head_install": {
+    "state": "clean",
+    "why": null,
+    "family": "npm",
+    "lockfile": "package-lock.json",
+    "counts": {
+      "changed": 0,
+      "missing": 0,
+      "extraneous": 0,
+      "missing_unchecked": 24
+    }
+  }
+}
