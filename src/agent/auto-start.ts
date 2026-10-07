@@ -1,10 +1,14 @@
 /// <reference types="node" />
+import type { Writable } from 'node:stream';
 import { openAgentOutput } from './agent-output.js';
 import { loadAgentConfig } from './config.js';
 import { enable as enableTracing, disable as disableTracing, drainSpans } from './http-tracing.js';
 import { createNdjsonExporter } from './ndjson-exporter.js';
 import { createSpanExport } from './span-export.js';
 import { createSamplerController } from './sampler-controller.js';
+import type { AgentSample } from './sampler-controller.js';
+import type { SpanDrain } from './span-buffer.js';
+import type { AgentLossCounters, AgentSampleLine } from './span-record.js';
 
 const AGENT_KEY = Symbol.for('argus.agent');
 
@@ -27,6 +31,61 @@ function reportOnce(err: unknown): void {
   }
 }
 
+export type AgentExportOptions = {
+  /** Bound of each output lane: sample lines and span lines are queued separately. */
+  queueBound: number;
+};
+
+export type AgentExport = {
+  /** Move the tracer's buffered spans into the span lane. Throws what the drain throws. */
+  flushSpans(): void;
+  /** Queue one sample line carrying the cumulative loss counters. */
+  exportSample(sample: AgentSample): void;
+  /** Cumulative integer loss counters, as the next sample line will carry them. */
+  readonly dropped: AgentLossCounters;
+  /** Flush both lanes and end the destination. */
+  stop(): Promise<void>;
+  /** The exporter's pipeline() result. */
+  readonly done: Promise<void>;
+};
+
+/**
+ * The agent's output wiring: one NDJSON pipeline with a sample lane and a span lane. Samples are
+ * written first and never evicted by spans; each lane drops its own oldest lines when the
+ * destination stalls, and every sample line reports the cumulative drops as `dropped`.
+ */
+export function createAgentExport(
+  destination: Writable,
+  options: AgentExportOptions,
+  drain: () => SpanDrain,
+): AgentExport {
+  const exporter = createNdjsonExporter(destination, {
+    queueBound: options.queueBound,
+    spanQueueBound: options.queueBound,
+  });
+  const spans = createSpanExport(drain, (record) => exporter.exportSpan(record));
+  const lossCounters = (): AgentLossCounters => ({
+    samples: exporter.droppedRecords,
+    spans: spans.dropped + exporter.droppedSpans,
+  });
+  return {
+    flushSpans(): void {
+      spans.flush();
+    },
+    exportSample(sample: AgentSample): void {
+      const line: AgentSampleLine = { ...sample, dropped: lossCounters() };
+      exporter.export(line);
+    },
+    get dropped(): AgentLossCounters {
+      return lossCounters();
+    },
+    stop(): Promise<void> {
+      return exporter.stop();
+    },
+    done: exporter.done,
+  };
+}
+
 async function start(): Promise<void> {
   const config = await loadAgentConfig(process.cwd(), process.env);
   if (!config.enabled || config.output === 'none') {
@@ -34,14 +93,13 @@ async function start(): Promise<void> {
     return;
   }
   const destination = openAgentOutput(config.output);
-  const exporter = createNdjsonExporter(destination, { queueBound: config.queueBound });
-  const spans = createSpanExport(drainSpans, (record) => exporter.export(record));
+  const output = createAgentExport(destination, { queueBound: config.queueBound }, drainSpans);
   let disable = (err: unknown): void => {
     reportOnce(err);
   };
   const flushSpans = (): void => {
     try {
-      spans.flush();
+      output.flushSpans();
     } catch (err) {
       disable(err);
     }
@@ -51,8 +109,14 @@ async function start(): Promise<void> {
   };
   process.once('beforeExit', onBeforeExit);
   const controller = createSamplerController((sample) => {
-    exporter.export(sample);
+    // Spans first, so this sample's `dropped` includes the tick's drain; the sample lane is
+    // still written ahead of every queued span.
     flushSpans();
+    try {
+      output.exportSample(sample);
+    } catch (err) {
+      disable(err);
+    }
   });
   disable = (err: unknown): void => {
     controller.stop();
@@ -62,7 +126,7 @@ async function start(): Promise<void> {
   };
   // pipeline() does not settle while the exporter's source is idle, so listen on the destination too.
   destination.once('error', disable);
-  exporter.done.then(undefined, disable);
+  output.done.then(undefined, disable);
   controller.start(config.intervalMs);
 }
 

@@ -14,6 +14,16 @@ export type PluginRunnerOptions = {
    * "isolated-vm is not installed" path.
    */
   isolatedVmModule?: string;
+  /**
+   * Most findings one rule run may return; a rule returning more fails with
+   * ARGUS_RULE_INVALID_RESULT. Default 10 000.
+   */
+  maxFindings?: number;
+  /**
+   * Most bytes of JSON one rule's result may serialize to; a larger result fails with
+   * ARGUS_RULE_INVALID_RESULT before it leaves the sandbox. Default 1 MiB.
+   */
+  maxResultBytes?: number;
 };
 
 export type PluginRunner = {
@@ -27,11 +37,15 @@ const DEFAULT_TIMEOUT_MS = 1000;
 const DEFAULT_MEMORY_LIMIT_MB = 64;
 const MIN_MEMORY_LIMIT_MB = 8;
 const WATCHDOG_SLACK_MS = 1000;
+const DEFAULT_MAX_FINDINGS = 10_000;
+const DEFAULT_MAX_RESULT_BYTES = 1024 * 1024;
 
 export function createPluginRunner(options: PluginRunnerOptions = {}): PluginRunner {
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const memoryLimitMb = options.memoryLimitMb ?? DEFAULT_MEMORY_LIMIT_MB;
   const isolatedVmModule = options.isolatedVmModule ?? 'isolated-vm';
+  const maxFindings = options.maxFindings ?? DEFAULT_MAX_FINDINGS;
+  const maxResultBytes = options.maxResultBytes ?? DEFAULT_MAX_RESULT_BYTES;
 
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
     throw new RangeError('timeoutMs must be a positive safe integer');
@@ -41,6 +55,12 @@ export function createPluginRunner(options: PluginRunnerOptions = {}): PluginRun
   }
   if (typeof isolatedVmModule !== 'string' || isolatedVmModule.length === 0) {
     throw new TypeError('isolatedVmModule must be a non-empty string');
+  }
+  if (!Number.isSafeInteger(maxFindings) || maxFindings <= 0) {
+    throw new RangeError('maxFindings must be a positive safe integer');
+  }
+  if (!Number.isSafeInteger(maxResultBytes) || maxResultBytes <= 0) {
+    throw new RangeError('maxResultBytes must be a positive safe integer');
   }
 
   let sandbox: SandboxProcess | undefined;
@@ -78,10 +98,18 @@ export function createPluginRunner(options: PluginRunnerOptions = {}): PluginRun
       if (script instanceof Error) {
         return ruleFailure(RuleErrorCode.SANDBOX_CRASHED, script.message);
       }
-      sandbox = createSandboxProcess(script);
+      sandbox = createSandboxProcess(script, { maxFindings, maxResultBytes });
     }
     return sandbox.request(
-      { source, windowsJson, timeoutMs, memoryLimitMb, isolatedVmModule },
+      {
+        source,
+        windowsJson,
+        timeoutMs,
+        memoryLimitMb,
+        isolatedVmModule,
+        maxFindings,
+        maxResultBytes,
+      },
       timeoutMs + WATCHDOG_SLACK_MS,
     );
   }
