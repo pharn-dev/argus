@@ -279,7 +279,7 @@ export const APP_SCRIPT: string =
       })
         .then(function (response) {
           if (response.status === 401 || response.status === 403) {
-            setStatus('unauthorized — open the dashboard with ?token=…', 'error');
+            setStatus('unauthorized — open the dashboard link with ?token=… again', 'error');
             return null;
           }
           if (!response.ok || !response.body) {

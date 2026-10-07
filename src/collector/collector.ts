@@ -156,7 +156,8 @@ export function createCollector(options: CollectorOptions): Collector {
     },
     async close(): Promise<void> {
       await dispatcher.close();
-      await store?.release();
+      // Latches the store: a consume() still running cannot reopen the file after close().
+      await store?.close();
     },
   };
 }

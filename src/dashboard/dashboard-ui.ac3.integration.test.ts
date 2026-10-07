@@ -55,6 +55,7 @@ type DomDocument = {
   readonly head: DomElement | null;
   readonly body: DomElement | null;
   querySelectorAll(selector: string): ArrayLike<DomElement>;
+  cookie: string;
 };
 
 type DomWindow = {
@@ -89,6 +90,15 @@ function httpGet(url: string, headers: Record<string, string> = {}): Promise<Htt
     req.setTimeout(5_000, () => req.destroy(new Error(`timed out: GET ${url}`)));
     req.end();
   });
+}
+
+/** Exchanges `?token=` for the session cookie: the Set-Cookie line and the request Cookie value. */
+async function login(base: string, token: string): Promise<{ setCookie: string; cookie: string }> {
+  const response = await httpGet(`${base}/?token=${encodeURIComponent(token)}`);
+  expect(response.status, 'GET /?token=…').toBe(303);
+  const setCookie = response.headers['set-cookie']?.[0] ?? '';
+  expect(setCookie, 'the session cookie').not.toBe('');
+  return { setCookie, cookie: setCookie.split(';')[0] ?? '' };
 }
 
 function unescapeHtml(value: string): string {
@@ -233,10 +243,12 @@ describe('dashboard UI — AC-3', () => {
         port: 0,
         token: 's3cret',
       });
-      const pageUrl = `http://127.0.0.1:${server.port}/?token=s3cret`;
+      const base = `http://127.0.0.1:${server.port}`;
+      const pageUrl = `${base}/`;
+      const { setCookie, cookie } = await login(base, 's3cret');
 
-      const page = await httpGet(pageUrl);
-      expect(page.status, 'GET /?token=s3cret').toBe(200);
+      const page = await httpGet(pageUrl, { cookie });
+      expect(page.status, 'GET / with the session cookie').toBe(200);
       const tags = parseTags(page.body);
       const scriptUrls = tags
         .filter((tag) => tag.name === 'script' && (tag.attrs.get('src') ?? '') !== '')
@@ -254,13 +266,13 @@ describe('dashboard UI — AC-3', () => {
 
       const styles: string[] = [];
       for (const url of styleUrls) {
-        const response = await httpGet(url.href);
+        const response = await httpGet(url.href, { cookie });
         expect(response.status, `GET ${url.pathname}`).toBe(200);
         styles.push(response.body);
       }
       const scripts: string[] = [];
       for (const url of scriptUrls) {
-        const response = await httpGet(url.href);
+        const response = await httpGet(url.href, { cookie });
         expect(response.status, `GET ${url.pathname}`).toBe(200);
         scripts.push(response.body);
       }
@@ -278,6 +290,8 @@ describe('dashboard UI — AC-3', () => {
         },
       });
       const document = window.document;
+      // The browser's cookie jar after the exchange: the script's same-origin fetch sends it.
+      document.cookie = setCookie;
       document.write(page.body);
       for (const css of styles) {
         const style = document.createElement('style');

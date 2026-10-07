@@ -3,6 +3,9 @@
 // the .js and .d.ts files there in the right format whatever the root package's own "type" is.
 // The CommonJS build uses moduleResolution Node10 (tsconfig.cjs.json): TypeScript 6 only accepts it
 // with ignoreDeprecations, and TypeScript 7 removes it, so revisit that file when upgrading to 7.
+// Source maps embed their sources (tsconfig.base.json inlineSources): src/ is not published, so a map
+// that only named ../../../src/... would point at nothing. Declaration maps are off for the same
+// reason: they cannot embed sources, and without src/ they only send go-to-definition to a missing file.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

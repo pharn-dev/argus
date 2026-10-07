@@ -7,6 +7,11 @@ export type OtlpExporterOptions = {
   serviceName?: string;
   timeoutMs?: number;
   queueCapacity?: number;
+  /**
+   * How long `close()` waits for queued batches before dropping them and aborting the request in
+   * flight. Defaults to `timeoutMs`.
+   */
+  closeTimeoutMs?: number;
   onError?: (error: Error) => void;
 };
 
@@ -14,6 +19,7 @@ export type ResolvedOtlpExporterOptions = {
   target: OtlpTarget;
   serviceName: string;
   queueCapacity: number;
+  closeTimeoutMs: number;
   onError: ((error: Error) => void) | undefined;
 };
 
@@ -44,6 +50,12 @@ export function resolveOtlpExporterOptions(
   requirePositiveSafeInteger('timeoutMs', timeoutMs);
   const queueCapacity = options.queueCapacity ?? DEFAULT_QUEUE_CAPACITY;
   requirePositiveSafeInteger('queueCapacity', queueCapacity);
+  const closeTimeoutMs = options.closeTimeoutMs ?? timeoutMs;
+  if (!Number.isSafeInteger(closeTimeoutMs) || closeTimeoutMs < 0) {
+    throw new RangeError(
+      `closeTimeoutMs must be a non-negative safe integer, got ${String(closeTimeoutMs)}`,
+    );
+  }
   const headers = options.headers ?? {};
   for (const [name, value] of Object.entries(headers)) {
     if (typeof value !== 'string') {
@@ -58,6 +70,7 @@ export function resolveOtlpExporterOptions(
     target: { url: options.url, origin: parsed.origin, headers: { ...headers }, timeoutMs },
     serviceName,
     queueCapacity,
+    closeTimeoutMs,
     onError: options.onError,
   };
 }
