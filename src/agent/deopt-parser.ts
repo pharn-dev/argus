@@ -14,6 +14,13 @@
  *
  * Lines are matched with index arithmetic and anchored, linear-time checks only, never
  * a backtracking pattern over the line text.
+ *
+ * Memory is bounded: `events()` keeps the newest `maxEvents` events (older ones are counted
+ * by `droppedEvents()`), and a line longer than `maxLineLength` is not parsed (counted as
+ * unparseable when it starts like a deopt line, otherwise skipped).
+ *
+ * This is a parser only: nothing in the agent captures `--trace-deopt` output; the caller
+ * feeds it lines.
  */
 
 /** Function name recorded when V8 prints no name for the function. */
@@ -37,10 +44,24 @@ export type DeoptEvent = {
 
 export type DeoptParser = {
   push(line: string): void;
+  /** The newest retained events (at most `maxEvents`), oldest first. */
   events(): DeoptEvent[];
+  /** Bailout count per function name, over every bailout seen (not only retained ones). */
   counts(): Map<string, number>;
   unparseableLines(): number;
+  /** Integer count of events evicted from `events()` to stay within `maxEvents`. */
+  droppedEvents(): number;
 };
+
+export type DeoptParserOptions = {
+  /** Maximum events retained by `events()`; the oldest is evicted first. Defaults to 1000. */
+  maxEvents?: number;
+  /** Lines longer than this many characters are not parsed. Defaults to 16384. */
+  maxLineLength?: number;
+};
+
+export const DEFAULT_DEOPT_MAX_EVENTS = 1000;
+export const DEFAULT_DEOPT_MAX_LINE_LENGTH = 16_384;
 
 const BAILOUT_PREFIX = '[bailout (kind: ';
 const BAILOUT_END_PREFIX = '[bailout end.';
@@ -154,14 +175,67 @@ function copyEvent(event: DeoptEvent): DeoptEvent {
   return { ...event, location: event.location === null ? null : { ...event.location } };
 }
 
-export function createDeoptParser(): DeoptParser {
-  const events: DeoptEvent[] = [];
+function positiveInteger(name: string, value: number | undefined, fallback: number): number {
+  if (value === undefined) return fallback;
+  if (!Number.isSafeInteger(value) || value <= 0) {
+    throw new RangeError(`${name} must be a positive safe integer, got ${String(value)}`);
+  }
+  return value;
+}
+
+/** Whether a line (already left-trimmed) starts like one of the deopt lines this parser reads. */
+function looksLikeDeoptLine(text: string): boolean {
+  return (
+    text.startsWith('[bailout (') ||
+    text.startsWith(POSITION_PREFIX) ||
+    text.startsWith('[marking dependent code')
+  );
+}
+
+export function createDeoptParser(options: DeoptParserOptions = {}): DeoptParser {
+  const maxEvents = positiveInteger('maxEvents', options.maxEvents, DEFAULT_DEOPT_MAX_EVENTS);
+  const maxLineLength = positiveInteger(
+    'maxLineLength',
+    options.maxLineLength,
+    DEFAULT_DEOPT_MAX_LINE_LENGTH,
+  );
+  // Ring buffer: `ring[(head + i) % maxEvents]` for i < size, oldest first.
+  const ring: DeoptEvent[] = [];
+  let head = 0;
+  let dropped = 0;
   const counts = new Map<string, number>();
   let unparseable = 0;
   let pending: DeoptEvent | null = null;
 
+  function record(event: DeoptEvent): void {
+    if (ring.length < maxEvents) {
+      ring.push(event);
+      return;
+    }
+    ring[head] = event;
+    head = (head + 1) % maxEvents;
+    dropped += 1;
+  }
+
+  function retained(): DeoptEvent[] {
+    const result: DeoptEvent[] = [];
+    for (let i = 0; i < ring.length; i += 1) {
+      const event = ring[(head + i) % ring.length];
+      if (event !== undefined) result.push(copyEvent(event));
+    }
+    return result;
+  }
+
   function push(line: string): void {
     const raw = typeof line === 'string' ? line : '';
+    if (raw.length > maxLineLength) {
+      // Only the start is inspected, so an overlong line costs no more than a normal one.
+      if (looksLikeDeoptLine(raw.slice(0, 64).trimStart())) {
+        unparseable += 1;
+        pending = null;
+      }
+      return;
+    }
     const text = (raw.endsWith('\r') ? raw.slice(0, -1) : raw).trimStart();
     if (text.length === 0) return;
 
@@ -172,7 +246,7 @@ export function createDeoptParser(): DeoptParser {
         pending = null;
         return;
       }
-      events.push(event);
+      record(event);
       counts.set(event.functionName, (counts.get(event.functionName) ?? 0) + 1);
       pending = event;
       return;
@@ -196,7 +270,7 @@ export function createDeoptParser(): DeoptParser {
         unparseable += 1;
         return;
       }
-      events.push(event);
+      record(event);
       return;
     }
 
@@ -208,8 +282,9 @@ export function createDeoptParser(): DeoptParser {
 
   return {
     push,
-    events: () => events.map(copyEvent),
+    events: retained,
     counts: () => new Map(counts),
     unparseableLines: () => unparseable,
+    droppedEvents: () => dropped,
   };
 }
