@@ -135,7 +135,7 @@ function expectRestrictiveCsp(what: string, headers: IncomingHttpHeaders): void 
 }
 
 describe('dashboard UI — AC-1', () => {
-  it('AC-1: GET /?token=s3cret serves an HTML page whose same-origin script and stylesheet load like a browser would, all under a restrictive CSP', async () => {
+  it('AC-1: GET /?token=s3cret leads, via the session cookie, to an HTML page whose same-origin script and stylesheet load like a browser would, all under a restrictive CSP', async () => {
     const collectorModule = (await import('../collector/index.js')) as unknown as CollectorModule;
     const dashboardModule = (await import('./index.js')) as unknown as DashboardModule;
 
@@ -148,14 +148,22 @@ describe('dashboard UI — AC-1', () => {
         port: 0,
         token: 's3cret',
       });
-      const pageUrl = `http://127.0.0.1:${server.port}/?token=s3cret`;
+      const loginUrl = `http://127.0.0.1:${server.port}/?token=s3cret`;
+      const pageUrl = `http://127.0.0.1:${server.port}/`;
       const pageOrigin = new URL(pageUrl).origin;
 
-      // The page.
-      const page = await httpGet(pageUrl);
+      // The token exchange: a redirect to the clean page URL, carrying the session cookie.
+      const login = await httpGet(loginUrl);
+      expect(login.status, 'GET /?token=s3cret').toBe(303);
+      expect(new URL(header(login.headers, 'location'), loginUrl).href).toBe(pageUrl);
+      const cookie = cookieHeader(login.headers);
+      expect(cookie, 'the session cookie').not.toBe('');
+
+      // The page, requested the way the browser follows the redirect.
+      const page = await httpGet(pageUrl, { cookie });
       expect(page.status).toBe(200);
       expect(header(page.headers, 'content-type')).toMatch(/^text\/html/);
-      expectRestrictiveCsp('GET /?token=s3cret', page.headers);
+      expectRestrictiveCsp('GET /', page.headers);
 
       const tags = parseTags(page.body);
 
@@ -188,9 +196,8 @@ describe('dashboard UI — AC-1', () => {
         expect(url.origin, `${url.href} is same-origin`).toBe(pageOrigin);
       }
 
-      // Every referenced asset, requested the way a browser would: any cookie the page set, no Authorization.
-      const cookie = cookieHeader(page.headers);
-      const assetHeaders: Record<string, string> = cookie === '' ? {} : { cookie };
+      // Every referenced asset, requested the way a browser would: the session cookie, no Authorization.
+      const assetHeaders: Record<string, string> = { cookie };
       for (const url of scriptUrls) {
         const asset = await httpGet(url.href, assetHeaders);
         expect(asset.status, `GET ${url.pathname}`).toBe(200);
