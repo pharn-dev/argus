@@ -66,8 +66,26 @@ export default tseslint.config(
               message: 'agent code may import only node: builtins and its own files.',
             },
             {
-              regex: '(^|/)(collector|analyzer|dashboard|plugin-runner)(/|$)',
+              regex: '(^|/)(collector|analyzer|dashboard|plugin-runner|otel)(/|$)',
               message: 'The agent must not import from other modules of this package.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // The OTel adapter is opt-in and dependency-free: Node core and this package's own files only.
+    files: ['src/otel/**/*.ts'],
+    ignores: ['src/otel/**/*.test.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^(?!node:|\\.)',
+              message: "otel code may import only node: builtins and this package's own files.",
             },
           ],
         },

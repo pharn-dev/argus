@@ -1,0 +1,83 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "stack-symbolization",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "stack-symbolization",
+    "spec_content_hash": "d83148099884b06c86741bfbfdcad9d356f6144739ab2810aa704694c1dea82a"
+  },
+  "mapping": {
+    "path": "pharn/features/stack-symbolization/AC-TESTS.md",
+    "sha256": "046bff2615dceec424bd593b886b222a375808529ce6c67ca7565fb0c71f5947"
+  },
+  "files": [
+    {
+      "path": "src/analyzer/stack-symbolization.ac1.integration.test.ts",
+      "sha256": "d08865fd49d26f2953e11543bee544eced76bb6ea87943217744cf36d0fd0da1"
+    },
+    {
+      "path": "src/analyzer/stack-symbolization.ac2.integration.test.ts",
+      "sha256": "350af7c5b587040b33d0a3ad000861d15f4dd3bc81aa3f3a52bc8108193dabe7"
+    },
+    {
+      "path": "src/analyzer/stack-symbolization.ac3.integration.test.ts",
+      "sha256": "71307f45214ea8b375186a580af76d080f5e2e952e93442f3992cd48d7e5c6ba"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "725ab3d43d96081f041bd8bbe111696d3312287c7e79194d6c7d509bd2859e7b",
+    "files_sha256": "e199fdbb9c40ef52d7780899f228b4368804c58a004783ee30b6eb2ebb1011a6",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "ae6ce875db374ca9c46a7ee2026468b2e67a30fb0a40447ddfdd003019621144"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/analyzer/stack-symbolization.ac1.integration.test.ts::analyzer stack symbolization › AC-1: maps frames through adjacent and inline source maps and returns unmapped frames unchanged, in order"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/analyzer/stack-symbolization.ac2.integration.test.ts::analyzer stack symbolization › AC-2: attaches a typed error to frames of a malformed source map and still maps the other frames"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/analyzer/stack-symbolization.ac3.integration.test.ts::analyzer stack symbolization pool routing and input checks › AC-3: rejects with TypeError, without a synchronous throw, when frames is not an array",
+          "src/analyzer/stack-symbolization.ac3.integration.test.ts::analyzer stack symbolization pool routing and input checks › AC-3: rejects with WorkerPoolClosedError, without a synchronous throw, when given a closed pool"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}
