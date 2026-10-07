@@ -61,6 +61,7 @@ type DomDocument = {
   readonly body: DomElement | null;
   getElementById(id: string): DomElement | null;
   querySelectorAll(selector: string): ArrayLike<DomElement>;
+  cookie: string;
 };
 
 type DomWindow = {
@@ -99,6 +100,15 @@ function httpGet(url: string, headers: Record<string, string> = {}): Promise<Htt
     req.setTimeout(5_000, () => req.destroy(new Error(`timed out: GET ${url}`)));
     req.end();
   });
+}
+
+/** Exchanges `?token=` for the session cookie: the Set-Cookie line and the request Cookie value. */
+async function login(base: string, token: string): Promise<{ setCookie: string; cookie: string }> {
+  const response = await httpGet(`${base}/?token=${encodeURIComponent(token)}`);
+  expect(response.status, 'GET /?token=…').toBe(303);
+  const setCookie = response.headers['set-cookie']?.[0] ?? '';
+  expect(setCookie, 'the session cookie').not.toBe('');
+  return { setCookie, cookie: setCookie.split(';')[0] ?? '' };
 }
 
 /** A response header as one string ('' when absent). */
@@ -189,11 +199,13 @@ describe('dashboard trace waterfall — AC-3', () => {
         port: 0,
         token: 's3cret',
       });
-      const pageUrl = `http://127.0.0.1:${server.port}/?token=s3cret`;
+      const base = `http://127.0.0.1:${server.port}`;
+      const pageUrl = `${base}/`;
+      const { setCookie, cookie } = await login(base, 's3cret');
 
       // The page: 200, and the CSP header byte-identical to the pre-feature one.
-      const page = await httpGet(pageUrl);
-      expect(page.status, 'GET /?token=s3cret').toBe(200);
+      const page = await httpGet(pageUrl, { cookie });
+      expect(page.status, 'GET / with the session cookie').toBe(200);
       expect(header(page.headers, 'content-security-policy')).toBe(EXPECTED_CSP);
 
       // The page parsed as a document, with no script run.
@@ -239,7 +251,7 @@ describe('dashboard trace waterfall — AC-3', () => {
 
       const styleBodies: string[] = [];
       for (const url of styleUrls) {
-        const asset = await httpGet(url.href);
+        const asset = await httpGet(url.href, { cookie });
         expect(asset.status, `GET ${url.pathname}`).toBe(200);
         expect(header(asset.headers, 'content-security-policy'), `GET ${url.pathname}`).toBe(
           EXPECTED_CSP,
@@ -248,7 +260,7 @@ describe('dashboard trace waterfall — AC-3', () => {
       }
       const scriptBodies: string[] = [];
       for (const url of scriptUrls) {
-        const asset = await httpGet(url.href);
+        const asset = await httpGet(url.href, { cookie });
         expect(asset.status, `GET ${url.pathname}`).toBe(200);
         expect(header(asset.headers, 'content-security-policy'), `GET ${url.pathname}`).toBe(
           EXPECTED_CSP,
@@ -267,6 +279,8 @@ describe('dashboard trace waterfall — AC-3', () => {
       const liveWindow = newWindow(happyDom, pageUrl, true);
       windows.push(liveWindow);
       const liveDocument = liveWindow.document;
+      // The browser's cookie jar after the exchange: the script's same-origin fetch sends it.
+      liveDocument.cookie = setCookie;
       liveDocument.write(page.body);
       for (const css of styleBodies) {
         const style = liveDocument.createElement('style');
