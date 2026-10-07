@@ -16,3 +16,6 @@ runs/
 /AGENTS.md
 /.agents/
 /.codex/
+# Local benchmark and soak output (bench/README.md).
+bench-results/
+soak-results/
