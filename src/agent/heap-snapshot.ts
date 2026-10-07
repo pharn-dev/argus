@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import v8 from 'node:v8';
+import { assertPermission } from './permission.js';
 
 export type HeapSnapshotOptions = { dir: string };
 export type HeapSnapshotResult = { path: string; bytes: number };
@@ -29,6 +30,13 @@ export async function takeHeapSnapshot(options: HeapSnapshotOptions): Promise<He
   inProgress = true;
   try {
     const dir = path.resolve(options.dir);
+    counter += 1;
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filePath = path.join(dir, `argus-${stamp}-${process.pid}-${counter}.heapsnapshot`);
+    // Before any fs call: under --permission, stat() on an ungranted directory would throw
+    // ERR_ACCESS_DENIED and be misreported as "directory does not exist".
+    assertPermission('fs.write', filePath);
+
     try {
       const info = await fs.promises.stat(dir);
       if (!info.isDirectory()) {
@@ -42,10 +50,6 @@ export async function takeHeapSnapshot(options: HeapSnapshotOptions): Promise<He
     } catch (cause) {
       throw new Error(`argus: heap snapshot directory is not writable: ${dir}`, { cause });
     }
-
-    counter += 1;
-    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filePath = path.join(dir, `argus-${stamp}-${process.pid}-${counter}.heapsnapshot`);
 
     let writtenPath: string;
     try {

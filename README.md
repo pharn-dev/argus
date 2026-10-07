@@ -78,6 +78,8 @@ See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the data flow and module boundari
 - **Overhead is a measured contract, not a hope.** Changes in the agent's hot path ship with an
   agent-on versus agent-off benchmark.
 - **The dashboard is token-gated by default** whenever it is not bound to localhost.
+- **The agent runs under the Node permission model.** The minimal `--permission` flag set is in
+  [`docs/PERMISSIONS.md`](./docs/PERMISSIONS.md).
 - **Heap snapshots and traces can contain sensitive data.** Treat them accordingly; see
   [`SECURITY.md`](./SECURITY.md), [`docs/THREAT-MODEL.md`](./docs/THREAT-MODEL.md) and
   [`docs/LIMITS.md`](./docs/LIMITS.md).
