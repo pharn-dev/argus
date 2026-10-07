@@ -26,7 +26,7 @@
   "type": "module",
   "private": true,
   "engines": {
-    "node": ">=22",
+    "node": ">=22.18.0",
     "npm": ">=10"
   },
   "exports": {
@@ -93,7 +93,8 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/test-task.worker.*"
   ],
   "publishConfig": {
     "access": "public",
@@ -113,6 +114,7 @@
     "typecheck": "tsc --noEmit",
     "build": "node scripts/build.mjs",
     "check:exports": "node scripts/check-exports.mjs",
+    "check:package": "node scripts/check-package.mts",
     "check:pins": "node scripts/check-action-pins.mjs",
     "prepack": "npm run build",
     "format": "prettier --write .",
