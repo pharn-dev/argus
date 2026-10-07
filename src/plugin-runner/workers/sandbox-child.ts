@@ -34,17 +34,27 @@ function loadIvm(specifier: string): Promise<IvmModule> {
   return ivmPromise;
 }
 
+/** Error messages longer than this (a rule can throw any string) are cut before crossing IPC. */
+const MAX_ERROR_MESSAGE_CHARS = 4096;
+
 function failure(code: string, message: string): RuleRunResult {
-  return { ok: false, error: { code, message } } as RuleRunResult;
+  const text =
+    message.length > MAX_ERROR_MESSAGE_CHARS
+      ? `${message.slice(0, MAX_ERROR_MESSAGE_CHARS)}… (${String(message.length)} characters)`
+      : message;
+  return { ok: false, error: { code, message: text } } as RuleRunResult;
 }
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-function parseFindingsLocal(value: unknown): RuleFinding[] | string {
+function parseFindingsLocal(value: unknown, maxFindings: number): RuleFinding[] | string {
   if (!Array.isArray(value)) {
     return 'the rule must return an array of findings';
+  }
+  if (value.length > maxFindings) {
+    return `the rule returned ${String(value.length)} findings, over the limit of ${String(maxFindings)} (maxFindings)`;
   }
   const findings: RuleFinding[] = [];
   for (const item of value as unknown[]) {
@@ -61,6 +71,18 @@ function parseFindingsLocal(value: unknown): RuleFinding[] | string {
     findings.push({ windowStart, message });
   }
   return findings;
+}
+
+function tooLarge(size: number, maxResultBytes: number): RuleRunResult {
+  return failure(
+    'ARGUS_RULE_INVALID_RESULT',
+    `the rule result is at least ${String(size)} bytes of JSON, over the limit of ` +
+      `${String(maxResultBytes)} (maxResultBytes)`,
+  );
+}
+
+function isPositiveInteger(value: unknown): boolean {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
 }
 
 async function runRule(request: RunRequest): Promise<RuleRunResult> {
@@ -80,10 +102,14 @@ async function runRule(request: RunRequest): Promise<RuleRunResult> {
   try {
     const context = await isolate.createContext();
     await context.global.set('__argusInput', request.windowsJson);
+    // An oversized result is measured inside the isolate and only its length crosses over, so it
+    // never reaches this process's heap, let alone the host's.
     const code =
       '"use strict"; const __argusRule = (function (windows) {\n' +
       request.source +
-      '\n}); JSON.stringify(__argusRule(JSON.parse(__argusInput)));';
+      '\n}); const __argusOut = JSON.stringify(__argusRule(JSON.parse(__argusInput)));' +
+      ` (typeof __argusOut === 'string' && __argusOut.length > ${String(request.maxResultBytes)})` +
+      ' ? __argusOut.length : __argusOut;';
 
     let script: IvmScript;
     try {
@@ -114,11 +140,18 @@ async function runRule(request: RunRequest): Promise<RuleRunResult> {
       return failure('ARGUS_RULE_THREW', message);
     }
 
+    if (typeof output === 'number' && Number.isSafeInteger(output) && output > 0) {
+      return tooLarge(output, request.maxResultBytes);
+    }
     if (typeof output !== 'string') {
       return failure(
         'ARGUS_RULE_INVALID_RESULT',
         'the rule did not return a JSON-serialisable value',
       );
+    }
+    const bytes = Buffer.byteLength(output, 'utf8');
+    if (bytes > request.maxResultBytes) {
+      return tooLarge(bytes, request.maxResultBytes);
     }
     let parsed: unknown;
     try {
@@ -129,7 +162,7 @@ async function runRule(request: RunRequest): Promise<RuleRunResult> {
         `the rule result is not valid JSON: ${messageOf(error)}`,
       );
     }
-    const findings = parseFindingsLocal(parsed);
+    const findings = parseFindingsLocal(parsed, request.maxFindings);
     if (typeof findings === 'string') {
       return failure('ARGUS_RULE_INVALID_RESULT', findings);
     }
@@ -161,7 +194,9 @@ function isRunRequest(value: unknown): value is RunRequest {
     typeof v['windowsJson'] === 'string' &&
     typeof v['timeoutMs'] === 'number' &&
     typeof v['memoryLimitMb'] === 'number' &&
-    typeof v['isolatedVmModule'] === 'string'
+    typeof v['isolatedVmModule'] === 'string' &&
+    isPositiveInteger(v['maxFindings']) &&
+    isPositiveInteger(v['maxResultBytes'])
   );
 }
 

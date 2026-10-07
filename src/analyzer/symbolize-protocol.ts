@@ -2,6 +2,10 @@
 
 export type SymbolizeRequest = {
   frames: { url: string; line: number; column: number }[];
+  /** Largest built file or source map the worker reads, in bytes. */
+  maxFileBytes: number;
+  /** Absolute directories reads are confined to; absent means unconfined. */
+  roots?: string[];
 };
 
 export type SymbolizeResult =
