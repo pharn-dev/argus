@@ -12,6 +12,9 @@ export {
   diffHeapSnapshots,
   summarizeHeapSnapshot,
 } from './heap-snapshot.js';
+export { createSymbolizationPool, symbolizeStackFrames } from './stack-symbolization.js';
+export type { OriginalPosition, StackFrame, SymbolizedFrame } from './stack-symbolization.js';
+export { MalformedSourceMapError } from './source-map-error.js';
 export type {
   HeapSnapshotDiff,
   HeapSnapshotDiffEntry,
