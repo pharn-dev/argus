@@ -1,0 +1,94 @@
+{
+  "feature": "agent-allocation-sampling",
+  "gates": {
+    "build": 0,
+    "format:check": 0,
+    "instruction-growth": 0,
+    "lint": 0,
+    "reconcile": 0,
+    "test": 0,
+    "typecheck": 0
+  },
+  "verdict": "PASS",
+  "failing_gates": [],
+  "gate_run": {
+    "stamp_sha256": "ba18e24827252e2d6be00227c77ce39df76cf939caf8241956865822994f9f8a",
+    "source": "discover",
+    "fingerprint": {
+      "algo": "worktree-fingerprint/2+sha256",
+      "final": "b59082cceb58e9d75f8282c272ec7d650d6fd956b0f0d93a5c08fde00486ada3"
+    }
+  },
+  "ac_gate": {
+    "mode": "test-first",
+    "verdict": "PASS",
+    "reason": null,
+    "evidence": [],
+    "acs": [
+      {
+        "id": "AC-1",
+        "level": "integration",
+        "tests": [
+          "src/agent/allocation-sampling.ac1.integration.test.ts::agent allocation sampling — AC-1 › AC-1: sampleAllocations resolves with non-empty integer-sized sites ordered largest first, including the allocating test function"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-2",
+        "level": "integration",
+        "tests": [
+          "src/agent/allocation-sampling.ac2.integration.test.ts::agent allocation sampling — AC-2 › AC-2: a second same-tick sampleAllocations call rejects as already in progress, and a later call resolves"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-3",
+        "level": "unit",
+        "tests": [
+          "src/agent/allocation-sampling.ac3.test.ts::agent allocation sampling — AC-3 › AC-3: invalid samplingInterval or durationMs rejects with an Error naming the option, and a later valid call resolves"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      }
+    ],
+    "unmapped_anomalies": [],
+    "note": "an AC is delivered = a locked, once-red test titled AC-<n>:, in a file mapped to AC-<n>, passed on this head run. PHARN does not judge whether that test fully captures the AC's intent."
+  },
+  "completeness": {
+    "plan": "pharn/features/agent-allocation-sampling/PLAN.md",
+    "repoDir": ".",
+    "declared": [
+      "src/agent/allocation-profile.ts",
+      "src/agent/allocation-sampler.ts",
+      "src/agent/index.ts"
+    ],
+    "skipped": [],
+    "missing": [],
+    "complete": true,
+    "verdict": "complete"
+  },
+  "verifiers": {
+    "registered": 0,
+    "findings": []
+  },
+  "gate_reuse": {
+    "reused": []
+  },
+  "head_install": {
+    "state": "clean",
+    "why": null,
+    "family": "npm",
+    "lockfile": "package-lock.json",
+    "counts": {
+      "changed": 0,
+      "missing": 0,
+      "extraneous": 0,
+      "missing_unchecked": 24
+    }
+  }
+}

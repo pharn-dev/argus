@@ -11,6 +11,14 @@ export { sampleHeapSpaces } from './heap-space-sampler.js';
 export type { HeapSpaceEntry, HeapSpaceSample } from './heap-space-sampler.js';
 export { takeHeapSnapshot } from './heap-snapshot.js';
 export type { HeapSnapshotOptions, HeapSnapshotResult } from './heap-snapshot.js';
+export {
+  sampleAllocations,
+  DEFAULT_ALLOCATION_SAMPLING_INTERVAL,
+  DEFAULT_ALLOCATION_SAMPLING_DURATION_MS,
+  DEFAULT_ALLOCATION_SITE_LIMIT,
+} from './allocation-sampler.js';
+export type { AllocationSamplingOptions } from './allocation-sampler.js';
+export type { AllocationSite } from './allocation-profile.js';
 export { createBackpressureProbe } from './backpressure-probe.js';
 export type {
   BackpressureHotspot,
