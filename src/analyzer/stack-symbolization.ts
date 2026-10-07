@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import type { ResourceLimits } from 'node:worker_threads';
 import { MalformedSourceMapError } from './source-map-error.js';
 import type { SymbolizeResult } from './symbolize-protocol.js';
@@ -13,7 +14,27 @@ export type SymbolizedFrame = StackFrame & {
   error?: MalformedSourceMapError;
 };
 
-type SymbolizeOptions = { pool?: WorkerPool; timeoutMs?: number };
+type SymbolizeOptions = {
+  pool?: WorkerPool;
+  timeoutMs?: number;
+  /**
+   * Directories the symbolizer may read from. When set, a frame's built file and its source map
+   * are read only if their real path (symlinks and `..` resolved) lies inside one of them; frames
+   * outside are returned unchanged. When left out, any local file a frame names may be read.
+   */
+  roots?: readonly string[];
+  /**
+   * Largest built file or source map read, in bytes. Default 64 MiB. A larger built file is left
+   * unsymbolized; a larger source map is reported as malformed. The pool's workers need an old
+   * generation of at least 8x this value (`resourceLimits.maxOldGenerationSizeMb`).
+   */
+  maxFileBytes?: number;
+};
+
+export const DEFAULT_MAX_SOURCE_FILE_BYTES = 64 * 1024 * 1024;
+/** Worker old-generation size needed per byte of file the symbolizer may read and parse. */
+const HEAP_PER_FILE_BYTE = 8;
+const MIB = 1024 * 1024;
 
 export function createSymbolizationPool(
   options: { size?: number; taskTimeoutMs?: number; resourceLimits?: ResourceLimits } = {},
@@ -65,6 +86,38 @@ function checkFrames(frames: readonly StackFrame[]): void {
   });
 }
 
+function checkRoots(roots: readonly string[] | undefined): string[] | undefined {
+  if (roots === undefined) return undefined;
+  if (!Array.isArray(roots)) throw new TypeError('roots must be an array of directory paths');
+  return roots.map((root: unknown, index) => {
+    if (typeof root !== 'string' || root === '') {
+      throw new TypeError(`roots[${index}] must be a non-empty string`);
+    }
+    return resolve(root);
+  });
+}
+
+function checkMaxFileBytes(value: number | undefined): number {
+  const maxFileBytes = value ?? DEFAULT_MAX_SOURCE_FILE_BYTES;
+  if (!Number.isSafeInteger(maxFileBytes) || maxFileBytes <= 0) {
+    throw new RangeError('maxFileBytes must be a positive safe integer');
+  }
+  return maxFileBytes;
+}
+
+/** Refuses a file cap the pool's worker heap cannot parse safely (a native overrun aborts V8). */
+function checkHeapFits(pool: WorkerPool | undefined, maxFileBytes: number): void {
+  const heapMb = pool === undefined ? undefined : pool.resourceLimits?.maxOldGenerationSizeMb;
+  if (heapMb === undefined) return;
+  const neededMb = Math.ceil((maxFileBytes * HEAP_PER_FILE_BYTE) / MIB);
+  if (heapMb < neededMb) {
+    throw new RangeError(
+      `maxFileBytes ${String(maxFileBytes)} needs a symbolization worker heap of at least ` +
+        `${String(neededMb)} MiB (resourceLimits.maxOldGenerationSizeMb is ${String(heapMb)})`,
+    );
+  }
+}
+
 async function runTask(payload: unknown, options: SymbolizeOptions): Promise<unknown> {
   const pool = options.pool ?? createSymbolizationPool();
   try {
@@ -82,8 +135,13 @@ export async function symbolizeStackFrames(
   options: SymbolizeOptions = {},
 ): Promise<SymbolizedFrame[]> {
   checkFrames(frames);
+  const roots = checkRoots(options.roots);
+  const maxFileBytes = checkMaxFileBytes(options.maxFileBytes);
+  checkHeapFits(options.pool, maxFileBytes);
   const payload = {
     frames: frames.map(({ url, line, column }) => ({ url, line, column })),
+    maxFileBytes,
+    ...(roots === undefined ? {} : { roots }),
   };
   const reply = await runTask(payload, options);
   if (!Array.isArray(reply) || reply.length !== frames.length || !reply.every(isResult)) {
