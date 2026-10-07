@@ -6,7 +6,7 @@ import {
   type AlertSink,
   type SinkErrorHandler,
 } from './alert-sink.js';
-import { discardResponseBody, isRedirect } from './http-response.js';
+import { createRequestSignal, discardResponseBody, isRedirect } from './http-response.js';
 
 export type WebhookSinkOptions = {
   url: string;
@@ -83,14 +83,14 @@ export function createWebhookSink(options: WebhookSinkOptions): AlertSink {
   const abortInFlight = new AbortController();
 
   async function attempt(alert: Alert): Promise<Outcome> {
-    const signal = AbortSignal.any([AbortSignal.timeout(timeoutMs), abortInFlight.signal]);
+    const request = createRequestSignal(timeoutMs, abortInFlight.signal);
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(alert),
         redirect: 'manual',
-        signal,
+        signal: request.signal,
       });
       await discardResponseBody(response);
       if (response.status >= 200 && response.status < 300) {
@@ -117,6 +117,8 @@ export function createWebhookSink(options: WebhookSinkOptions): AlertSink {
         };
       }
       return { ok: false, retry: true, reason: toError(error).message };
+    } finally {
+      request.dispose();
     }
   }
 

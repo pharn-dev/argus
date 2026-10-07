@@ -37,6 +37,34 @@ async function discardResponseBody(response: Response, maxBytes: number): Promis
   }
 }
 
+type RequestSignal = { readonly signal: AbortSignal; dispose(): void };
+
+/**
+ * A per-request signal that aborts with a `TimeoutError` after `timeoutMs`, or as soon as
+ * `parent` aborts. Call `dispose()` once the request (including its body) is done. Built by hand
+ * rather than with `AbortSignal.any`, so a long-lived `parent` never accumulates dependents.
+ */
+function createRequestSignal(timeoutMs: number, parent?: AbortSignal): RequestSignal {
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort(new DOMException('The operation was aborted due to timeout', 'TimeoutError'));
+  }, timeoutMs);
+  const onParentAbort = (): void => {
+    controller.abort(parent?.reason);
+  };
+  if (parent !== undefined) {
+    if (parent.aborted) onParentAbort();
+    else parent.addEventListener('abort', onParentAbort, { once: true });
+  }
+  return {
+    signal: controller.signal,
+    dispose(): void {
+      clearTimeout(timer);
+      parent?.removeEventListener('abort', onParentAbort);
+    },
+  };
+}
+
 /**
  * Sends one OTLP JSON body with a single POST. Never throws or rejects: it resolves `undefined`
  * on a 2xx response and an `Error` otherwise. Only the origin appears in messages, never the
@@ -49,14 +77,14 @@ export async function postOtlpJson(
   body: string,
   abort?: AbortSignal,
 ): Promise<Error | undefined> {
-  const timeout = AbortSignal.timeout(target.timeoutMs);
+  const request = createRequestSignal(target.timeoutMs, abort);
   try {
     const response = await fetch(target.url, {
       method: 'POST',
       headers: { ...target.headers, 'content-type': 'application/json' },
       body,
       redirect: 'manual',
-      signal: abort === undefined ? timeout : AbortSignal.any([timeout, abort]),
+      signal: request.signal,
     });
     await discardResponseBody(response, MAX_RESPONSE_BODY_BYTES);
     if (response.status >= 200 && response.status < 300) return undefined;
@@ -79,5 +107,7 @@ export async function postOtlpJson(
     }
     const reason = cause instanceof Error ? cause.message : String(cause);
     return new Error(`OTLP export to ${target.origin} failed: ${reason}`, { cause });
+  } finally {
+    request.dispose();
   }
 }

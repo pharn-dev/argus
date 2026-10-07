@@ -37,3 +37,31 @@ export async function discardResponseBody(
     reader.releaseLock();
   }
 }
+
+export type RequestSignal = { readonly signal: AbortSignal; dispose(): void };
+
+/**
+ * A per-request signal that aborts with a `TimeoutError` after `timeoutMs`, or as soon as
+ * `parent` aborts. Call `dispose()` once the request (including its body) is done. Built by hand
+ * rather than with `AbortSignal.any`, so a long-lived `parent` never accumulates dependents.
+ */
+export function createRequestSignal(timeoutMs: number, parent?: AbortSignal): RequestSignal {
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort(new DOMException('The operation was aborted due to timeout', 'TimeoutError'));
+  }, timeoutMs);
+  const onParentAbort = (): void => {
+    controller.abort(parent?.reason);
+  };
+  if (parent !== undefined) {
+    if (parent.aborted) onParentAbort();
+    else parent.addEventListener('abort', onParentAbort, { once: true });
+  }
+  return {
+    signal: controller.signal,
+    dispose(): void {
+      clearTimeout(timer);
+      parent?.removeEventListener('abort', onParentAbort);
+    },
+  };
+}
