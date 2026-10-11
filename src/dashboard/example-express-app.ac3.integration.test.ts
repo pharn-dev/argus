@@ -30,12 +30,12 @@ const STOP_TIMEOUT_MS = 15_000;
 
 const APP_LINE = /^\[express-app\] app listening on http:\/\/127\.0\.0\.1:(\d+)$/m;
 const DASHBOARD_LINE = /^\[express-app\] dashboard listening on http:\/\/127\.0\.0\.1:(\d+)$/m;
-const ARGUS_SUBPATH = /^argus\/[a-z-]+$/;
+const PHARGUS_SUBPATH = /^@pharn-dev\/phargus\/[a-z-]+$/;
 const SOURCE_EXTENSIONS = ['.mjs', '.js', '.cjs', '.ts', '.mts', '.cts'];
 
 const lockDir = join(
   tmpdir(),
-  `argus-dist-build-${createHash('sha256').update(repoRoot).digest('hex').slice(0, 16)}.lock`,
+  `phargus-dist-build-${createHash('sha256').update(repoRoot).digest('hex').slice(0, 16)}.lock`,
 );
 
 function errorCode(err: unknown): unknown {
@@ -145,7 +145,7 @@ async function ensureFreshDist(): Promise<void> {
 function exampleEnv(): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...process.env };
   for (const key of Object.keys(env)) {
-    if (key.startsWith('ARGUS_')) delete env[key];
+    if (key.startsWith('PHARGUS_')) delete env[key];
   }
   env['APP_PORT'] = '0';
   env['DASHBOARD_PORT'] = '0';
@@ -442,10 +442,10 @@ describe('examples/express-app: clean shutdown and dependency-free sources', () 
     expect(exit?.error, diagnostics(run)).toBeUndefined();
     expect(exit?.signal, diagnostics(run)).toBeNull();
     expect(exit?.code, diagnostics(run)).toBe(0);
-    expect(run.stderr()).not.toContain('[argus] agent disabled');
+    expect(run.stderr()).not.toContain('[phargus] agent disabled');
   }, 90_000);
 
-  it('AC-3: the example imports Argus only through bare argus/<subpath> specifiers, never express, and its README documents build, run and Express', () => {
+  it('AC-3: the example imports Phargus only through bare @pharn-dev/phargus/<subpath> specifiers, never express, and its README documents build, run and Express', () => {
     const files = sourceFiles(exampleDir);
     expect(files.length, `source files under ${exampleDir}`).toBeGreaterThan(0);
 
@@ -455,7 +455,7 @@ describe('examples/express-app: clean shutdown and dependency-free sources', () 
       for (const specifier of moduleSpecifiers(readFileSync(file, 'utf8'))) {
         all.push(specifier);
         expect(
-          specifier.startsWith('node:') || ARGUS_SUBPATH.test(specifier),
+          specifier.startsWith('node:') || PHARGUS_SUBPATH.test(specifier),
           `${where} imports ${JSON.stringify(specifier)}`,
         ).toBe(true);
         expect(specifier, where).not.toContain('src/');
@@ -463,8 +463,8 @@ describe('examples/express-app: clean shutdown and dependency-free sources', () 
         expect(specifier === 'express' || specifier.startsWith('express/'), where).toBe(false);
       }
     }
-    // The one-line agent setup is itself an Argus import; a scan that found none proves nothing.
-    expect(all).toContain('argus/agent');
+    // The one-line agent setup is itself an Phargus import; a scan that found none proves nothing.
+    expect(all).toContain('@pharn-dev/phargus/agent');
 
     const readme = readFileSync(join(exampleDir, 'README.md'), 'utf8');
     expect(readme).toContain('npm run build');

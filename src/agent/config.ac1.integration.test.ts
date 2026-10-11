@@ -21,7 +21,7 @@ type ConfigModuleUnderTest = {
 const dirs: string[] = [];
 
 async function makeTempDir(): Promise<string> {
-  const dir = await mkdtemp(path.join(tmpdir(), 'argus-config-ac1-'));
+  const dir = await mkdtemp(path.join(tmpdir(), 'phargus-config-ac1-'));
   dirs.push(dir);
   return dir;
 }
@@ -31,22 +31,22 @@ afterEach(async () => {
 });
 
 describe('agent config — AC-1', () => {
-  it('AC-1: env overrides the JSON file interval, the file output is kept, ARGUS_ENABLED "0" disables, queue bound is the default, and the config is frozen', async () => {
+  it('AC-1: env overrides the JSON file interval, the file output is kept, PHARGUS_ENABLED "0" disables, queue bound is the default, and the config is frozen', async () => {
     const { loadAgentConfig, defaultAgentConfig } =
       (await import('./index.js')) as unknown as ConfigModuleUnderTest;
 
     const dir = await makeTempDir();
-    const outputPath = path.join(dir, 'out', 'argus.ndjson');
+    const outputPath = path.join(dir, 'out', 'phargus.ndjson');
     expect(path.isAbsolute(outputPath)).toBe(true);
     await writeFile(
-      path.join(dir, 'argus.config.json'),
+      path.join(dir, 'phargus.config.json'),
       JSON.stringify({ intervalMs: 250, output: outputPath }),
       'utf8',
     );
 
     const config = await loadAgentConfig(dir, {
-      ARGUS_INTERVAL_MS: '750',
-      ARGUS_ENABLED: '0',
+      PHARGUS_INTERVAL_MS: '750',
+      PHARGUS_ENABLED: '0',
     });
 
     expect(config.intervalMs).toBe(750);

@@ -1,6 +1,6 @@
-import 'argus/agent';
-import { takeHeapSnapshot } from 'argus/agent';
-import { createHeapSnapshotPool, summarizeHeapSnapshot } from 'argus/analyzer';
+import '@pharn-dev/phargus/agent';
+import { takeHeapSnapshot } from '@pharn-dev/phargus/agent';
+import { createHeapSnapshotPool, summarizeHeapSnapshot } from '@pharn-dev/phargus/analyzer';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -122,7 +122,7 @@ async function analyzeHeap(dir) {
 async function main() {
   await runCpuTasks();
 
-  const dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'argus-worker-pool-example-'));
+  const dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'phargus-worker-pool-example-'));
   await withCleanup(
     async () => {
       await analyzeHeap(dir);

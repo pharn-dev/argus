@@ -2,13 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# Argus
+# Phargus
 
 > All-seeing runtime diagnostics for Node.js.
 
 ## Repo state & commands
 
-**Package manager: npm.** Argus is one normal npm package (a single root `package.json`).
+**Package manager: npm.** Phargus is one normal npm package (a single root `package.json`).
 Use npm only; don't add another package manager or its lockfile. Commit `package-lock.json`.
 
 Commands (run from the repo root):
@@ -36,8 +36,8 @@ source or test file you create or edit, before running any gate. CI fails on unf
   step must leave `main` compiling and runnable.
 - `CONTRIBUTING.md`: the rules PRs are checked against.
 
-Argus is a runtime diagnostics agent for Node.js processes. You drop in a single
-`require('argus/agent')` (or `import 'argus/agent'`) and get a dashboard with
+Phargus is a runtime diagnostics agent for Node.js processes. You drop in a single
+`require('@pharn-dev/phargus/agent')` (or `import '@pharn-dev/phargus/agent'`) and get a dashboard with
 event loop lag, memory pressure, stream backpressure hotspots, GC events, and
 request tracing — **with zero external dependencies**, no Datadog, no collector
 service. Works locally and in production.
@@ -54,7 +54,7 @@ The market gap is real and it drives the design:
 - OpenTelemetry is powerful but complex to set up for a quick look.
 - Datadog and friends cost money and require an account.
 
-Argus is the thing you reach for at 2am when something is broken: one line,
+Phargus is the thing you reach for at 2am when something is broken: one line,
 runs in-process, works locally and in prod. **The "zero external dependencies in
 the agent" constraint is the killer adoption feature — never compromise it.**
 
@@ -62,18 +62,18 @@ the agent" constraint is the killer adoption feature — never compromise it.**
 
 ## Architecture
 
-One npm package (`argus`) with six modules under `src/`, each exposed as a subpath
-export (`argus/agent`, `argus/collector`, …):
+One npm package (`phargus`) with six modules under `src/`, each exposed as a subpath
+export (`@pharn-dev/phargus/agent`, `@pharn-dev/phargus/collector`, …):
 
 ```
-argus/
+phargus/
 ├── src/
-│   ├── agent/          # argus/agent — core, injected into the monitored process
-│   ├── collector/      # argus/collector — metric aggregation, stream pipeline
-│   ├── analyzer/       # argus/analyzer — Worker Threads, heap analysis
-│   ├── dashboard/      # argus/dashboard — lightweight UI (SSE + vanilla JS)
-│   ├── plugin-runner/  # argus/plugin-runner — isolated-vm sandbox for user rules
-│   └── otel/           # argus/otel — opt-in OTLP/HTTP JSON export (Node core only)
+│   ├── agent/          # @pharn-dev/phargus/agent — core, injected into the monitored process
+│   ├── collector/      # @pharn-dev/phargus/collector — metric aggregation, stream pipeline
+│   ├── analyzer/       # @pharn-dev/phargus/analyzer — Worker Threads, heap analysis
+│   ├── dashboard/      # @pharn-dev/phargus/dashboard — lightweight UI (SSE + vanilla JS)
+│   ├── plugin-runner/  # @pharn-dev/phargus/plugin-runner — isolated-vm sandbox for user rules
+│   └── otel/           # @pharn-dev/phargus/otel — opt-in OTLP/HTTP JSON export (Node core only)
 ├── scripts/            # build (dual ESM + CJS) and exports smoke test
 ├── examples/
 │   ├── express-app/    # example with full instrumentation
@@ -172,7 +172,7 @@ These aren't bolted on — each is load-bearing in the design:
 - `CONTRIBUTING.md`, labeled `good-first-issue`s.
 - CI/CD via GitHub Actions (format, lint, typecheck, test, build, action pins, CodeQL, gitleaks;
   release on GitHub Release).
-- OpenTelemetry instrumentation is a natural integration target — Argus emitting
+- OpenTelemetry instrumentation is a natural integration target — Phargus emitting
   OTel traces/metrics turns it into a credible observability story (and is itself
   a portfolio signal). Treat OTel export as a first-class optional output, not the
   core (the core stays dependency-free).
@@ -182,7 +182,7 @@ These aren't bolted on — each is load-bearing in the design:
 
 ## First task for a fresh repo
 
-> We are building Argus from scratch. Start by scaffolding the package: a single
+> We are building Phargus from scratch. Start by scaffolding the package: a single
 > npm `package.json`, `tsconfig.base.json` with strict mode, a shared eslint
 > config, and the skeleton of the 5 modules (`agent`, `collector`, `analyzer`,
 > `dashboard`, `plugin-runner`) under `src/` with correct `package.json`

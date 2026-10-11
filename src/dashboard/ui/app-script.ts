@@ -77,7 +77,7 @@ export const APP_SCRIPT: string =
   }
 
   function init() {
-    var meta = document.querySelector('meta[name="argus-events"]');
+    var meta = document.querySelector('meta[name="phargus-events"]');
     var statusEl = document.getElementById('status');
     var lagEl = document.getElementById('lag');
     var memoryEl = document.getElementById('memory');
@@ -98,7 +98,7 @@ export const APP_SCRIPT: string =
       !waterfallEl ||
       !waterfallEmptyEl
     ) {
-      console.error('argus dashboard: the page is missing an expected element');
+      console.error('phargus dashboard: the page is missing an expected element');
       if (statusEl) {
         statusEl.textContent = 'error: the page is incomplete';
         statusEl.className = 'status-error';
@@ -231,7 +231,7 @@ export const APP_SCRIPT: string =
           addAlert(payload);
         }
       } catch (error) {
-        console.error('argus dashboard: bad ' + parsed.event + ' event', error);
+        console.error('phargus dashboard: bad ' + parsed.event + ' event', error);
         setStatus('error: bad ' + parsed.event + ' event', 'error');
       }
     }
@@ -249,7 +249,7 @@ export const APP_SCRIPT: string =
 
     function onDisconnect(error) {
       if (error) {
-        console.error('argus dashboard: stream error', error);
+        console.error('phargus dashboard: stream error', error);
       }
       setStatus('reconnecting', 'reconnecting');
       scheduleRetry();

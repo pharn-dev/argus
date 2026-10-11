@@ -42,7 +42,7 @@ function expectSnapshotFile(result: unknown, dir: string): string {
 describe('agent on-demand heap snapshot — AC-2', () => {
   it('AC-2: two sequential takeHeapSnapshot({ dir }) calls write distinct parseable .heapsnapshot files whose size equals bytes', async () => {
     const { takeHeapSnapshot } = await import('./index.js');
-    const dir = mkdtempSync(join(tmpdir(), 'argus-v8-heap-ac2-'));
+    const dir = mkdtempSync(join(tmpdir(), 'phargus-v8-heap-ac2-'));
     tempDirs.push(dir);
 
     const first: unknown = await takeHeapSnapshot({ dir });

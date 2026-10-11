@@ -1,6 +1,6 @@
-name: argus codeql config
+name: phargus codeql config
 
-# `pharn/` is vendored PHARN tooling (a dev-time gate runner), not Argus source and not shipped in the
+# `pharn/` is vendored PHARN tooling (a dev-time gate runner), not Phargus source and not shipped in the
 # npm package. Its job is to run gate commands given on its own command line, which CodeQL reports as
 # js/indirect-command-line-injection. Same exclusion as eslint.config.mjs and .prettierignore.
 paths-ignore:

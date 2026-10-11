@@ -25,7 +25,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
 
 function warn(error: unknown): void {
   const message = error instanceof Error ? error.message : String(error);
-  process.emitWarning(`http tracing handler failed: ${message}`, 'ArgusTracingWarning');
+  process.emitWarning(`http tracing handler failed: ${message}`, 'PhargusTracingWarning');
 }
 
 function headerValue(headers: unknown): string | string[] | undefined {
@@ -104,12 +104,12 @@ function onFinish(message: unknown): void {
 //     inactive, which turns its wrapper into a transparent pass-through, so a wrapper someone
 //     stacked on top keeps working.
 //   - `emit` is restored only while the prototype still holds our wrapper (identity guard).
-//   - The install lives on `globalThis` under a `Symbol.for` key. A second copy of Argus (ESM + CJS)
+//   - The install lives on `globalThis` under a `Symbol.for` key. A second copy of Phargus (ESM + CJS)
 //     adds its own contributor (its own `inflight` map and trace context) to the existing wrapper
 //     instead of wrapping `emit` again.
 
 type Emit = (this: unknown, event: string | symbol, ...args: unknown[]) => boolean;
-/** Shared by every Argus copy that uses the v1 registry; change `EMIT_REGISTRY_KEY` if it changes. */
+/** Shared by every Phargus copy that uses the v1 registry; change `EMIT_REGISTRY_KEY` if it changes. */
 type Contributor = (request: object, next: () => boolean) => boolean;
 type EmitPatch = {
   readonly proto: object;
@@ -121,9 +121,9 @@ type EmitPatch = {
 type EmitSession = { readonly patches: EmitPatch[] };
 type EmitRegistry = { readonly contributors: Set<Contributor>; session: EmitSession | undefined };
 
-const EMIT_REGISTRY_KEY = Symbol.for('argus.http-tracing.emit.v1');
+const EMIT_REGISTRY_KEY = Symbol.for('phargus.http-tracing.emit.v1');
 /** Set on every wrapper; points at its install record so a later install can skip a dead layer. */
-const EMIT_WRAPPER_KEY = Symbol.for('argus.http-tracing.emit');
+const EMIT_WRAPPER_KEY = Symbol.for('phargus.http-tracing.emit');
 const MAX_PEEL = 64;
 
 function isEmitRegistry(value: unknown): value is EmitRegistry {
@@ -194,7 +194,7 @@ function patchEmit(session: EmitSession, proto: object): void {
   try {
     let own = Object.getOwnPropertyDescriptor(proto, 'emit');
     let original = (proto as { emit: Emit }).emit;
-    // Skip inactive Argus wrappers left on top (a third party restored one of them).
+    // Skip inactive Phargus wrappers left on top (a third party restored one of them).
     for (let i = 0; i < MAX_PEEL; i += 1) {
       const dead = own === undefined ? undefined : deadRecordOf(own.value);
       if (dead === undefined) {

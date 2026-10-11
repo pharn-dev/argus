@@ -1,4 +1,4 @@
-# PHARN development tooling: the owner's build pipeline, not part of Argus. Marked so GitHub leaves it
+# PHARN development tooling: the owner's build pipeline, not part of Phargus. Marked so GitHub leaves it
 # out of the language statistics and collapses it in pull request diffs. None of it is published:
 # package.json "files" ships dist/ only, and `npm run check:package` fails if anything else ships.
 pharn/** linguist-vendored

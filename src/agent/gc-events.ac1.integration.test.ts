@@ -70,7 +70,7 @@ function expectNonNegativeInt(value: unknown, label: string): void {
 
 describe('agent GC events — AC-1', () => {
   it('AC-1: a GC sampler reads zeros, then counts a forced GC with integer pauses and kinds, then reads zeros again', () => {
-    const outDir = mkdtempSync(join(tmpdir(), 'argus-gc-ac1-'));
+    const outDir = mkdtempSync(join(tmpdir(), 'phargus-gc-ac1-'));
     try {
       compileAgent(outDir);
       writeFileSync(

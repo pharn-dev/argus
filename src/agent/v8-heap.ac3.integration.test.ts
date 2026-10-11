@@ -19,7 +19,7 @@ afterEach(() => {
 });
 
 function makeTempDir(tag: string): string {
-  const dir = mkdtempSync(join(tmpdir(), `argus-v8-heap-ac3-${tag}-`));
+  const dir = mkdtempSync(join(tmpdir(), `phargus-v8-heap-ac3-${tag}-`));
   tempDirs.push(dir);
   return dir;
 }

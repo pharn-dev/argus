@@ -76,7 +76,7 @@ describe('collector alert sinks — AC-1', () => {
       },
     });
 
-    const dir = await mkdtemp(join(tmpdir(), 'argus-alert-sinks-'));
+    const dir = await mkdtemp(join(tmpdir(), 'phargus-alert-sinks-'));
     try {
       const path = join(dir, 'alerts.ndjson');
       await writeFile(path, '{"original":true}\n', 'utf8');

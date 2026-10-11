@@ -6,8 +6,8 @@ Two maintained harnesses that keep the agent's overhead and resource claims chec
 - `soak.mjs` — long run under load that fails on leaks.
 
 Both use Node core only (no dependencies, like the agent). They measure the **built package**:
-the targets load `argus/agent` through the package's own `exports` (self-reference by package
-name), which is exactly what a user's `--import argus/agent` loads. Build first:
+the targets load `@pharn-dev/phargus/agent` through the package's own `exports` (self-reference by package
+name), which is exactly what a user's `--import @pharn-dev/phargus/agent` loads. Build first:
 
 ```bash
 npm ci
@@ -53,13 +53,13 @@ order rotates from round to round, so slow drift on the host does not always hit
 
 **Variants**
 
-| Variant    | What is loaded                                                                                      |
-| ---------- | --------------------------------------------------------------------------------------------------- |
-| `none`     | nothing: the baseline                                                                               |
-| `idle`     | `--import argus/agent` with `ARGUS_ENABLED=false`: installed, switched off by config                |
-| `full`     | `--import argus/agent` with its defaults: tracing and every sampler, NDJSON to stdout (`/dev/null`) |
-| `tracing`  | library API only: HTTP tracing on, spans flushed once a second to `/dev/null`; no samplers          |
-| `samplers` | library API only: samplers and the backpressure probe at 1 s, to `/dev/null`; tracing off           |
+| Variant    | What is loaded                                                                                                   |
+| ---------- | ---------------------------------------------------------------------------------------------------------------- |
+| `none`     | nothing: the baseline                                                                                            |
+| `idle`     | `--import @pharn-dev/phargus/agent` with `PHARGUS_ENABLED=false`: installed, switched off by config              |
+| `full`     | `--import @pharn-dev/phargus/agent` with its defaults: tracing and every sampler, NDJSON to stdout (`/dev/null`) |
+| `tracing`  | library API only: HTTP tracing on, spans flushed once a second to `/dev/null`; no samplers                       |
+| `samplers` | library API only: samplers and the backpressure probe at 1 s, to `/dev/null`; tracing off                        |
 
 **What is measured.** On the load generator: requests per second and the p50/p99 latency, from
 the HDR histogram in `node:perf_hooks`. In the target, for the measured window only: CPU time
@@ -100,19 +100,19 @@ node bench/soak.mjs --duration 30      # quick run; the heap baseline moves to 7
 
 Three processes for the whole run:
 
-1. **App** — `node --expose-gc --import argus/agent` with `ARGUS_INTERVAL_MS=100` and
-   `ARGUS_OUTPUT=stdout`, serving a mix of the benchmark workloads under closed-loop load
+1. **App** — `node --expose-gc --import @pharn-dev/phargus/agent` with `PHARGUS_INTERVAL_MS=100` and
+   `PHARGUS_OUTPUT=stdout`, serving a mix of the benchmark workloads under closed-loop load
    (`--connections`, default 8). Every request path is unique, and one request in eight stalls a
    `Writable`, so the backpressure probe churns too.
 2. **Collector** — `node --expose-gc`, reading the app's NDJSON (piped through the harness) into
-   `argus/collector`, and keeping every other module busy:
-   - `argus/dashboard` serves it to SSE clients: `--sse-concurrency` loops (default 10) that
+   `@pharn-dev/phargus/collector`, and keeping every other module busy:
+   - `@pharn-dev/phargus/dashboard` serves it to SSE clients: `--sse-concurrency` loops (default 10) that
      connect, read for 20–300 ms and hang up, plus `--stalled-clients` (default 5) that connect at
      the start and never read until the end;
-   - `argus/otel` metric and trace exporters flood a dead endpoint (500 batches per 100 ms each);
-   - `argus/analyzer` symbolizes twice a second, on a persistent pool and every fourth time on a
+   - `@pharn-dev/phargus/otel` metric and trace exporters flood a dead endpoint (500 batches per 100 ms each);
+   - `@pharn-dev/phargus/analyzer` symbolizes twice a second, on a persistent pool and every fourth time on a
      fresh pool (a Worker created and terminated per call);
-   - `argus/plugin-runner` runs the built-in rules every second, plus a rule that times out every
+   - `@pharn-dev/phargus/plugin-runner` runs the built-in rules every second, plus a rule that times out every
      fifth run (the sandbox child is killed and respawned).
 3. **Harness** — load generator, SSE clients, and the checks.
 

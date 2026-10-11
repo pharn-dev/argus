@@ -280,7 +280,7 @@ describe('webhook sink and dispatcher bounded close (F-08)', () => {
 
 describe('window store latch and file modes (F-21, F-14)', () => {
   it('append() after close() rejects and never recreates the file', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'argus-store-latch-'));
+    const dir = await mkdtemp(join(tmpdir(), 'phargus-store-latch-'));
     try {
       const path = join(dir, 'windows.ndjson');
       const store = createWindowStore({ path, maxBytes: 1_000_000, capacity: 4 });
@@ -296,7 +296,7 @@ describe('window store latch and file modes (F-21, F-14)', () => {
   });
 
   it('release() still allows a later append (sequential consume)', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'argus-store-release-'));
+    const dir = await mkdtemp(join(tmpdir(), 'phargus-store-release-'));
     try {
       const path = join(dir, 'windows.ndjson');
       const store = createWindowStore({ path, maxBytes: 1_000_000, capacity: 4 });
@@ -311,7 +311,7 @@ describe('window store latch and file modes (F-21, F-14)', () => {
   });
 
   it('a consume() after collector.close() does not recreate the persistence file', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'argus-collector-latch-'));
+    const dir = await mkdtemp(join(tmpdir(), 'phargus-collector-latch-'));
     try {
       const path = join(dir, 'windows.ndjson');
       const collector = createCollector({
@@ -335,7 +335,7 @@ describe('window store latch and file modes (F-21, F-14)', () => {
   it.skipIf(process.platform === 'win32')(
     'creates the persistence and file-sink files with mode 0600',
     async () => {
-      const dir = await mkdtemp(join(tmpdir(), 'argus-modes-'));
+      const dir = await mkdtemp(join(tmpdir(), 'phargus-modes-'));
       try {
         const storePath = join(dir, 'windows.ndjson');
         const store = createWindowStore({ path: storePath, maxBytes: 300, capacity: 2 });
@@ -361,7 +361,7 @@ describe('window store latch and file modes (F-21, F-14)', () => {
   it.skipIf(process.platform === 'win32')(
     'leaves the mode of a file the user created alone, including across compaction',
     async () => {
-      const dir = await mkdtemp(join(tmpdir(), 'argus-modes-existing-'));
+      const dir = await mkdtemp(join(tmpdir(), 'phargus-modes-existing-'));
       try {
         const storePath = join(dir, 'windows.ndjson');
         await writeFile(storePath, '');

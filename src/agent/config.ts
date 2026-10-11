@@ -5,21 +5,21 @@ import type { AgentConfig } from './config-schema.js';
 
 export type LoadAgentConfigOptions = {
   /**
-   * Receives each non-fatal config problem (an unknown ARGUS_* variable, which is ignored).
-   * Defaults to one `[argus] warning: ...` line on stderr per problem.
+   * Receives each non-fatal config problem (an unknown PHARGUS_* variable, which is ignored).
+   * Defaults to one `[phargus] warning: ...` line on stderr per problem.
    */
   onWarning?: (message: string) => void;
 };
 
 function warnOnStderr(message: string): void {
   try {
-    process.stderr.write(`[argus] warning: ${message.replace(/\s+/g, ' ').trim()}\n`);
+    process.stderr.write(`[phargus] warning: ${message.replace(/\s+/g, ' ').trim()}\n`);
   } catch {
     // A warning must never throw into the caller; stderr is the only channel.
   }
 }
 
-/** Resolve the agent config: defaults, then argus.config.json/js in `cwd`, then ARGUS_* env. */
+/** Resolve the agent config: defaults, then phargus.config.json/js in `cwd`, then PHARGUS_* env. */
 export async function loadAgentConfig(
   cwd: string,
   env: Readonly<Record<string, string | undefined>>,

@@ -75,7 +75,7 @@ function parseFindingsLocal(value: unknown, maxFindings: number): RuleFinding[] 
 
 function tooLarge(size: number, maxResultBytes: number): RuleRunResult {
   return failure(
-    'ARGUS_RULE_INVALID_RESULT',
+    'PHARGUS_RULE_INVALID_RESULT',
     `the rule result is at least ${String(size)} bytes of JSON, over the limit of ` +
       `${String(maxResultBytes)} (maxResultBytes)`,
   );
@@ -91,31 +91,31 @@ async function runRule(request: RunRequest): Promise<RuleRunResult> {
     ivm = await loadIvm(request.isolatedVmModule);
   } catch (error) {
     return failure(
-      'ARGUS_ISOLATED_VM_MISSING',
+      'PHARGUS_ISOLATED_VM_MISSING',
       `isolated-vm could not be loaded (${request.isolatedVmModule}: ${messageOf(error)}). ` +
-        'argus/plugin-runner needs it: install it with `npm install isolated-vm` ' +
-        '(an optional peer dependency of argus, 6.x).',
+        '@pharn-dev/phargus/plugin-runner needs it: install it with `npm install isolated-vm` ' +
+        '(an optional peer dependency of phargus, 6.x).',
     );
   }
 
   const isolate = new ivm.Isolate({ memoryLimit: request.memoryLimitMb });
   try {
     const context = await isolate.createContext();
-    await context.global.set('__argusInput', request.windowsJson);
+    await context.global.set('__phargusInput', request.windowsJson);
     // An oversized result is measured inside the isolate and only its length crosses over, so it
     // never reaches this process's heap, let alone the host's.
     const code =
-      '"use strict"; const __argusRule = (function (windows) {\n' +
+      '"use strict"; const __phargusRule = (function (windows) {\n' +
       request.source +
-      '\n}); const __argusOut = JSON.stringify(__argusRule(JSON.parse(__argusInput)));' +
-      ` (typeof __argusOut === 'string' && __argusOut.length > ${String(request.maxResultBytes)})` +
-      ' ? __argusOut.length : __argusOut;';
+      '\n}); const __phargusOut = JSON.stringify(__phargusRule(JSON.parse(__phargusInput)));' +
+      ` (typeof __phargusOut === 'string' && __phargusOut.length > ${String(request.maxResultBytes)})` +
+      ' ? __phargusOut.length : __phargusOut;';
 
     let script: IvmScript;
     try {
       script = await isolate.compileScript(code);
     } catch (error) {
-      return failure('ARGUS_RULE_COMPILE_ERROR', messageOf(error));
+      return failure('PHARGUS_RULE_COMPILE_ERROR', messageOf(error));
     }
 
     const startedAt = process.hrtime.bigint();
@@ -126,18 +126,18 @@ async function runRule(request: RunRequest): Promise<RuleRunResult> {
       const message = messageOf(error);
       if (isolate.isDisposed) {
         return failure(
-          'ARGUS_RULE_MEMORY_LIMIT',
+          'PHARGUS_RULE_MEMORY_LIMIT',
           `the rule exceeded the ${request.memoryLimitMb} MB memory limit (${message})`,
         );
       }
       const elapsedMs = Number(process.hrtime.bigint() - startedAt) / 1e6;
       if (/timed out/i.test(message) && elapsedMs >= request.timeoutMs) {
         return failure(
-          'ARGUS_RULE_TIMEOUT',
+          'PHARGUS_RULE_TIMEOUT',
           `the rule exceeded the ${request.timeoutMs} ms timeout`,
         );
       }
-      return failure('ARGUS_RULE_THREW', message);
+      return failure('PHARGUS_RULE_THREW', message);
     }
 
     if (typeof output === 'number' && Number.isSafeInteger(output) && output > 0) {
@@ -145,7 +145,7 @@ async function runRule(request: RunRequest): Promise<RuleRunResult> {
     }
     if (typeof output !== 'string') {
       return failure(
-        'ARGUS_RULE_INVALID_RESULT',
+        'PHARGUS_RULE_INVALID_RESULT',
         'the rule did not return a JSON-serialisable value',
       );
     }
@@ -158,23 +158,23 @@ async function runRule(request: RunRequest): Promise<RuleRunResult> {
       parsed = JSON.parse(output);
     } catch (error) {
       return failure(
-        'ARGUS_RULE_INVALID_RESULT',
+        'PHARGUS_RULE_INVALID_RESULT',
         `the rule result is not valid JSON: ${messageOf(error)}`,
       );
     }
     const findings = parseFindingsLocal(parsed, request.maxFindings);
     if (typeof findings === 'string') {
-      return failure('ARGUS_RULE_INVALID_RESULT', findings);
+      return failure('PHARGUS_RULE_INVALID_RESULT', findings);
     }
     return { ok: true, findings };
   } catch (error) {
     if (isolate.isDisposed) {
       return failure(
-        'ARGUS_RULE_MEMORY_LIMIT',
+        'PHARGUS_RULE_MEMORY_LIMIT',
         `the rule exceeded the ${request.memoryLimitMb} MB memory limit`,
       );
     }
-    return failure('ARGUS_RULE_THREW', messageOf(error));
+    return failure('PHARGUS_RULE_THREW', messageOf(error));
   } finally {
     if (!isolate.isDisposed) {
       isolate.dispose();
@@ -204,7 +204,7 @@ let queue: Promise<void> = Promise.resolve();
 
 process.on('message', (message: unknown) => {
   if (!isRunRequest(message)) {
-    process.stderr.write('argus sandbox: ignored a malformed request\n');
+    process.stderr.write('phargus sandbox: ignored a malformed request\n');
     return;
   }
   const request = message;
@@ -213,17 +213,17 @@ process.on('message', (message: unknown) => {
     try {
       result = await runRule(request);
     } catch (error) {
-      result = failure('ARGUS_RULE_THREW', messageOf(error));
+      result = failure('PHARGUS_RULE_THREW', messageOf(error));
     }
     const reply: RunReply = { type: 'result', id: request.id, result };
     if (process.send === undefined) {
-      process.stderr.write('argus sandbox: no IPC channel to reply on\n');
+      process.stderr.write('phargus sandbox: no IPC channel to reply on\n');
       process.exit(1);
       return;
     }
     process.send(reply, (error: Error | null) => {
       if (error !== null) {
-        process.stderr.write(`argus sandbox: failed to send reply: ${error.message}\n`);
+        process.stderr.write(`phargus sandbox: failed to send reply: ${error.message}\n`);
         process.exit(1);
       }
     });
@@ -235,11 +235,11 @@ process.on('disconnect', () => {
 });
 
 process.on('uncaughtException', (error: Error) => {
-  process.stderr.write(`argus sandbox: uncaught exception: ${error.stack ?? error.message}\n`);
+  process.stderr.write(`phargus sandbox: uncaught exception: ${error.stack ?? error.message}\n`);
   process.exit(1);
 });
 
 process.on('unhandledRejection', (reason: unknown) => {
-  process.stderr.write(`argus sandbox: unhandled rejection: ${messageOf(reason)}\n`);
+  process.stderr.write(`phargus sandbox: unhandled rejection: ${messageOf(reason)}\n`);
   process.exit(1);
 });

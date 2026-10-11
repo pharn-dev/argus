@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 const retained: number[][] = [];
 
 // A distinctively named allocator: the sampling call must report it among the allocation sites.
-function argusAc1RetainingAllocator(): void {
+function phargusAc1RetainingAllocator(): void {
   for (let i = 0; i < 20; i += 1) {
     retained.push(new Array<number>(4096).fill(i));
   }
@@ -15,8 +15,8 @@ describe('agent allocation sampling — AC-1', () => {
   it('AC-1: sampleAllocations resolves with non-empty integer-sized sites ordered largest first, including the allocating test function', async () => {
     const { sampleAllocations } = await import('./index.js');
 
-    argusAc1RetainingAllocator();
-    const timer = setInterval(argusAc1RetainingAllocator, 5);
+    phargusAc1RetainingAllocator();
+    const timer = setInterval(phargusAc1RetainingAllocator, 5);
     let result: unknown;
     try {
       result = await sampleAllocations({ samplingInterval: 1024, durationMs: 300, limit: 1000 });
@@ -52,7 +52,7 @@ describe('agent allocation sampling — AC-1', () => {
     }
 
     expect(names, 'the allocating test function appears among the sites').toContain(
-      argusAc1RetainingAllocator.name,
+      phargusAc1RetainingAllocator.name,
     );
   }, 30_000);
 });

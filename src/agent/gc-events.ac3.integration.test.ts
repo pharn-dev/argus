@@ -46,7 +46,7 @@ function compileAgent(outDir: string): void {
 
 describe('agent GC events — AC-3', () => {
   it('AC-3: a process that starts the controller with its GC sampler, allocates and stops exits 0 on its own with no sample after stop', () => {
-    const outDir = mkdtempSync(join(tmpdir(), 'argus-gc-ac3-'));
+    const outDir = mkdtempSync(join(tmpdir(), 'phargus-gc-ac3-'));
     try {
       compileAgent(outDir);
       writeFileSync(

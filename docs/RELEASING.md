@@ -1,4 +1,4 @@
-# Releasing Argus
+# Releasing Phargus
 
 Releases are cut by a maintainer, by hand. There is no release bot: a person decides when to
 release and what the version is. CI does the part that must not depend on a person's laptop —
@@ -49,13 +49,19 @@ If a release is bad, do not delete it from npm. Publish a fixed patch version an
 Trusted Publishing can only be configured for a package that already exists on the registry, so
 the very first publish is manual:
 
-1. Make sure the name is free and yours: `npm view <name>`. **The unscoped name `argus` is already
-   taken on npm by an unrelated package**, so the first release needs a different name (for example
-   a scoped one such as `@pharn-dev/argus`). Change `name` in `package.json` and the install
-   snippets in `README.md` together, and keep the import specifiers in docs in sync.
-2. Remove `"private": true` from `package.json` in the release PR (the publish workflow refuses a
-   private package on purpose).
-3. From a clean checkout of the tagged commit on `main`, run `npm ci && npm publish --access public`
-   with your own npm login (2FA on).
+1. Phargus publishes as **`@pharn-dev/phargus`**. The scope `@pharn-dev` must exist on npmjs.com and be yours
+   (`npm access list packages @pharn-dev` or the organization page). The `package.json` name,
+   the install snippets and every import specifier already use it.
+2. Confirm `package.json` is not marked `"private": true` (the publish workflow refuses a private
+   package on purpose).
+3. From a clean checkout of the tagged commit on `main`, run
+   `npm ci && npm publish --access public --provenance=false` with your own npm login (2FA on).
+   This first publish runs locally, so it cannot produce CI provenance; subsequent releases use
+   the workflow's provenance attestation.
 4. On npmjs.com, add the Trusted Publisher (repository, `publish.yml`, environment `npm-publish`)
-   under the package's settings. Every later release goes through CI.
+   under the package's settings. Enable direct `npm publish` for this publisher because that is
+   the command the workflow uses. Every later release goes through CI.
+
+The Trusted Publisher repository must be `pharn-dev/phargus`. A repository rename does not update
+the package's npm settings automatically. After any rename, check the repository, workflow and
+environment fields before cutting the next release.

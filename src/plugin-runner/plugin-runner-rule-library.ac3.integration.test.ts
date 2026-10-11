@@ -45,12 +45,12 @@ type RuleLibraryModule = {
   RuleErrorCode: { RULE_THREW: string; COMPILE_ERROR: string };
 };
 
-const LAG_ID = 'argus/event-loop-lag';
-const HEAP_ID = 'argus/heap-growth';
-const GC_ID = 'argus/gc-pause-share';
+const LAG_ID = 'phargus/event-loop-lag';
+const HEAP_ID = 'phargus/heap-growth';
+const GC_ID = 'phargus/gc-pause-share';
 
 /** Set on the HOST's globalThis only if a user rule file is ever evaluated in this process. */
-const HOST_MARKER = '__argusRuleLibraryAc3HostMarker';
+const HOST_MARKER = '__phargusRuleLibraryAc3HostMarker';
 
 function markerLine(name: string): string {
   return `try { globalThis.${HOST_MARKER} = ${JSON.stringify(name)}; } catch (_ignored) { /* frozen global */ }\n`;
@@ -160,7 +160,7 @@ afterAll(async () => {
 describe('plugin-runner rule library — AC-3', () => {
   it('AC-3: user rules loaded from a directory run alongside the built-ins, each failure stays its own typed result, and no user file runs in the host', async () => {
     Reflect.deleteProperty(globalThis, HOST_MARKER);
-    rulesDir = await mkdtemp(join(tmpdir(), 'argus-rule-library-ac3-'));
+    rulesDir = await mkdtemp(join(tmpdir(), 'phargus-rule-library-ac3-'));
     await writeFile(join(rulesDir, 'good.js'), GOOD_RULE, 'utf8');
     await writeFile(join(rulesDir, 'throws.js'), THROWING_RULE, 'utf8');
     await writeFile(join(rulesDir, 'broken.js'), BROKEN_RULE, 'utf8');

@@ -40,8 +40,8 @@ describe('collector persistence — AC-1', () => {
   it('AC-1: a persisting collector appends each closed window as one NDJSON line in ring order, and a collector without persist touches no file', async () => {
     const collectorModule = (await import('./index.js')) as unknown as CollectorModule;
 
-    const persistDir = await mkdtemp(join(tmpdir(), 'argus-persist-ac1-'));
-    const plainDir = await mkdtemp(join(tmpdir(), 'argus-persist-ac1-plain-'));
+    const persistDir = await mkdtemp(join(tmpdir(), 'phargus-persist-ac1-'));
+    const plainDir = await mkdtemp(join(tmpdir(), 'phargus-persist-ac1-plain-'));
     try {
       const path = join(persistDir, 'windows.ndjson');
       const persisting = collectorModule.createCollector({

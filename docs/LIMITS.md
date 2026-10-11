@@ -1,6 +1,6 @@
-# Argus — Limits
+# Phargus — Limits
 
-What Argus does **not** guarantee, stated plainly. Argus is pre-release (S0 to S7 implemented, not
+What Phargus does **not** guarantee, stated plainly. Phargus is pre-release (S0 to S7 implemented, not
 yet published). These are the design's inherent limits and the known gaps in what is built. For the
 security design see [`THREAT-MODEL.md`](./THREAT-MODEL.md).
 
@@ -22,7 +22,7 @@ security design see [`THREAT-MODEL.md`](./THREAT-MODEL.md).
   `node bench/overhead.mjs --workloads promise --node-arg=--experimental-async-context-frame`.
 - **The default output shares your stdout.** With no configuration the agent writes about 2 KB per
   sample (one per second) plus one line per traced request to the process's stdout, interleaved
-  with your own output. Set `ARGUS_OUTPUT` to a file path, or to `none`, if that matters.
+  with your own output. Set `PHARGUS_OUTPUT` to a file path, or to `none`, if that matters.
 - **Heap snapshots pause the process.** Taking one blocks the event loop and can need as much memory
   again as the heap holds. On a large heap in a memory-constrained container, that can end in an OOM
   kill. Snapshots are opt-in and manual for this reason.
@@ -32,7 +32,7 @@ security design see [`THREAT-MODEL.md`](./THREAT-MODEL.md).
 
 ## 2. In-process, so shared fate
 
-- **If the host dies, Argus dies with it,** and so does the in-memory data. The ring buffer is lost
+- **If the host dies, Phargus dies with it,** and so does the in-memory data. The ring buffer is lost
   on a crash or restart unless opt-in disk persistence is on, and persistence keeps only recent
   windows, not history.
 - **Data is dropped, not queued without limit.** The agent's sample and span output lanes each
@@ -42,8 +42,8 @@ security design see [`THREAT-MODEL.md`](./THREAT-MODEL.md).
   display them yet.
 - **Event loop lag is observed by the loop itself.** A loop blocked completely cannot report
   until it resumes, so the longest stalls are reported late, with their full length.
-- **Argus cannot protect itself from the host.** Code running in the same process can read or alter
-  Argus's data. It is a diagnostic tool, not a tamper-evident audit log.
+- **Phargus cannot protect itself from the host.** Code running in the same process can read or alter
+  Phargus's data. It is a diagnostic tool, not a tamper-evident audit log.
 
 ## 3. What the data can and cannot tell you
 
@@ -53,7 +53,7 @@ security design see [`THREAT-MODEL.md`](./THREAT-MODEL.md).
 - **Trace context can be lost.** `AsyncLocalStorage` propagates through promises and most callbacks,
   but not across every native addon, connection pool or queue, and not across processes. Spans can
   be missing or attached to the wrong request. Worker Threads need explicit propagation.
-- **No distributed tracing.** An incoming W3C `traceparent` is honoured, but Argus does not add one
+- **No distributed tracing.** An incoming W3C `traceparent` is honoured, but Phargus does not add one
   to outgoing requests, so it does not follow a request across services.
 - **Backpressure hotspots are inferred from `write()` returning `false`.** The probe wraps `write`
   on the `Writable`, `Duplex` and `http.OutgoingMessage` prototypes, which covers `Writable`
@@ -67,8 +67,8 @@ security design see [`THREAT-MODEL.md`](./THREAT-MODEL.md).
   counters use integer math, so very small or very large values are bounded by the unit chosen.
 - **GC and deoptimization detail depend on Node and V8.** GC data comes from `PerformanceObserver`
   `gc` entries, whose detail varies by Node version. Deoptimization support is a parser for
-  `node --trace-deopt` output: Argus does not start or capture that output, and the text format can
-  change between V8 versions. Argus targets the Node versions in `package.json`'s `engines` field
+  `node --trace-deopt` output: Phargus does not start or capture that output, and the text format can
+  change between V8 versions. Phargus targets the Node versions in `package.json`'s `engines` field
   and may report less on others.
 - **Heap-snapshot analysis has caps.** Files over `maxSnapshotBytes` (default 256 MiB) are refused
   before reading. The streaming parser needs the top-level keys in V8's order (`snapshot`, `nodes`,
@@ -83,7 +83,7 @@ security design see [`THREAT-MODEL.md`](./THREAT-MODEL.md).
   cookie. If you click that link on another website, some browsers leave the cookie off the
   redirected request and the first load shows `401`; reloading `/` works. Opening the link from
   the address bar, a terminal or a bookmark is not affected.
-- **There is no redaction step.** Argus records method, path without query string, status and
+- **There is no redaction step.** Phargus records method, path without query string, status and
   timing, and nothing else from a request. A secret in a path segment is recorded as is.
 - **Sandboxed rules are limited, not safe.** `isolated-vm` constrains memory, time, result size and
   reach, but it is a defense in depth, not a guarantee. Load only rules you would run anyway.
@@ -94,11 +94,11 @@ security design see [`THREAT-MODEL.md`](./THREAT-MODEL.md).
 ## 5. Packaging
 
 - **ESM and CJS can both be loaded.** The package ships both formats. If an application loads
-  `argus/agent` once through `import` and once through `require`, it gets two copies of the module
+  `@pharn-dev/phargus/agent` once through `import` and once through `require`, it gets two copies of the module
   (the "dual package hazard"). The agent itself starts only once per process, and the two copies
   share one set of prototype wrappers through `globalThis` registries, so disabling either copy, in
   any order, leaves `write` and `emit` working and restores the prototypes when the last one is
   disabled. Each copy still keeps its own samples, spans and trace context. Pick one format per
   process.
-- **Platform.** Argus is developed and tested on Linux and macOS. Other platforms are not covered
+- **Platform.** Phargus is developed and tested on Linux and macOS. Other platforms are not covered
   by CI.

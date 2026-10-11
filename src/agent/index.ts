@@ -1,5 +1,5 @@
 /** Scaffold placeholder, still imported by the collector. */
-export type ArgusAgentPlaceholder = void;
+export type PhargusAgentPlaceholder = void;
 
 export { createEventLoopSampler } from './event-loop-sampler.js';
 export type { EventLoopSample, EventLoopSampler } from './event-loop-sampler.js';
@@ -33,13 +33,13 @@ export { createNdjsonExporter } from './ndjson-exporter.js';
 export type { NdjsonExporter, NdjsonExporterOptions } from './ndjson-exporter.js';
 export { loadAgentConfig } from './config.js';
 export type { LoadAgentConfigOptions } from './config.js';
-export { defaultAgentConfig, ArgusConfigError } from './config-schema.js';
+export { defaultAgentConfig, PhargusConfigError } from './config-schema.js';
 export type { AgentConfig } from './config-schema.js';
 export { createDeoptParser, ANONYMOUS_FUNCTION, DEPENDENT_CODE_KIND } from './deopt-parser.js';
 export type { DeoptEvent, DeoptLocation, DeoptParser, DeoptParserOptions } from './deopt-parser.js';
 export { isPermissionModelEnabled, checkPermission, assertPermission } from './permission.js';
 export type { PermissionCheck, PermissionScope } from './permission.js';
-export { ArgusPermissionError } from './permission-error.js';
+export { PhargusPermissionError } from './permission-error.js';
 export { currentTraceId, runWithTrace } from './context.js';
 export { enable, disable, drainSpans, DEFAULT_SPAN_BUFFER_SIZE } from './http-tracing.js';
 export type { HttpTracingOptions } from './http-tracing.js';

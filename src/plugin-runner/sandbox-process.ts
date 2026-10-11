@@ -10,7 +10,7 @@ export type SandboxProcess = {
 };
 
 export type SandboxProcessOptions = {
-  /** Most findings a reply may carry; a larger reply is turned into ARGUS_RULE_INVALID_RESULT. */
+  /** Most findings a reply may carry; a larger reply is turned into PHARGUS_RULE_INVALID_RESULT. */
   maxFindings: number;
   /** Most characters of finding messages a reply may carry, same treatment. */
   maxResultBytes: number;
@@ -149,7 +149,7 @@ export function createSandboxProcess(
         return;
       }
       if (!isRawReply(message) || pending === undefined || message.id !== pending.id) {
-        process.emitWarning('argus sandbox: ignored an unexpected reply from the sandbox child');
+        process.emitWarning('phargus sandbox: ignored an unexpected reply from the sandbox child');
         return;
       }
       settle(checkResult(message.result, options));
@@ -176,7 +176,7 @@ export function createSandboxProcess(
     if (pending !== undefined) {
       settle(ruleFailure(RuleErrorCode.SANDBOX_CRASHED, reason));
     } else if (!closed) {
-      process.emitWarning(`argus sandbox: ${reason} while idle`);
+      process.emitWarning(`phargus sandbox: ${reason} while idle`);
     }
   }
 

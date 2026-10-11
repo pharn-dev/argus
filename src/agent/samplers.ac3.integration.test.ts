@@ -42,7 +42,7 @@ describe('agent samplers — AC-3', () => {
   }, 10_000);
 
   it('AC-3: a separate Node process that only starts the controller exits on its own with code 0', () => {
-    const outDir = mkdtempSync(join(tmpdir(), 'argus-ac3-'));
+    const outDir = mkdtempSync(join(tmpdir(), 'phargus-ac3-'));
     try {
       const tscPath = join(repoRoot, 'node_modules', 'typescript', 'bin', 'tsc');
       const compile = spawnSync(

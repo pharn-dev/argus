@@ -21,7 +21,7 @@ const tscPath = join(repoRoot, 'node_modules', 'typescript', 'bin', 'tsc');
 
 const INTERVAL_MS = 50;
 const MARKER = 'ac2-app-loaded-marker';
-const DISABLED_PREFIX = '[argus] agent disabled:';
+const DISABLED_PREFIX = '[phargus] agent disabled:';
 
 function agentSources(): string[] {
   return readdirSync(agentDir)
@@ -29,7 +29,7 @@ function agentSources(): string[] {
     .map((f) => join(agentDir, f));
 }
 
-/** Compiles src/agent to CommonJS — what `--require argus/agent` loads through the `require` condition. */
+/** Compiles src/agent to CommonJS — what `--require phargus/agent` loads through the `require` condition. */
 function compileCjs(sources: string[], outDir: string): void {
   const result = spawnSync(
     process.execPath,
@@ -70,9 +70,9 @@ function compileCjs(sources: string[], outDir: string): void {
   writeFileSync(join(outDir, '..', 'package.json'), JSON.stringify({ type: 'commonjs' }));
 }
 
-/** A private copy of the package named "argus" (real `exports`), under a realpath'd temp root. */
+/** A private copy of the package named "phargus" (real `exports`), under a realpath'd temp root. */
 function buildTempPackage(): string {
-  const pkgDir = realpathSync(mkdtempSync(join(tmpdir(), 'argus-perm-ac2-')));
+  const pkgDir = realpathSync(mkdtempSync(join(tmpdir(), 'phargus-perm-ac2-')));
   const cjsDir = join(pkgDir, 'dist', 'cjs', 'agent');
   mkdirSync(cjsDir, { recursive: true });
   compileCjs(agentSources(), cjsDir);
@@ -82,7 +82,7 @@ function buildTempPackage(): string {
   writeFileSync(
     join(pkgDir, 'package.json'),
     JSON.stringify({
-      name: 'argus',
+      name: 'phargus',
       version: '0.0.0',
       private: true,
       type: 'module',
@@ -104,11 +104,11 @@ afterAll(() => {
   }
 });
 
-/** The child's env: the parent's minus every ARGUS_* name (an unknown one warns on stderr). */
+/** The child's env: the parent's minus every PHARGUS_* name (an unknown one warns on stderr). */
 function childEnv(extra: Record<string, string>): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
   for (const [name, value] of Object.entries(process.env)) {
-    if (value === undefined || name.startsWith('ARGUS_') || name === 'NODE_OPTIONS') {
+    if (value === undefined || name.startsWith('PHARGUS_') || name === 'NODE_OPTIONS') {
       continue;
     }
     env[name] = value;
@@ -116,7 +116,7 @@ function childEnv(extra: Record<string, string>): NodeJS.ProcessEnv {
   return { ...env, ...extra };
 }
 
-// Preloaded with --require argus/agent: prints a marker, then runs briefly and ends on its own.
+// Preloaded with --require phargus/agent: prints a marker, then runs briefly and ends on its own.
 const APP = [
   `console.log(${JSON.stringify(MARKER)});`,
   'const intervalMs = Number(process.argv[2]);',
@@ -143,10 +143,10 @@ function runChild(
   }
   return spawnSync(
     process.execPath,
-    [...flags, '--require', 'argus/agent', app, String(INTERVAL_MS)],
+    [...flags, '--require', 'phargus/agent', app, String(INTERVAL_MS)],
     {
       cwd: root,
-      env: childEnv({ ARGUS_OUTPUT: outFile, ARGUS_INTERVAL_MS: String(INTERVAL_MS) }),
+      env: childEnv({ PHARGUS_OUTPUT: outFile, PHARGUS_INTERVAL_MS: String(INTERVAL_MS) }),
       encoding: 'utf8',
       timeout: 30_000,
     },
@@ -157,8 +157,8 @@ function stderrLines(child: SpawnSyncReturns<string>): string[] {
   return child.stderr.split('\n').filter((l) => l.length > 0);
 }
 
-describe('argus/agent NDJSON file export under --permission — AC-2', () => {
-  it('AC-2: with an fs-write grant the NDJSON file gets JSON lines and the agent stays enabled; without it no file is written, exactly one "[argus] agent disabled:" stderr line appears, the app still prints its marker and exits 0', () => {
+describe('phargus/agent NDJSON file export under --permission — AC-2', () => {
+  it('AC-2: with an fs-write grant the NDJSON file gets JSON lines and the agent stays enabled; without it no file is written, exactly one "[phargus] agent disabled:" stderr line appears, the app still prints its marker and exits 0', () => {
     const root = tempPackage();
 
     // With --allow-fs-write granting the output file's directory.
@@ -171,7 +171,7 @@ describe('argus/agent NDJSON file export under --permission — AC-2', () => {
     expect(granted.error, `granted child failed to run: ${String(granted.error)}`).toBeUndefined();
     expect(granted.signal, `granted child was killed:\n${granted.stderr}`).toBeNull();
     expect(
-      stderrLines(granted).filter((l) => l.startsWith('[argus] agent disabled')),
+      stderrLines(granted).filter((l) => l.startsWith('[phargus] agent disabled')),
       `granted child stderr:\n${granted.stderr}`,
     ).toEqual([]);
     expect(existsSync(grantedFile), `the agent wrote ${grantedFile}`).toBe(true);
@@ -203,7 +203,7 @@ describe('argus/agent NDJSON file export under --permission — AC-2', () => {
       disabledLines.length,
       `exactly one "${DISABLED_PREFIX}" line; stderr:\n${denied.stderr}`,
     ).toBe(1);
-    // The SPEC's intent: the denial surfaces as Argus's typed permission error (scope and resource),
+    // The SPEC's intent: the denial surfaces as Phargus's typed permission error (scope and resource),
     // not as Node's raw ERR_ACCESS_DENIED message, which names neither.
     const disabledLine = disabledLines[0] as string;
     expect(disabledLine, 'the disabled line names the denied scope').toContain('fs.write');

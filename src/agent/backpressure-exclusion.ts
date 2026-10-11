@@ -1,11 +1,11 @@
 /// <reference types="node" />
 import type { Writable } from 'node:stream';
 
-const EXCLUDED_KEY = Symbol.for('argus.backpressure.excluded.v1');
+const EXCLUDED_KEY = Symbol.for('phargus.backpressure.excluded.v1');
 
 /**
  * Streams the backpressure probe must ignore, such as the agent's own export destination. Kept on
- * `globalThis` so a second copy of Argus (ESM + CJS) whose probe shares the write wrappers also
+ * `globalThis` so a second copy of Phargus (ESM + CJS) whose probe shares the write wrappers also
  * ignores the first copy's destination.
  */
 const excluded: WeakSet<object> = (() => {

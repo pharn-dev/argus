@@ -1,10 +1,10 @@
 # express-app example
 
-Argus watching a small HTTP app, end to end: one `import 'argus/agent'` line in the app, a collector
+Phargus watching a small HTTP app, end to end: one `import '@pharn-dev/phargus/agent'` line in the app, a collector
 that aggregates the agent's NDJSON into time windows and alerts, and the live dashboard.
 
 The app uses `node:http` so the example adds no dependency. The agent works the same way in an
-Express app: put `import 'argus/agent'` (or `require('argus/agent')`) first in the file that starts
+Express app: put `import '@pharn-dev/phargus/agent'` (or `require('@pharn-dev/phargus/agent')`) first in the file that starts
 your Express server and nothing else changes.
 
 ## Run it
@@ -16,12 +16,12 @@ npm run build
 node examples/express-app/index.mjs
 ```
 
-The example has no `package.json` of its own: `argus/agent`, `argus/collector` and `argus/dashboard`
+The example has no `package.json` of its own: `@pharn-dev/phargus/agent`, `@pharn-dev/phargus/collector` and `@pharn-dev/phargus/dashboard`
 resolve through the root package's `exports`, so they need the build above.
 
 It starts two processes. `app.mjs` is the monitored app: it loads the agent, which writes NDJSON to
-the app's stdout. `index.mjs` reads that stream into an `argus/collector` collector (1 second windows,
-an alert when the event loop lag reaches 50 ms) and serves `argus/dashboard`. Both servers bind to
+the app's stdout. `index.mjs` reads that stream into an `@pharn-dev/phargus/collector` collector (1 second windows,
+an alert when the event loop lag reaches 50 ms) and serves `@pharn-dev/phargus/dashboard`. Both servers bind to
 `127.0.0.1` only.
 
 ## Configuration
@@ -31,7 +31,7 @@ an alert when the event loop lag reaches 50 ms) and serves `argus/dashboard`. Bo
 | `APP_PORT`       | `3000`  | Port of the app. `0` picks a free port.       |
 | `DASHBOARD_PORT` | `7070`  | Port of the dashboard. `0` picks a free port. |
 
-`ARGUS_INTERVAL_MS` is passed to the agent and defaults to `250` here.
+`PHARGUS_INTERVAL_MS` is passed to the agent and defaults to `250` here.
 
 ## Routes
 

@@ -1,5 +1,5 @@
 // Soak target: the monitored application. Started by bench/soak.mjs with
-// `--expose-gc --import argus/agent`, ARGUS_INTERVAL_MS (default 100) and ARGUS_OUTPUT=stdout; the
+// `--expose-gc --import @pharn-dev/phargus/agent`, PHARGUS_INTERVAL_MS (default 100) and PHARGUS_OUTPUT=stdout; the
 // agent's NDJSON goes to stdout, which the harness pipes into the collector process.
 import http from 'node:http';
 import { describe } from './common.mjs';

@@ -24,7 +24,7 @@ Examples of unacceptable behavior include:
 - Publishing others' private information, such as a physical or email address, without their explicit permission
 - Other conduct which could reasonably be considered inappropriate in a professional setting
 
-Argus is for people who care about getting production Node.js services right. Disagree on substance; do not flame.
+Phargus is for people who care about getting production Node.js services right. Disagree on substance; do not flame.
 
 ## Enforcement Responsibilities
 
@@ -38,7 +38,7 @@ This Code of Conduct applies within all community spaces, and also applies when 
 
 ## Enforcement
 
-This Code of Conduct applies to the Argus repository, its issue tracker, discussions and pull requests.
+This Code of Conduct applies to the Phargus repository, its issue tracker, discussions and pull requests.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders responsible for enforcement at `support@pharn.dev`. If your report concerns a member of the enforcement team, note that in your message so it can be routed to an uninvolved leader.
 

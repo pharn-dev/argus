@@ -1,6 +1,6 @@
 import path from 'node:path';
 import process from 'node:process';
-import { ArgusPermissionError } from './permission-error.js';
+import { PhargusPermissionError } from './permission-error.js';
 
 export type PermissionScope = 'fs.read' | 'fs.write';
 export type PermissionCheck = { allowed: boolean; scope: string; resource: string };
@@ -35,10 +35,10 @@ export function checkPermission(scope: PermissionScope, reference: string): Perm
   return { allowed: permission.has(scope, resource), scope, resource };
 }
 
-/** Throw `ArgusPermissionError` when the permission model denies `scope` on `reference`. */
+/** Throw `PhargusPermissionError` when the permission model denies `scope` on `reference`. */
 export function assertPermission(scope: PermissionScope, reference: string): void {
   const check = checkPermission(scope, reference);
   if (!check.allowed) {
-    throw new ArgusPermissionError(check.scope, check.resource);
+    throw new PhargusPermissionError(check.scope, check.resource);
   }
 }

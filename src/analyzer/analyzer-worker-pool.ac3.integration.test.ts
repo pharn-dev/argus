@@ -18,7 +18,7 @@ type DiffModule = {
   ) => Promise<HeapSnapshotDiff>;
 };
 
-class ArgusAc3DiffGrowthMarker {
+class PhargusAc3DiffGrowthMarker {
   f0: number;
   f1: number;
   f2: number;
@@ -58,15 +58,15 @@ class ArgusAc3DiffGrowthMarker {
 
 describe('analyzer heap-snapshot diff', () => {
   it('AC-3: diffs two real heap snapshots and ranks the newly held class by self-size growth', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'argus-ac3-'));
+    const dir = await mkdtemp(join(tmpdir(), 'phargus-ac3-'));
     try {
       const mod = (await import('./index.js')) as unknown as DiffModule;
 
       const beforePath = writeHeapSnapshot(join(dir, 'before.heapsnapshot'));
 
-      const held: ArgusAc3DiffGrowthMarker[] = [];
+      const held: PhargusAc3DiffGrowthMarker[] = [];
       for (let i = 0; i < 5_000; i += 1) {
-        held.push(new ArgusAc3DiffGrowthMarker(i));
+        held.push(new PhargusAc3DiffGrowthMarker(i));
       }
       const afterPath = writeHeapSnapshot(join(dir, 'after.heapsnapshot'));
       expect(held.length).toBe(5_000);
@@ -90,7 +90,7 @@ describe('analyzer heap-snapshot diff', () => {
         expect(previous?.selfSizeDelta).toBeGreaterThanOrEqual(current?.selfSizeDelta ?? Infinity);
       }
 
-      const marker = diff.entries.find((entry) => entry.name === 'ArgusAc3DiffGrowthMarker');
+      const marker = diff.entries.find((entry) => entry.name === 'PhargusAc3DiffGrowthMarker');
       expect(marker).toBeDefined();
       expect(marker?.countDelta).toBeGreaterThanOrEqual(5_000);
       expect(marker?.selfSizeDelta).toBeGreaterThan(0);

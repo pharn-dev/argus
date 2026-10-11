@@ -23,7 +23,7 @@ describe('analyzer stack symbolization pool routing and input checks', () => {
     await pool.close();
 
     const frame: StackFrame = {
-      url: pathToFileURL(join(tmpdir(), 'argus-symbolize-ac3-frame.js')).href,
+      url: pathToFileURL(join(tmpdir(), 'phargus-symbolize-ac3-frame.js')).href,
       line: 1,
       column: 1,
     };

@@ -1,4 +1,4 @@
-# Argus — Feature List
+# Phargus — Feature List
 
 **Everything in this document is in scope.** We build the full version; nothing is deferred to
 "later". The markers record what the code on `main` does today, so a reader can tell a built
@@ -14,13 +14,13 @@ Status legend:
 
 ## 1. Installation & integration
 
-- ✅ One-line injection: `require('argus/agent')` / `import 'argus/agent'`.
-- ✅ Preload via `node --require argus/agent app.js` or `node --import argus/agent app.mjs` (no
+- ✅ One-line injection: `require('@pharn-dev/phargus/agent')` / `import '@pharn-dev/phargus/agent'`.
+- ✅ Preload via `node --require @pharn-dev/phargus/agent app.js` or `node --import @pharn-dev/phargus/agent app.mjs` (no
   source edit needed).
 - ✅ Zero external dependencies in the agent (Node core only; enforced by ESLint).
 - ✅ Dual package: ESM + CJS, six subpath exports.
-- ✅ Config via env vars (`ARGUS_OUTPUT`, `ARGUS_INTERVAL_MS`, `ARGUS_QUEUE_BOUND`,
-  `ARGUS_ENABLED`) + `argus.config.{js,json}`. Unknown `ARGUS_*` variables warn and are ignored.
+- ✅ Config via env vars (`PHARGUS_OUTPUT`, `PHARGUS_INTERVAL_MS`, `PHARGUS_QUEUE_BOUND`,
+  `PHARGUS_ENABLED`) + `phargus.config.{js,json}`. Unknown `PHARGUS_*` variables warn and are ignored.
 - 🟡 Works the same locally and in production. The agent does; the dashboard needs a collector
   process wired by you (see `examples/express-app`), and the default output is the app's stdout.
 - ⬜ Published to npm. On hold (S8); build from source for now.
@@ -47,7 +47,7 @@ Status legend:
 - ✅ Heap-snapshot summaries and diffing in the analyzer worker pool, with an input size cap.
 - ✅ Allocation sampling profiler capture (`sampleAllocations`, library API).
 - 🟡 Deoptimization detection: a bounded parser for `node --trace-deopt` output
-  (`createDeoptParser`). Nothing in Argus starts or captures that output; you feed the parser lines.
+  (`createDeoptParser`). Nothing in Phargus starts or captures that output; you feed the parser lines.
 - ✅ Stack-trace symbolization in a Worker Thread, with optional directory confinement (`roots`).
 
 ## 4. Data pipeline & export
@@ -57,7 +57,7 @@ Status legend:
   `stream/promises` `pipeline()`).
 - ✅ Integer-math aggregation (no float drift in counters).
 - ✅ OpenTelemetry export of windows (metrics) and spans (traces) as OTLP/HTTP JSON, in
-  `argus/otel`, outside the agent core. Bounded queue, timeouts, no redirects, bounded `close()`.
+  `@pharn-dev/phargus/otel`, outside the agent core. Bounded queue, timeouts, no redirects, bounded `close()`.
 
 ## 5. Dashboard
 
@@ -79,7 +79,7 @@ Status legend:
   and capped results (`maxFindings`, `maxResultBytes`).
 - ✅ A small bundled rule library (event loop lag, GC pause share, heap growth).
 - 🟡 Node Permission Model. The agent runs under `--permission` with file system grants only, and
-  the sandbox child inherits the host's permission flags. Argus does not turn the permission model
+  the sandbox child inherits the host's permission flags. Phargus does not turn the permission model
   on for you; you start Node with it. See `docs/PERMISSIONS.md`.
 
 ## 7. Analysis (Worker Threads)
@@ -116,7 +116,7 @@ Status legend:
 
 ## Out of scope — by identity, not by timeline
 
-These stay out even in the full build, because they contradict what Argus _is_
+These stay out even in the full build, because they contradict what Phargus _is_
 (lightweight, dependency-free, local-first). Cutting them is not deferral:
 
 - A hosted/SaaS backend or a required external collector service.

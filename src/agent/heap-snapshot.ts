@@ -22,17 +22,17 @@ export async function takeHeapSnapshot(options: HeapSnapshotOptions): Promise<He
     typeof options.dir !== 'string' ||
     options.dir === ''
   ) {
-    throw new TypeError('argus: takeHeapSnapshot requires options.dir to be a non-empty string');
+    throw new TypeError('phargus: takeHeapSnapshot requires options.dir to be a non-empty string');
   }
   if (inProgress) {
-    throw new Error('argus: a heap snapshot is already in progress');
+    throw new Error('phargus: a heap snapshot is already in progress');
   }
   inProgress = true;
   try {
     const dir = path.resolve(options.dir);
     counter += 1;
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filePath = path.join(dir, `argus-${stamp}-${process.pid}-${counter}.heapsnapshot`);
+    const filePath = path.join(dir, `phargus-${stamp}-${process.pid}-${counter}.heapsnapshot`);
     // Before any fs call: under --permission, stat() on an ungranted directory would throw
     // ERR_ACCESS_DENIED and be misreported as "directory does not exist".
     assertPermission('fs.write', filePath);
@@ -43,12 +43,12 @@ export async function takeHeapSnapshot(options: HeapSnapshotOptions): Promise<He
         throw new Error('not a directory');
       }
     } catch (cause) {
-      throw new Error(`argus: heap snapshot directory does not exist: ${dir}`, { cause });
+      throw new Error(`phargus: heap snapshot directory does not exist: ${dir}`, { cause });
     }
     try {
       await fs.promises.access(dir, fs.constants.W_OK);
     } catch (cause) {
-      throw new Error(`argus: heap snapshot directory is not writable: ${dir}`, { cause });
+      throw new Error(`phargus: heap snapshot directory is not writable: ${dir}`, { cause });
     }
 
     let writtenPath: string;
@@ -61,7 +61,7 @@ export async function takeHeapSnapshot(options: HeapSnapshotOptions): Promise<He
       } catch (rmError) {
         cleanup = `; cleanup also failed: ${rmError instanceof Error ? rmError.message : String(rmError)}`;
       }
-      throw new Error(`argus: heap snapshot write failed: ${filePath}${cleanup}`, { cause });
+      throw new Error(`phargus: heap snapshot write failed: ${filePath}${cleanup}`, { cause });
     }
 
     const { size } = await fs.promises.stat(writtenPath);

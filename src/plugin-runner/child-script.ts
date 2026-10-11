@@ -34,7 +34,7 @@ export function resolveChildScript(): string | Error {
   const directory = ownDirectory();
   if (directory === undefined) {
     return new Error(
-      'could not determine the directory of argus/plugin-runner to find the sandbox child',
+      'could not determine the directory of @pharn-dev/phargus/plugin-runner to find the sandbox child',
     );
   }
   const compiled = join(directory, 'workers', 'sandbox-child.js');

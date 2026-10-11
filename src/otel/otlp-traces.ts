@@ -8,8 +8,8 @@ import {
   type OtlpTracesRequest,
 } from './otlp-trace-types.js';
 
-const DEFAULT_SERVICE_NAME = 'argus';
-const SCOPE_NAME = 'argus';
+const DEFAULT_SERVICE_NAME = 'phargus';
+const SCOPE_NAME = 'phargus';
 const NANOS_PER_MS = 1_000_000n;
 
 // Anchored, fixed-length character classes: linear time, no backtracking.

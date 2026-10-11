@@ -22,7 +22,7 @@ type PluginRunnerModule = {
 };
 
 /** A specifier no installed package resolves to: the sandbox child cannot load it. */
-const MISSING_MODULE = 'argus-test-isolated-vm-that-does-not-exist';
+const MISSING_MODULE = 'phargus-test-isolated-vm-that-does-not-exist';
 
 const RULE_SOURCE = `return [];`;
 

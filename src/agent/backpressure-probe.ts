@@ -81,14 +81,14 @@ function emptyWindow(): Window {
 //   - A prototype is restored only while it still holds our wrapper (identity guard); a wrapper
 //     someone installed later is never removed.
 //   - The observer set and the active install live on `globalThis` under a `Symbol.for` key, with the
-//     same lifetime as the prototypes they patch. A second copy of Argus (ESM + CJS) joins the
+//     same lifetime as the prototypes they patch. A second copy of Phargus (ESM + CJS) joins the
 //     existing install instead of wrapping again, and the last probe disabled in either copy
 //     restores the prototypes.
 
 /** The stream whose `write()` returned false: a Writable, a Duplex or an `http.OutgoingMessage`. */
 type Observable = NodeJS.EventEmitter;
 type WriteFn = (this: unknown, ...args: unknown[]) => unknown;
-/** Shared by every Argus copy that uses the v1 registry; change `REGISTRY_KEY` if it changes. */
+/** Shared by every Phargus copy that uses the v1 registry; change `REGISTRY_KEY` if it changes. */
 type Observer = (stream: Observable, wrapper: WriteFn) => void;
 type Patch = {
   readonly target: { write?: unknown };
@@ -100,9 +100,9 @@ type Patch = {
 type Session = { readonly patches: Patch[]; suppress: number };
 type Registry = { readonly observers: Set<Observer>; session: Session | undefined };
 
-const REGISTRY_KEY = Symbol.for('argus.backpressure.v1');
+const REGISTRY_KEY = Symbol.for('phargus.backpressure.v1');
 /** Set on every wrapper; points at its install record so a later install can skip a dead layer. */
-const WRAPPER_KEY = Symbol.for('argus.backpressure.write');
+const WRAPPER_KEY = Symbol.for('phargus.backpressure.write');
 const MAX_PEEL = 64;
 
 function isRegistry(value: unknown): value is Registry {
@@ -140,7 +140,7 @@ function report(kind: string, error: unknown): void {
   const message = error instanceof Error ? error.message : String(error);
   process.emitWarning(
     `backpressure probe ${kind} failed: ${message} (further ${kind} failures are not reported)`,
-    'ArgusBackpressureWarning',
+    'PhargusBackpressureWarning',
   );
 }
 
@@ -253,7 +253,7 @@ function isDeadRecord(value: unknown): value is { active: false; original: Write
   );
 }
 
-/** Skip inactive Argus wrappers left on top of the chain (a third party restored one of them). */
+/** Skip inactive Phargus wrappers left on top of the chain (a third party restored one of them). */
 function peel(fn: WriteFn): WriteFn {
   let current = fn;
   for (let i = 0; i < MAX_PEEL; i += 1) {

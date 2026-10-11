@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Argus are recorded here. The format follows
+All notable changes to Phargus are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/). Releases are cut by hand; see
 [`docs/RELEASING.md`](./docs/RELEASING.md).
@@ -18,10 +18,10 @@ Nothing has been published to npm yet. Everything below is on `main`.
 - Manual release process with npm Trusted Publishing and provenance.
 - Agent: event loop delay and memory samplers driven by a sampler controller.
 - Agent: NDJSON export stream with bounded, drop-oldest backpressure, to stdout or a file.
-- Agent: configuration from `ARGUS_*` environment variables and `argus.config.{js,json}`.
+- Agent: configuration from `PHARGUS_*` environment variables and `phargus.config.{js,json}`.
 - Agent: GC sampler (count and pause times by kind) from `PerformanceObserver`.
 - Agent: stream backpressure probe that reports stalled writes by call site.
-- Agent: `require('argus/agent')` / `import 'argus/agent'` (or `--require`/`--import`) starts the
+- Agent: `require('@pharn-dev/phargus/agent')` / `import '@pharn-dev/phargus/agent'` (or `--require`/`--import`) starts the
   agent once per process.
 - Agent: automatic trace id per incoming `node:http`/`node:https` request through
   `AsyncLocalStorage`, honouring an incoming W3C `traceparent`; `currentTraceId()`.
@@ -31,30 +31,30 @@ Nothing has been published to npm yet. Everything below is on `main`.
 - Agent: a parser for `node --trace-deopt` output (`createDeoptParser`). It does not capture the
   output itself.
 - Agent: runs under the Node permission model; a denied grant disables only that feature with a
-  typed `ArgusPermissionError`; `isPermissionModelEnabled()` and `checkPermission()`.
+  typed `PhargusPermissionError`; `isPermissionModelEnabled()` and `checkPermission()`.
 - Agent: HTTP spans exported as NDJSON lines next to samples.
-- Collector (`argus/collector`): fixed time windows with integer math and ring buffers of recent
+- Collector (`@pharn-dev/phargus/collector`): fixed time windows with integer math and ring buffers of recent
   windows, alerts and spans.
 - Collector: window-based alerts with per-metric thresholds.
 - Collector: alert sinks for stdout, a file and a webhook (Node core `fetch`).
 - Collector: opt-in persistence of recent windows to an append-only file, restored on start.
-- Dashboard (`argus/dashboard`): SSE server with token gating for non-loopback binds.
+- Dashboard (`@pharn-dev/phargus/dashboard`): SSE server with token gating for non-loopback binds.
 - Dashboard: vanilla-JS live page with event loop, memory, GC, alerts and a trace waterfall of
   recent requests.
-- Analyzer (`argus/analyzer`): Worker Thread pool with heap-snapshot summaries and diffs.
+- Analyzer (`@pharn-dev/phargus/analyzer`): Worker Thread pool with heap-snapshot summaries and diffs.
 - Analyzer: source-map stack-trace symbolization on the worker pool.
-- Plugin runner (`argus/plugin-runner`): user rules in an `isolated-vm` sandbox in a child process,
+- Plugin runner (`@pharn-dev/phargus/plugin-runner`): user rules in an `isolated-vm` sandbox in a child process,
   with a memory limit and a timeout.
 - Plugin runner: built-in rules (event loop lag, GC pause share, heap growth) and
   `loadRulesDirectory`.
-- OpenTelemetry (`argus/otel`): opt-in OTLP/HTTP JSON export of windows as metrics and spans as
+- OpenTelemetry (`@pharn-dev/phargus/otel`): opt-in OTLP/HTTP JSON export of windows as metrics and spans as
   traces.
 - Examples: `examples/express-app` (agent in the app, collector and dashboard in a second process)
   and `examples/worker-pool`.
 - Agent: every sample line carries cumulative `dropped: { samples, spans }` loss counters.
 - Agent: `createDeoptParser({ maxEvents, maxLineLength })` and `droppedEvents()`.
-- Agent: `createSamplerController(onSample, { onError })`; new `ArgusSamplerWarning` and
-  `ArgusBackpressureWarning` process warnings.
+- Agent: `createSamplerController(onSample, { onError })`; new `PhargusSamplerWarning` and
+  `PhargusBackpressureWarning` process warnings.
 - Dashboard: `allowedHosts` option for names the dashboard is reached by (reverse proxy, container
   port mapping).
 - Collector and OpenTelemetry: `closeTimeoutMs` option on the webhook sink and the OTLP exporters;
@@ -71,11 +71,17 @@ Nothing has been published to npm yet. Everything below is on `main`.
 
 ### Changed
 
+- Renamed the project and npm package to Phargus (`@pharn-dev/phargus`). Imports and preloads now
+  use `@pharn-dev/phargus/<subpath>`; configuration uses `PHARGUS_*` environment variables and
+  `phargus.config.{js,json}`. Existing integrations must update those names.
+- Renamed public errors and warnings to `Phargus*`, error codes to `PHARGUS_*`, built-in rule IDs
+  and OpenTelemetry metric names to `phargus/...` and `phargus.*`, and the dashboard session
+  cookie to `phargus_token` (existing dashboard sessions must sign in again).
 - `engines.node` is now `>=22.18.0`, and `.nvmrc` pins `22.18.0`; required CI jobs run on that
   floor.
 - The package no longer ships declaration maps or the analyzer test fixture; `.js.map` files embed
   their sources.
-- Agent: an unknown `ARGUS_*` variable prints one warning on stderr and is ignored, instead of
+- Agent: an unknown `PHARGUS_*` variable prints one warning on stderr and is ignored, instead of
   disabling the agent.
 - Agent: samples and spans are queued in separate lanes, each bounded by `queueBound`; sample lines
   are written first.

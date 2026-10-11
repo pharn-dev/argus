@@ -13,11 +13,11 @@ the solution.
 
 ## Proposed solution
 
-What would you like Argus to do?
+What would you like Phargus to do?
 
-## Fit with Argus
+## Fit with Phargus
 
-Argus is in-process, dependency-free in the agent, and local-first. Please say how your idea fits:
+Phargus is in-process, dependency-free in the agent, and local-first. Please say how your idea fits:
 
 - Which module would own it? <!-- agent | collector | analyzer | dashboard | plugin-runner | new adapter -->
 - Would it need a third-party dependency? <!-- the agent cannot take one; adapters can be opt-in -->

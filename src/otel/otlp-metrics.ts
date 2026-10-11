@@ -31,43 +31,43 @@ type GaugeSpec = {
 
 const GAUGES: readonly GaugeSpec[] = [
   {
-    name: 'argus.event_loop.lag.max',
+    name: 'phargus.event_loop.lag.max',
     description: 'Maximum event loop lag in the window',
     unit: 'ns',
     read: (w) => w.eventLoop.max,
   },
   {
-    name: 'argus.event_loop.lag.p99',
+    name: 'phargus.event_loop.lag.p99',
     description: '99th percentile event loop lag in the window',
     unit: 'ns',
     read: (w) => w.eventLoop.p99,
   },
   {
-    name: 'argus.event_loop.lag.mean',
+    name: 'phargus.event_loop.lag.mean',
     description: 'Mean event loop lag in the window',
     unit: 'ns',
     read: (w) => w.eventLoop.mean,
   },
   {
-    name: 'argus.memory.heap_used.last',
+    name: 'phargus.memory.heap_used.last',
     description: 'Heap used at the end of the window',
     unit: 'By',
     read: (w) => w.memory.heapUsedLast,
   },
   {
-    name: 'argus.memory.heap_used.max',
+    name: 'phargus.memory.heap_used.max',
     description: 'Maximum heap used in the window',
     unit: 'By',
     read: (w) => w.memory.heapUsedMax,
   },
   {
-    name: 'argus.memory.rss.last',
+    name: 'phargus.memory.rss.last',
     description: 'Resident set size at the end of the window',
     unit: 'By',
     read: (w) => w.memory.rssLast,
   },
   {
-    name: 'argus.memory.rss.max',
+    name: 'phargus.memory.rss.max',
     description: 'Maximum resident set size in the window',
     unit: 'By',
     read: (w) => w.memory.rssMax,
@@ -99,7 +99,7 @@ export function toOtlpMetrics(
   }));
 
   metrics.push({
-    name: 'argus.gc.count',
+    name: 'phargus.gc.count',
     description: 'Garbage collections in the window',
     unit: '{collection}',
     sum: {
@@ -118,10 +118,10 @@ export function toOtlpMetrics(
       {
         resource: {
           attributes: [
-            { key: 'service.name', value: { stringValue: options.serviceName ?? 'argus' } },
+            { key: 'service.name', value: { stringValue: options.serviceName ?? 'phargus' } },
           ],
         },
-        scopeMetrics: [{ scope: { name: 'argus' }, metrics }],
+        scopeMetrics: [{ scope: { name: 'phargus' }, metrics }],
       },
     ],
   };

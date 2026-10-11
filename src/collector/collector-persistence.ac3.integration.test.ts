@@ -39,7 +39,7 @@ describe('collector persistence — AC-3', () => {
   it('AC-3: compacts the file to a contiguous tail of windows past maxBytes, surfaces append errors, and validates path and maxBytes', async () => {
     const collectorModule = (await import('./index.js')) as unknown as CollectorModule;
 
-    const dir = await mkdtemp(join(tmpdir(), 'argus-persist-ac3-'));
+    const dir = await mkdtemp(join(tmpdir(), 'phargus-persist-ac3-'));
     try {
       // Compaction past a small maxBytes.
       const path = join(dir, 'windows.ndjson');

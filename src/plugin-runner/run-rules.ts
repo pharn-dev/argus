@@ -31,7 +31,7 @@ export async function runRules(
     if (!hasStringId(rule)) {
       process.emitWarning(
         `rule at index ${index} has no string id and string source and was skipped`,
-        'ArgusRuleWarning',
+        'PhargusRuleWarning',
       );
       return;
     }
