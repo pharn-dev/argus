@@ -4,9 +4,10 @@
 
 Argus is a runtime diagnostics agent for Node.js. One line loads the agent into your process; it
 samples event loop lag, memory, GC and stream backpressure, traces incoming HTTP requests, and
-writes everything as NDJSON. A collector and a small dashboard, shipped in the same package, turn
-that stream into time windows, alerts and a live page in your browser. The agent has **zero
-external dependencies**: no hosted account, no separate collector service to deploy.
+writes everything as NDJSON. An optional collector and a small dashboard, shipped in the same
+package, turn that stream into time windows, alerts and a live page in your browser. They are
+libraries you run in your own process, not a service: the agent works on its own and has **zero
+external dependencies**, with no hosted account and no separate backend to deploy.
 
 > **Status: pre-release, not published to npm.** Roadmap steps S0 to S7 are implemented on `main`
 > (agent, collector, dashboard, tracing, V8 and memory depth, plugin runner, OpenTelemetry export;
