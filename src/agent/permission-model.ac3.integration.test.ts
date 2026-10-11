@@ -25,7 +25,7 @@ function agentSources(): string[] {
     .map((f) => join(agentDir, f));
 }
 
-/** Compiles src/agent to CommonJS — what `require('argus/agent')` loads through the `require` condition. */
+/** Compiles src/agent to CommonJS — what `require('phargus/agent')` loads through the `require` condition. */
 function compileCjs(sources: string[], outDir: string): void {
   const result = spawnSync(
     process.execPath,
@@ -66,9 +66,9 @@ function compileCjs(sources: string[], outDir: string): void {
   writeFileSync(join(outDir, '..', 'package.json'), JSON.stringify({ type: 'commonjs' }));
 }
 
-/** A private copy of the package named "argus" (real `exports`), under a realpath'd temp root. */
+/** A private copy of the package named "phargus" (real `exports`), under a realpath'd temp root. */
 function buildTempPackage(): string {
-  const pkgDir = realpathSync(mkdtempSync(join(tmpdir(), 'argus-perm-ac3-')));
+  const pkgDir = realpathSync(mkdtempSync(join(tmpdir(), 'phargus-perm-ac3-')));
   const cjsDir = join(pkgDir, 'dist', 'cjs', 'agent');
   mkdirSync(cjsDir, { recursive: true });
   compileCjs(agentSources(), cjsDir);
@@ -78,7 +78,7 @@ function buildTempPackage(): string {
   writeFileSync(
     join(pkgDir, 'package.json'),
     JSON.stringify({
-      name: 'argus',
+      name: 'phargus',
       version: '0.0.0',
       private: true,
       type: 'module',
@@ -100,11 +100,11 @@ afterAll(() => {
   }
 });
 
-/** The child's env: the parent's minus every ARGUS_* name (an unknown one warns on stderr). */
+/** The child's env: the parent's minus every PHARGUS_* name (an unknown one warns on stderr). */
 function childEnv(extra: Record<string, string>): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
   for (const [name, value] of Object.entries(process.env)) {
-    if (value === undefined || name.startsWith('ARGUS_') || name === 'NODE_OPTIONS') {
+    if (value === undefined || name.startsWith('PHARGUS_') || name === 'NODE_OPTIONS') {
       continue;
     }
     env[name] = value;
@@ -114,14 +114,14 @@ function childEnv(extra: Record<string, string>): NodeJS.ProcessEnv {
 
 // Calls takeHeapSnapshot({ dir }) through the package entry and prints the outcome as one JSON line.
 const APP = [
-  "const agent = require('argus/agent');",
+  "const agent = require('phargus/agent');",
   'const dir = process.argv[2];',
   'agent.takeHeapSnapshot({ dir }).then(',
   '  (result) => {',
   '    console.log(JSON.stringify({ ok: true, path: result.path }));',
   '  },',
   '  (err) => {',
-  '    const Typed = agent.ArgusPermissionError;',
+  '    const Typed = agent.PhargusPermissionError;',
   '    console.log(',
   '      JSON.stringify({',
   '        ok: false,',
@@ -160,7 +160,7 @@ function runChild(
   }
   return spawnSync(process.execPath, [...flags, app, dir], {
     cwd: root,
-    env: childEnv({ ARGUS_OUTPUT: 'none' }),
+    env: childEnv({ PHARGUS_OUTPUT: 'none' }),
     encoding: 'utf8',
     timeout: 120_000,
   });
@@ -180,7 +180,7 @@ function snapshotFilesIn(dir: string): string[] {
   return readdirSync(dir).filter((f) => f.endsWith('.heapsnapshot'));
 }
 
-describe('argus/agent takeHeapSnapshot under --permission — AC-3', () => {
+describe('phargus/agent takeHeapSnapshot under --permission — AC-3', () => {
   it('AC-3: with an fs-write grant for the directory the snapshot is written inside it; without one the call rejects with the typed permission error (scope fs.write, absolute resource inside the directory), no .heapsnapshot is left and the child exits 0', () => {
     const root = tempPackage();
 

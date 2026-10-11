@@ -1,5 +1,5 @@
-import { createCollector } from 'argus/collector';
-import { createDashboardServer } from 'argus/dashboard';
+import { createCollector } from '@pharn-dev/phargus/collector';
+import { createDashboardServer } from '@pharn-dev/phargus/dashboard';
 import { fork } from 'node:child_process';
 import { pipeline } from 'node:stream/promises';
 import { fileURLToPath } from 'node:url';
@@ -128,8 +128,8 @@ async function main() {
     stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
     env: {
       ...process.env,
-      ARGUS_OUTPUT: 'stdout',
-      ARGUS_INTERVAL_MS: process.env.ARGUS_INTERVAL_MS ?? DEFAULT_INTERVAL_MS,
+      PHARGUS_OUTPUT: 'stdout',
+      PHARGUS_INTERVAL_MS: process.env.PHARGUS_INTERVAL_MS ?? DEFAULT_INTERVAL_MS,
       APP_PORT: String(appPort),
     },
   });

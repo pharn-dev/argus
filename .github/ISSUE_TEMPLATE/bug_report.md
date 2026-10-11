@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Argus behaves incorrectly, crashes, or slows down the monitored process
+about: Phargus behaves incorrectly, crashes, or slows down the monitored process
 title: '[bug] '
 labels: bug
 assignees: ''
@@ -10,11 +10,11 @@ assignees: ''
 
 A clear description of the bug.
 
-## Which part of Argus
+## Which part of Phargus
 
 - **Module**: <!-- agent | collector | analyzer | dashboard | plugin-runner | examples -->
-- **Argus version** (`npm ls argus`, or the commit SHA if built from source):
-- **How it is loaded**: <!-- require('argus/agent') | import 'argus/agent' | node --require argus/agent -->
+- **Phargus version** (`npm ls @pharn-dev/phargus`, or the commit SHA if built from source):
+- **How it is loaded**: <!-- require('@pharn-dev/phargus/agent') | import '@pharn-dev/phargus/agent' | node --require @pharn-dev/phargus/agent -->
 
 ## Steps to reproduce
 
@@ -31,9 +31,9 @@ What you expected to happen.
 ## Actual behavior
 
 What actually happened. Paste relevant output, and **redact tokens, URLs with credentials, and any
-other sensitive data** — Argus output can contain request paths, headers and heap contents.
+other sensitive data** — Phargus output can contain request paths, headers and heap contents.
 
-## Overhead report (only if the bug is "Argus slows my app down")
+## Overhead report (only if the bug is "Phargus slows my app down")
 
 - Measured with agent on vs. off? <!-- how: autocannon, k6, production metrics, ... -->
 - Throughput / latency difference:
@@ -49,4 +49,4 @@ other sensitive data** — Argus output can contain request paths, headers and h
 
 ## Additional context
 
-Anything else that helps — your `argus.config.*`, relevant env vars (values redacted), or logs.
+Anything else that helps — your `phargus.config.*`, relevant env vars (values redacted), or logs.

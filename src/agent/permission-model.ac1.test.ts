@@ -1,7 +1,7 @@
 import { isAbsolute, join, resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
-const RELATIVE_PATH = join('argus-ac1-out', 'samples.ndjson');
+const RELATIVE_PATH = join('phargus-ac1-out', 'samples.ndjson');
 
 /** The descriptor `process.permission` had before a stub, restored after each test. */
 let savedDescriptor: PropertyDescriptor | undefined;
@@ -66,11 +66,11 @@ describe('agent permission helper — AC-1', () => {
   });
 
   it('AC-1: the typed permission error from the agent entrypoint is an Error exposing the denied scope and resource as given', async () => {
-    const { ArgusPermissionError } = await import('./index.js');
+    const { PhargusPermissionError } = await import('./index.js');
 
-    const err: unknown = new ArgusPermissionError('fs.write', '/abs/x');
+    const err: unknown = new PhargusPermissionError('fs.write', '/abs/x');
     expect(err).toBeInstanceOf(Error);
-    expect(err).toBeInstanceOf(ArgusPermissionError);
+    expect(err).toBeInstanceOf(PhargusPermissionError);
     expect((err as { scope: unknown }).scope).toBe('fs.write');
     expect((err as { resource: unknown }).resource).toBe('/abs/x');
     expect(typeof (err as Error).message).toBe('string');

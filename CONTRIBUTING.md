@@ -1,16 +1,16 @@
-# Contributing to Argus
+# Contributing to Phargus
 
-Thanks for your interest in Argus — _all-seeing runtime diagnostics for Node.js._
+Thanks for your interest in Phargus — _all-seeing runtime diagnostics for Node.js._
 
 ## Project shape
 
-Argus is a single npm package. Its six modules live under `src/` (`agent`, `collector`,
+Phargus is a single npm package. Its six modules live under `src/` (`agent`, `collector`,
 `analyzer`, `dashboard`, `plugin-runner`, `otel`) and are exposed as subpath exports such as
-`argus/agent`. See `ARCHITECTURE.md` for how they fit together and `CLAUDE.md` for the hard rules.
+`@pharn-dev/phargus/agent`. See `ARCHITECTURE.md` for how they fit together and `CLAUDE.md` for the hard rules.
 
 ## Getting set up
 
-Argus uses **npm**. Use the Node version in `.nvmrc` (22.18.0, the supported floor; `engines.node`
+Phargus uses **npm**. Use the Node version in `.nvmrc` (22.18.0, the supported floor; `engines.node`
 is `>=22.18.0`).
 
 ```bash
@@ -61,11 +61,15 @@ workers and child processes). See `bench/README.md`.
 
 ## Threat model and limits
 
-Argus's own security design is in [`docs/THREAT-MODEL.md`](./docs/THREAT-MODEL.md) and its
+Phargus's own security design is in [`docs/THREAT-MODEL.md`](./docs/THREAT-MODEL.md) and its
 limits in [`docs/LIMITS.md`](./docs/LIMITS.md). A change that adds a network listener, a place data
 is written or sent, or parsing of untrusted input needs a row in the threat model in the same PR.
 (PHARN, the owner's development tooling, keeps its own threat model and limits in `pharn/`;
 `.gitattributes` marks `pharn/` and `.claude/` as vendored, and none of it ships in the package.)
+
+Completed records under `pharn/features/` are historical snapshots of the code at their recorded
+commits. Their original project names, test titles and hash pins are retained; current package
+names and configuration are documented in `README.md`.
 
 ## The rules that PRs are checked against
 

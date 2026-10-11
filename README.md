@@ -1,8 +1,8 @@
-# Argus
+# Phargus
 
 > All-seeing runtime diagnostics for Node.js.
 
-Argus is a runtime diagnostics agent for Node.js. One line loads the agent into your process; it
+Phargus is a runtime diagnostics agent for Node.js. One line loads the agent into your process; it
 samples event loop lag, memory, GC and stream backpressure, traces incoming HTTP requests, and
 writes everything as NDJSON. An optional collector and a small dashboard, shipped in the same
 package, turn that stream into time windows, alerts and a live page in your browser. They are
@@ -11,17 +11,16 @@ external dependencies**, with no hosted account and no separate backend to deplo
 
 > **Status: pre-release, not published to npm.** Roadmap steps S0 to S7 are implemented on `main`
 > (agent, collector, dashboard, tracing, V8 and memory depth, plugin runner, OpenTelemetry export;
-> see [`ROADMAP.md`](./ROADMAP.md)). The first release (S8) is on hold. `package.json` is
-> `private: true` and the name `argus` is taken on npm, so the published name will differ. To try
-> it today, build it from source (below).
+> see [`ROADMAP.md`](./ROADMAP.md)). The package name is `@pharn-dev/phargus`; the first npm
+> publish is still pending. To try it today, build it from source (below).
 
-## Why Argus
+## Why Phargus
 
 - [clinic.js](https://clinicjs.org/) is heavy and one-shot: capture, then analyze offline.
 - OpenTelemetry is powerful but takes real setup for a quick look.
 - Hosted APMs cost money and require an account.
 
-Argus is meant for a quick look at a live process: one line, in-process, no account. The agent's
+Phargus is meant for a quick look at a live process: one line, in-process, no account. The agent's
 zero-dependency rule is never relaxed.
 
 ## Requirements
@@ -30,15 +29,23 @@ zero-dependency rule is never relaxed.
 floor). On Node 22, request tracing is noticeably more expensive for promise-heavy code than on
 Node 24; see [`docs/LIMITS.md`](./docs/LIMITS.md#1-cost-and-overhead).
 
+## Install
+
+Once the first release is published:
+
+```bash
+npm install @pharn-dev/phargus
+```
+
 ## Try it from source
 
 ```bash
-git clone https://github.com/pharn-dev/argus.git
-cd argus
+git clone https://github.com/pharn-dev/phargus.git
+cd phargus
 npm ci
-npm pack                       # builds dist/ and writes argus-0.0.1.tgz
+npm pack                       # builds dist/ and writes pharn-dev-phargus-0.0.1.tgz
 cd /path/to/your-app
-npm install /path/to/argus/argus-0.0.1.tgz
+npm install /path/to/phargus/pharn-dev-phargus-0.0.1.tgz
 ```
 
 ## Usage
@@ -47,45 +54,45 @@ Load the agent first, before your own code:
 
 ```js
 // CommonJS
-require('argus/agent');
+require('@pharn-dev/phargus/agent');
 
 // ESM
-import 'argus/agent';
+import '@pharn-dev/phargus/agent';
 ```
 
 Or with no source edit:
 
 ```bash
-node --require argus/agent app.js     # CommonJS app
-node --import argus/agent app.mjs     # ESM app
+node --require @pharn-dev/phargus/agent app.js     # CommonJS app
+node --import @pharn-dev/phargus/agent app.mjs     # ESM app
 ```
 
 By default the agent writes one sample line per second (about 2 KB) to **your process's stdout**,
-plus one line per traced request. Choose the destination with `ARGUS_OUTPUT`:
+plus one line per traced request. Choose the destination with `PHARGUS_OUTPUT`:
 
-| Variable            | Default  | Meaning                                                   |
-| ------------------- | -------- | --------------------------------------------------------- |
-| `ARGUS_OUTPUT`      | `stdout` | `stdout`, `none` (agent off), or a file path              |
-| `ARGUS_INTERVAL_MS` | `1000`   | sampling interval                                         |
-| `ARGUS_QUEUE_BOUND` | `1024`   | lines held per output queue before the oldest are dropped |
-| `ARGUS_ENABLED`     | `true`   | `false` or `0` turns the agent off                        |
+| Variable              | Default  | Meaning                                                   |
+| --------------------- | -------- | --------------------------------------------------------- |
+| `PHARGUS_OUTPUT`      | `stdout` | `stdout`, `none` (agent off), or a file path              |
+| `PHARGUS_INTERVAL_MS` | `1000`   | sampling interval                                         |
+| `PHARGUS_QUEUE_BOUND` | `1024`   | lines held per output queue before the oldest are dropped |
+| `PHARGUS_ENABLED`     | `true`   | `false` or `0` turns the agent off                        |
 
-The same keys (`output`, `intervalMs`, `queueBound`, `enabled`) can go in `argus.config.json` or
-`argus.config.js` in the working directory. An unknown `ARGUS_*` variable prints one warning on
-stderr and is ignored. An invalid value disables the agent with one `[argus] agent disabled: ...`
+The same keys (`output`, `intervalMs`, `queueBound`, `enabled`) can go in `phargus.config.json` or
+`phargus.config.js` in the working directory. An unknown `PHARGUS_*` variable prints one warning on
+stderr and is ignored. An invalid value disables the agent with one `[phargus] agent disabled: ...`
 line on stderr; your app keeps running.
 
 ### Getting to the dashboard
 
-The agent does not start a server. You wire `argus/collector` and `argus/dashboard` to the agent's
+The agent does not start a server. You wire `@pharn-dev/phargus/collector` and `@pharn-dev/phargus/dashboard` to the agent's
 NDJSON, usually in a second process. A minimal version, assuming your app writes nothing else to
 stdout:
 
 ```js
-// collect.mjs — run as: node --import argus/agent app.mjs | node collect.mjs
+// collect.mjs — run as: node --import @pharn-dev/phargus/agent app.mjs | node collect.mjs
 import { createInterface } from 'node:readline';
-import { createCollector } from 'argus/collector';
-import { createDashboardServer } from 'argus/dashboard';
+import { createCollector } from '@pharn-dev/phargus/collector';
+import { createDashboardServer } from '@pharn-dev/phargus/dashboard';
 
 async function* records(input) {
   for await (const line of createInterface({ input, crlfDelay: Infinity })) {
@@ -95,7 +102,7 @@ async function* records(input) {
 
 const collector = createCollector({ windowMs: 1000, capacity: 300 });
 const dashboard = await createDashboardServer({ collector, host: '127.0.0.1', port: 7070 });
-process.stderr.write(`argus dashboard on ${dashboard.url}\n`);
+process.stderr.write(`phargus dashboard on ${dashboard.url}\n`);
 await collector.consume(records(process.stdin));
 ```
 
@@ -131,18 +138,18 @@ its stdout into a collector with an alert rule, serves the dashboard, and shuts 
 - **Loss accounting**: output queues are bounded and drop the oldest lines; every sample line
   carries cumulative `dropped: { samples, spans }` counters.
 - **V8 and memory tools** (library API): on-demand heap snapshots (`takeHeapSnapshot`), snapshot
-  summaries and diffs and stack-trace symbolization in a Worker Thread pool (`argus/analyzer`),
+  summaries and diffs and stack-trace symbolization in a Worker Thread pool (`@pharn-dev/phargus/analyzer`),
   allocation sampling (`sampleAllocations`), and a parser for `node --trace-deopt` output
   (`createDeoptParser`). The parser does not capture that output; you feed it the lines.
-- **Collector** (`argus/collector`): fixed time windows with integer math, threshold alerts, alert
+- **Collector** (`@pharn-dev/phargus/collector`): fixed time windows with integer math, threshold alerts, alert
   sinks (stdout, file, webhook), and opt-in persistence of recent windows to an append-only file.
-- **Dashboard** (`argus/dashboard`): vanilla JS, no framework, no bundler, live over Server-Sent
+- **Dashboard** (`@pharn-dev/phargus/dashboard`): vanilla JS, no framework, no bundler, live over Server-Sent
   Events. Shows the latest event loop, memory and GC figures, alerts, and a waterfall of recent
   requests.
-- **Custom rules** (`argus/plugin-runner`): user rules run in an `isolated-vm` sandbox in a child
+- **Custom rules** (`@pharn-dev/phargus/plugin-runner`): user rules run in an `isolated-vm` sandbox in a child
   process, with a memory limit, a timeout and capped results. `isolated-vm` is an optional peer
   dependency.
-- **OpenTelemetry export** (`argus/otel`): opt-in OTLP/HTTP JSON export of windows as metrics and
+- **OpenTelemetry export** (`@pharn-dev/phargus/otel`): opt-in OTLP/HTTP JSON export of windows as metrics and
   spans as traces, using Node core `fetch` only.
 
 [`FEATURES.md`](./FEATURES.md) lists the full scope with the status of each item.
@@ -150,27 +157,27 @@ its stdout into a collector with an alert rule, serves the dashboard, and shuts 
 ## How it fits together
 
 ```
-your process                                 a second process (or the same one)
-┌──────────────────────────────┐             ┌──────────────────────────────────────────┐
-│ app code                     │   NDJSON    │ argus/collector: windows, alerts, sinks  │
-│ argus/agent: samplers,       │  (stdout or │ argus/dashboard: SSE to the browser      │
-│ HTTP tracing, bounded output │ ─ a file) ─▶│ argus/otel, argus/plugin-runner (opt-in) │
-└──────────────────────────────┘             └──────────────────────────────────────────┘
+your process                          a second process (or the same one)
+┌──────────────────────────────┐      ┌──────────────────────────────────────────┐
+│ app code                     │      │ collector: windows, alerts, sinks        │
+│ agent: samplers,             │NDJSON│ dashboard: SSE to the browser            │
+│ HTTP tracing, bounded output │─────▶│ otel, plugin-runner (opt-in)              │
+└──────────────────────────────┘      └──────────────────────────────────────────┘
 ```
 
 The agent never waits for the consumer: if the reader is slow, the agent drops the oldest queued
 lines and counts them, so a slow consumer cannot slow your app.
 
-| Module (`src/…`) | Import as             | Role                                                            |
-| ---------------- | --------------------- | --------------------------------------------------------------- |
-| `agent`          | `argus/agent`         | Samples and traces inside your process. Node core only.         |
-| `collector`      | `argus/collector`     | Aggregates samples into windows and alerts (stream pipeline).   |
-| `analyzer`       | `argus/analyzer`      | Heap-snapshot and stack-trace analysis in Worker Threads.       |
-| `dashboard`      | `argus/dashboard`     | SSE server and static UI over a collector.                      |
-| `plugin-runner`  | `argus/plugin-runner` | Optional sandbox for user-written diagnostic rules.             |
-| `otel`           | `argus/otel`          | Opt-in OTLP/HTTP JSON metrics and trace export. Node core only. |
+| Module (`src/…`) | Import as                          | Role                                                            |
+| ---------------- | ---------------------------------- | --------------------------------------------------------------- |
+| `agent`          | `@pharn-dev/phargus/agent`         | Samples and traces inside your process. Node core only.         |
+| `collector`      | `@pharn-dev/phargus/collector`     | Aggregates samples into windows and alerts (stream pipeline).   |
+| `analyzer`       | `@pharn-dev/phargus/analyzer`      | Heap-snapshot and stack-trace analysis in Worker Threads.       |
+| `dashboard`      | `@pharn-dev/phargus/dashboard`     | SSE server and static UI over a collector.                      |
+| `plugin-runner`  | `@pharn-dev/phargus/plugin-runner` | Optional sandbox for user-written diagnostic rules.             |
+| `otel`           | `@pharn-dev/phargus/otel`          | Opt-in OTLP/HTTP JSON metrics and trace export. Node core only. |
 
-Argus is one npm package: the six modules are subpath exports, shipped as both ESM and CommonJS.
+Phargus is one npm package: the six modules are subpath exports, shipped as both ESM and CommonJS.
 See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the data flow and module boundaries.
 
 ## Safety and limits

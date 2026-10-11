@@ -29,7 +29,7 @@ let pool: WorkerPool;
 
 beforeAll(async () => {
   // tmpdir() is itself behind a symlink on macOS (/var -> /private/var): roots must still match.
-  base = await mkdtemp(join(tmpdir(), 'argus-roots-'));
+  base = await mkdtemp(join(tmpdir(), 'phargus-roots-'));
   root = join(base, 'app');
   outside = join(base, 'outside');
   await mkdir(join(root, 'dist'), { recursive: true });

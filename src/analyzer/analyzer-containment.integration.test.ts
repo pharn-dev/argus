@@ -71,7 +71,7 @@ function runNode(args: string[], timeoutMs: number): ChildResult {
 let dir: string;
 
 beforeAll(async () => {
-  dir = await mkdtemp(join(tmpdir(), 'argus-containment-'));
+  dir = await mkdtemp(join(tmpdir(), 'phargus-containment-'));
 });
 
 afterAll(async () => {

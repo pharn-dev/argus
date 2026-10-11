@@ -1,4 +1,4 @@
-# Argus — Architecture
+# Phargus — Architecture
 
 This document is the "how it fits together" companion to `CLAUDE.md`. Read
 `CLAUDE.md` first for rules and constraints.
@@ -18,7 +18,7 @@ that reads the app's stdout, so aggregation and serving never use the app's even
 ┌──────────────── monitored Node.js process ─────────────────┐
 │ user app code (no instrumentation required)                │
 │                                                            │
-│ argus/agent  (Node core only)                              │
+│ @pharn-dev/phargus/agent  (Node core only)                              │
 │  ├─ HTTP tracing: diagnostics_channel + Server#emit wrap,  │
 │  │  AsyncLocalStorage → traceId per incoming request       │
 │  ├─ samplers: event loop delay, memory, heap spaces,       │
@@ -31,16 +31,16 @@ that reads the app's stdout, so aggregation and serving never use the app's even
                               │ NDJSON (sample lines carry dropped counters)
                               ▼
 ┌──────── collector / dashboard process (wired by the user) ─────────┐
-│ argus/collector                                                    │
+│ @pharn-dev/phargus/collector                                                    │
 │  └─ pipeline(): spans → ring buffer │ samples → windows →          │
 │     persistence (opt-in) → alerts → sinks (stdout/file/webhook)    │
 │        │ subscribe()                                               │
-│        ├─▶ argus/dashboard: HTTP server, static UI, SSE /events    │
-│        ├─▶ argus/otel: OTLP/HTTP JSON metrics and traces (opt-in)  │
-│        └─▶ argus/plugin-runner: rules over windows (opt-in)        │
+│        ├─▶ @pharn-dev/phargus/dashboard: HTTP server, static UI, SSE /events    │
+│        ├─▶ @pharn-dev/phargus/otel: OTLP/HTTP JSON metrics and traces (opt-in)  │
+│        └─▶ @pharn-dev/phargus/plugin-runner: rules over windows (opt-in)        │
 │             └─ child process → isolated-vm (memory + time limit)   │
 │                                                                    │
-│ argus/analyzer (independent): Worker Thread pool for heap-snapshot │
+│ @pharn-dev/phargus/analyzer (independent): Worker Thread pool for heap-snapshot │
 │ summaries/diffs and stack-trace symbolization                      │
 └───────────────────────────────┬────────────────────────────────────┘
                                 │ SSE
@@ -53,7 +53,7 @@ that reads the app's stdout, so aggregation and serving never use the app's even
 
 ## Data flow, step by step
 
-1. **Collection (agent).** `import 'argus/agent'` (or `--require`/`--import`) starts the agent once
+1. **Collection (agent).** `import '@pharn-dev/phargus/agent'` (or `--require`/`--import`) starts the agent once
    per process. Tracing subscribes to the `http.server.request.start` and
    `http.server.response.finish` diagnostics channels and wraps `Server.prototype.emit` for
    `node:http` and `node:https`, so each request's handler runs inside an `AsyncLocalStorage`
@@ -76,8 +76,8 @@ that reads the app's stdout, so aggregation and serving never use the app's even
 4. **Delivery (dashboard).** `createDashboardServer({ collector, host, port })` subscribes to the
    collector and serves the UI and an SSE endpoint. Each SSE client has its own bounded queue; a
    stalled client loses its oldest events, never the server's memory.
-5. **Export and rules (optional).** `argus/otel` exporters subscribe to the collector and send
-   windows as OTLP metrics and spans as OTLP traces. `argus/plugin-runner` runs user rules over a
+5. **Export and rules (optional).** `@pharn-dev/phargus/otel` exporters subscribe to the collector and send
+   windows as OTLP metrics and spans as OTLP traces. `@pharn-dev/phargus/plugin-runner` runs user rules over a
    copy of recent windows in a sandboxed child process.
 6. **Heavy analysis (analyzer).** Heap-snapshot summaries and diffs and stack-trace symbolization
    run in a Worker Thread pool with `resourceLimits`, a task timeout and input size caps, so the
@@ -88,13 +88,13 @@ that reads the app's stdout, so aggregation and serving never use the app's even
 
 ## Module boundaries (who may import what)
 
-- `src/agent` (`argus/agent`) — Node core only. **No imports from other modules, no
+- `src/agent` (`@pharn-dev/phargus/agent`) — Node core only. **No imports from other modules, no
   third-party deps** (an ESLint rule enforces this).
 - `src/collector` — consumes agent output; owns the stream pipeline.
 - `src/analyzer` — Worker Threads only; pure CPU work, no app coupling.
 - `src/dashboard` — SSE server + static UI; reads from collector output.
 - `src/plugin-runner` — isolated-vm sandbox; reads aggregated data only.
-- `src/otel` (`argus/otel`) — opt-in OTLP/HTTP JSON metrics and trace export; Node core only,
+- `src/otel` (`@pharn-dev/phargus/otel`) — opt-in OTLP/HTTP JSON metrics and trace export; Node core only,
   reads collector output. The agent never imports it.
 
 `async_hooks` is imported in exactly one file: `src/agent/context.ts`.
@@ -115,9 +115,9 @@ that reads the app's stdout, so aggregation and serving never use the app's even
 
 ## Build & module setup
 
-- One npm package (`argus`); the six modules live under `src/` and are exposed as subpath
-  exports (`argus/agent`, `argus/collector`, `argus/analyzer`, `argus/dashboard`,
-  `argus/plugin-runner`, `argus/otel`).
+- One npm package (`phargus`); the six modules live under `src/` and are exposed as subpath
+  exports (`@pharn-dev/phargus/agent`, `@pharn-dev/phargus/collector`, `@pharn-dev/phargus/analyzer`, `@pharn-dev/phargus/dashboard`,
+  `@pharn-dev/phargus/plugin-runner`, `@pharn-dev/phargus/otel`).
 - `tsconfig.base.json` (strict) shared by two builds: `tsconfig.esm.json` →
   `dist/esm`, `tsconfig.cjs.json` → `dist/cjs` (`npm run build`).
 - Every subpath ships dual ESM + CJS with a correct `exports` entry (separate types per format).

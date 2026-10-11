@@ -5,7 +5,7 @@ import type { AddressInfo } from 'node:net';
 import { Duplex, Writable } from 'node:stream';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// Regression tests for F-01, F-13 and F-22 (production-readiness audit): Argus must never leave a
+// Regression tests for F-01, F-13 and F-22 (production-readiness audit): Phargus must never leave a
 // prototype method that throws, and never remove a wrapper a third party installed after it.
 
 type Sample = { events: number; hotspots: { site: string }[] };
@@ -42,7 +42,7 @@ afterEach(() => {
   emitTargets.forEach((target, i) => restoreDescriptor(target, 'emit', pristineEmit[i]));
 });
 
-/** A fresh, independent evaluation of the probe module: a second "copy" of Argus. */
+/** A fresh, independent evaluation of the probe module: a second "copy" of Phargus. */
 async function loadProbeCopy(): Promise<ProbeModule> {
   vi.resetModules();
   return (await import('./backpressure-probe.js')) as unknown as ProbeModule;
@@ -137,14 +137,14 @@ describe('prototype patch safety — backpressure probe write wrappers (F-01)', 
     },
   );
 
-  it('an inactive Argus wrapper that a third party restored on top is skipped by the next enable()', async () => {
+  it('an inactive Phargus wrapper that a third party restored on top is skipped by the next enable()', async () => {
     const original = Writable.prototype.write;
     const { createBackpressureProbe } = await loadProbeCopy();
     const probe = track(createBackpressureProbe());
     probe.enable();
     const foreign = installForeignWrite(Writable.prototype);
     probe.disable();
-    // The third party uninstalls itself by restoring what it saw: Argus's now-inactive wrapper.
+    // The third party uninstalls itself by restoring what it saw: Phargus's now-inactive wrapper.
     (Writable.prototype as { write: AnyFn }).write = foreign.beneath;
 
     const { stream, received } = sink(Writable);
@@ -226,7 +226,7 @@ describe('prototype patch safety — backpressure probe write wrappers (F-01)', 
     }).not.toThrow();
     expect(result).toBe(false);
     await new Promise<void>((resolve) => setImmediate(resolve));
-    expect(warnings.some((w) => w.name === 'ArgusBackpressureWarning')).toBe(true);
+    expect(warnings.some((w) => w.name === 'PhargusBackpressureWarning')).toBe(true);
     probe.disable();
   });
 });
@@ -236,7 +236,7 @@ describe('prototype patch safety — write wrapper arity and arguments (F-22)', 
     const lengths = writeTargets.map((target) => (target as { write: AnyFn }).write.length);
     expect(lengths).toEqual([3, 3, 3]);
 
-    // A spy beneath Argus's wrapper records how many arguments reach the original.
+    // A spy beneath Phargus's wrapper records how many arguments reach the original.
     const counts: number[] = [];
     const holder = Writable.prototype as unknown as { write: AnyFn };
     const beneath = holder.write;

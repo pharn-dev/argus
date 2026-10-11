@@ -94,7 +94,7 @@ describe('backpressure probe — stream kinds (F-03)', () => {
   });
 
   it('fs.WriteStream: stall then drain is one event', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'argus-bp-kinds-'));
+    const dir = mkdtempSync(join(tmpdir(), 'phargus-bp-kinds-'));
     cleanups.push(() => rmSync(dir, { recursive: true, force: true }));
     const stream = createWriteStream(join(dir, 'out.txt'), { highWaterMark: 1 });
     const probe = enabledProbe();

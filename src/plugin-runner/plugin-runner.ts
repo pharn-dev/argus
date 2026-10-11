@@ -16,12 +16,12 @@ export type PluginRunnerOptions = {
   isolatedVmModule?: string;
   /**
    * Most findings one rule run may return; a rule returning more fails with
-   * ARGUS_RULE_INVALID_RESULT. Default 10 000.
+   * PHARGUS_RULE_INVALID_RESULT. Default 10 000.
    */
   maxFindings?: number;
   /**
    * Most bytes of JSON one rule's result may serialize to; a larger result fails with
-   * ARGUS_RULE_INVALID_RESULT before it leaves the sandbox. Default 1 MiB.
+   * PHARGUS_RULE_INVALID_RESULT before it leaves the sandbox. Default 1 MiB.
    */
   maxResultBytes?: number;
 };
@@ -136,7 +136,7 @@ export function createPluginRunner(options: PluginRunnerOptions = {}): PluginRun
         await sandbox?.kill();
       } catch (error) {
         process.emitWarning(
-          `argus plugin-runner: closing the sandbox failed: ${error instanceof Error ? error.message : String(error)}`,
+          `phargus plugin-runner: closing the sandbox failed: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     })();

@@ -205,7 +205,7 @@ describe('dashboard token exchange (no token in URLs)', () => {
     expect(cookies).toHaveLength(1);
     const setCookie = cookies[0] ?? '';
     const attributes = setCookie.split(';').map((part) => part.trim().toLowerCase());
-    expect(attributes[0]).toMatch(/^argus_token=[A-Za-z0-9_-]{20,}$/i);
+    expect(attributes[0]).toMatch(/^phargus_token=[A-Za-z0-9_-]{20,}$/i);
     expect(attributes).toContain('httponly');
     expect(attributes).toContain('samesite=strict');
     expect(attributes).toContain('path=/');
@@ -240,7 +240,7 @@ describe('dashboard token exchange (no token in URLs)', () => {
     expect(bearer.status).toBe(200);
     expect(bearer.headers['content-type']).toMatch(/^text\/event-stream/);
     // A forged or stale cookie does nothing.
-    for (const forged of ['argus_token=forged', `argus_token=${TOKEN}`]) {
+    for (const forged of ['phargus_token=forged', `phargus_token=${TOKEN}`]) {
       const response = await send(server.port, '/events', { host, cookie: forged });
       expect(response.status, forged).toBe(401);
     }

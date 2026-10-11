@@ -25,7 +25,7 @@ export type ResolvedOtlpExporterOptions = {
 
 const DEFAULT_TIMEOUT_MS = 10000;
 const DEFAULT_QUEUE_CAPACITY = 64;
-const DEFAULT_SERVICE_NAME = 'argus';
+const DEFAULT_SERVICE_NAME = 'phargus';
 
 function requirePositiveSafeInteger(name: string, value: number): void {
   if (!Number.isSafeInteger(value) || value <= 0) {

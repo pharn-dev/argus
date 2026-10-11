@@ -62,9 +62,9 @@ function compile(sources: string[], outDir: string, moduleArgs: string[], type: 
   writeFileSync(join(outDir, '..', 'package.json'), JSON.stringify({ type }));
 }
 
-/** A private copy of the package: both builds of src/agent and the real `exports`, named "argus". */
+/** A private copy of the package: both builds of src/agent and the real `exports`, named "phargus". */
 function buildTempPackage(): string {
-  const pkgDir = mkdtempSync(join(tmpdir(), 'argus-entry-ac2-'));
+  const pkgDir = mkdtempSync(join(tmpdir(), 'phargus-entry-ac2-'));
   const sources = agentSources();
   const esmDir = join(pkgDir, 'dist', 'esm', 'agent');
   const cjsDir = join(pkgDir, 'dist', 'cjs', 'agent');
@@ -83,7 +83,7 @@ function buildTempPackage(): string {
   writeFileSync(
     join(pkgDir, 'package.json'),
     JSON.stringify({
-      name: 'argus',
+      name: 'phargus',
       version: '0.0.0',
       private: true,
       type: 'module',
@@ -105,11 +105,11 @@ afterAll(() => {
   }
 });
 
-/** The child's env: the parent's minus every ARGUS_* name (an unknown one warns on stderr). */
+/** The child's env: the parent's minus every PHARGUS_* name (an unknown one warns on stderr). */
 function childEnv(extra: Record<string, string>): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
   for (const [name, value] of Object.entries(process.env)) {
-    if (value === undefined || name.startsWith('ARGUS_') || name === 'NODE_OPTIONS') {
+    if (value === undefined || name.startsWith('PHARGUS_') || name === 'NODE_OPTIONS') {
       continue;
     }
     env[name] = value;
@@ -117,13 +117,13 @@ function childEnv(extra: Record<string, string>): NodeJS.ProcessEnv {
   return { ...env, ...extra };
 }
 
-// Preloaded with --require argus/agent; loads the entry twice more with require() and once with import().
+// Preloaded with --require phargus/agent; loads the entry twice more with require() and once with import().
 const APP = [
-  "const first = require('argus/agent');",
-  "const second = require('argus/agent');",
+  "const first = require('phargus/agent');",
+  "const second = require('phargus/agent');",
   'const intervalMs = Number(process.argv[2]);',
   `const names = ${JSON.stringify(EXPORTS)};`,
-  "import('argus/agent').then((esm) => {",
+  "import('phargus/agent').then((esm) => {",
   '  for (const name of names) {',
   "    console.log('cjs ' + name + ' ' + String(typeof first[name] === 'function' && typeof second[name] === 'function'));",
   "    console.log('esm ' + name + ' ' + String(typeof esm[name] === 'function'));",
@@ -145,7 +145,7 @@ const APP = [
 function runChild(dir: string, env: Record<string, string>): SpawnSyncReturns<string> {
   const app = join(dir, 'ac2-app.cjs');
   writeFileSync(app, APP);
-  return spawnSync(process.execPath, ['--require', 'argus/agent', app, String(INTERVAL_MS)], {
+  return spawnSync(process.execPath, ['--require', 'phargus/agent', app, String(INTERVAL_MS)], {
     cwd: dir,
     env: childEnv(env),
     encoding: 'utf8',
@@ -164,14 +164,14 @@ function expectExitAndExports(child: SpawnSyncReturns<string>): void {
   }
 }
 
-describe('argus/agent entry — AC-2', () => {
-  it('AC-2: loading argus/agent by --require, twice by require() and once by import() exposes the library exports, runs a single agent, and ARGUS_ENABLED=0 turns it off', () => {
+describe('phargus/agent entry — AC-2', () => {
+  it('AC-2: loading phargus/agent by --require, twice by require() and once by import() exposes the library exports, runs a single agent, and PHARGUS_ENABLED=0 turns it off', () => {
     const dir = tempPackage();
     const outFile = join(dir, 'once-out.ndjson');
     rmSync(outFile, { force: true });
     const child = runChild(dir, {
-      ARGUS_OUTPUT: outFile,
-      ARGUS_INTERVAL_MS: String(INTERVAL_MS),
+      PHARGUS_OUTPUT: outFile,
+      PHARGUS_INTERVAL_MS: String(INTERVAL_MS),
     });
     expectExitAndExports(child);
 
@@ -190,16 +190,16 @@ describe('argus/agent entry — AC-2', () => {
       ).toBeGreaterThanOrEqual(INTERVAL_MS / 2);
     }
 
-    // The same app with ARGUS_ENABLED=0: exports still there, no samples written.
+    // The same app with PHARGUS_ENABLED=0: exports still there, no samples written.
     const disabledFile = join(dir, 'disabled-out.ndjson');
     rmSync(disabledFile, { force: true });
     const disabled = runChild(dir, {
-      ARGUS_OUTPUT: disabledFile,
-      ARGUS_INTERVAL_MS: String(INTERVAL_MS),
-      ARGUS_ENABLED: '0',
+      PHARGUS_OUTPUT: disabledFile,
+      PHARGUS_INTERVAL_MS: String(INTERVAL_MS),
+      PHARGUS_ENABLED: '0',
     });
     expectExitAndExports(disabled);
     const written = existsSync(disabledFile) ? readFileSync(disabledFile, 'utf8') : '';
-    expect(written, 'with ARGUS_ENABLED=0 the output file is absent or empty').toBe('');
+    expect(written, 'with PHARGUS_ENABLED=0 the output file is absent or empty').toBe('');
   }, 300_000);
 });

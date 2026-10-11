@@ -1,7 +1,7 @@
 {
-  "name": "argus",
+  "name": "@pharn-dev/phargus",
   "version": "0.0.1",
-  "description": "All-seeing runtime diagnostics for Node.js. Event loop lag, memory, GC, stream backpressure and request tracing from a single require — zero dependencies in the agent, no hosted account. An optional in-package collector and live dashboard turn the agent's output into windows, alerts and a browser view.",
+  "description": "All-seeing runtime diagnostics for Node.js. Event loop lag, memory, GC, stream backpressure and request tracing from a single require \u2014 zero dependencies in the agent, no hosted account. An optional in-package collector and live dashboard turn the agent's output into windows, alerts and a browser view.",
   "keywords": [
     "nodejs",
     "diagnostics",
@@ -13,13 +13,13 @@
     "profiling",
     "apm"
   ],
-  "homepage": "https://github.com/pharn-dev/argus#readme",
+  "homepage": "https://github.com/pharn-dev/phargus#readme",
   "bugs": {
-    "url": "https://github.com/pharn-dev/argus/issues"
+    "url": "https://github.com/pharn-dev/phargus/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pharn-dev/argus.git"
+    "url": "git+https://github.com/pharn-dev/phargus.git"
   },
   "license": "Apache-2.0",
   "author": "Przemek Galarowicz",

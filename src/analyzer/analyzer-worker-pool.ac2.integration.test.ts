@@ -17,7 +17,7 @@ type SummaryModule = {
   ) => Promise<HeapSnapshotSummary>;
 };
 
-class ArgusAc2SummaryMarkerInstance {
+class PhargusAc2SummaryMarkerInstance {
   a: number;
   b: number;
   c: number;
@@ -41,11 +41,11 @@ class ArgusAc2SummaryMarkerInstance {
 
 describe('analyzer heap-snapshot summary', () => {
   it('AC-2: summarizes a real heap snapshot with integer totals and the held class in the top list', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'argus-ac2-'));
+    const dir = await mkdtemp(join(tmpdir(), 'phargus-ac2-'));
     try {
-      const held: ArgusAc2SummaryMarkerInstance[] = [];
+      const held: PhargusAc2SummaryMarkerInstance[] = [];
       for (let i = 0; i < 10_000; i += 1) {
-        held.push(new ArgusAc2SummaryMarkerInstance(i));
+        held.push(new PhargusAc2SummaryMarkerInstance(i));
       }
       const snapshotPath = writeHeapSnapshot(join(dir, 'a.heapsnapshot'));
       expect(held.length).toBe(10_000);
@@ -75,7 +75,7 @@ describe('analyzer heap-snapshot summary', () => {
         expect(previous?.selfSize).toBeGreaterThanOrEqual(current?.selfSize ?? Infinity);
       }
 
-      const marker = summary.top.find((entry) => entry.name === 'ArgusAc2SummaryMarkerInstance');
+      const marker = summary.top.find((entry) => entry.name === 'PhargusAc2SummaryMarkerInstance');
       expect(marker).toBeDefined();
       expect(marker?.count).toBeGreaterThanOrEqual(10_000);
     } finally {

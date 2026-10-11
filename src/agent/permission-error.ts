@@ -3,18 +3,18 @@
  * access the agent needs. Names the denied scope, the absolute resource and the
  * flag that would grant it.
  */
-export class ArgusPermissionError extends Error {
+export class PhargusPermissionError extends Error {
   readonly scope: string;
   readonly resource: string;
-  readonly code = 'ARGUS_ERR_PERMISSION_DENIED';
+  readonly code = 'PHARGUS_ERR_PERMISSION_DENIED';
 
   constructor(scope: string, resource: string, options?: ErrorOptions) {
     const flag = scope === 'fs.read' ? '--allow-fs-read' : '--allow-fs-write';
     super(
-      `argus: permission denied for ${scope} on ${resource}; grant it with ${flag}=<${resource} or its directory>`,
+      `phargus: permission denied for ${scope} on ${resource}; grant it with ${flag}=<${resource} or its directory>`,
       options,
     );
-    this.name = 'ArgusPermissionError';
+    this.name = 'PhargusPermissionError';
     this.scope = scope;
     this.resource = resource;
   }

@@ -1,25 +1,25 @@
 # Security Policy
 
-Argus runs **inside** the Node.js process it observes, and its dashboard exposes runtime internals
+Phargus runs **inside** the Node.js process it observes, and its dashboard exposes runtime internals
 (request paths, timings, memory, and optionally heap snapshots). Both facts make security part of
 the product, not an afterthought. We welcome coordinated disclosure of any vulnerability in this
 repository.
 
-> **Status:** Argus is pre-release. Roadmap steps S0 to S7 are implemented on `main`, but no version
+> **Status:** Phargus is pre-release. Roadmap steps S0 to S7 are implemented on `main`, but no version
 > has been published yet, so there is nothing to patch in the wild today. Reports against `main` are
 > welcome and are handled the same way.
 
-## What Argus is, and its security surface
+## What Phargus is, and its security surface
 
-Argus is a single npm package with six subpath exports (`argus/agent`, `argus/collector`,
-`argus/analyzer`, `argus/dashboard`, `argus/plugin-runner`, `argus/otel`). Its security-relevant
+Phargus is a single npm package with six subpath exports (`@pharn-dev/phargus/agent`, `@pharn-dev/phargus/collector`,
+`@pharn-dev/phargus/analyzer`, `@pharn-dev/phargus/dashboard`, `@pharn-dev/phargus/plugin-runner`, `@pharn-dev/phargus/otel`). Its security-relevant
 surface is:
 
 - **The dashboard and SSE endpoint** — an HTTP server in whichever process you start it in (the
   monitored process or a separate collector process). Binding it anywhere but loopback requires a
   token; every request's `Host` is checked against an allowlist, and a cross-origin `Origin` on
   `/events` is refused.
-- **Data Argus collects** — request method, path (query string removed), status and timing, runtime
+- **Data Phargus collects** — request method, path (query string removed), status and timing, runtime
   samples and, on demand, heap snapshots, which can contain secrets and personal data. What is
   captured and what leaves the process are part of the surface.
 - **The plugin runner** — user-supplied rules executed in `isolated-vm` with a memory limit and a
@@ -32,7 +32,7 @@ surface is:
   runtime dependencies by design, which also keeps its supply-chain exposure to Node core.
 
 The security design and its named residual risks are in
-[`docs/THREAT-MODEL.md`](./docs/THREAT-MODEL.md); what Argus does not guarantee is in
+[`docs/THREAT-MODEL.md`](./docs/THREAT-MODEL.md); what Phargus does not guarantee is in
 [`docs/LIMITS.md`](./docs/LIMITS.md).
 
 ## Supported versions
@@ -50,7 +50,7 @@ Until 1.0, only the **latest** release (and `main`) receives security fixes.
 requests.**
 
 Report privately through
-[GitHub private vulnerability reporting](https://github.com/pharn-dev/argus/security/advisories/new).
+[GitHub private vulnerability reporting](https://github.com/pharn-dev/phargus/security/advisories/new).
 The report stays confidential and embargoed until a fix ships.
 
 Please include as much of the following as you can — it speeds up triage:
@@ -122,4 +122,4 @@ unless you ask to remain anonymous.
 We appreciate the security research community. Anyone who reports a valid issue in good faith will
 be credited in the resulting advisory, unless they ask to remain anonymous.
 
-Thank you for helping keep Argus and its users safe.
+Thank you for helping keep Phargus and its users safe.

@@ -26,13 +26,13 @@ const INTERVAL_MS_MAX = 3_600_000;
 const QUEUE_BOUND_MAX = 1_000_000;
 
 /** A config problem that names its source (file or variable) and, when known, the key. */
-export class ArgusConfigError extends Error {
+export class PhargusConfigError extends Error {
   readonly source: string;
   readonly key: string | undefined;
 
   constructor(source: string, key: string | undefined, reason: string, options?: ErrorOptions) {
-    super(`argus config: ${source}${key === undefined ? '' : `: ${key}`}: ${reason}`, options);
-    this.name = 'ArgusConfigError';
+    super(`phargus config: ${source}${key === undefined ? '' : `: ${key}`}: ${reason}`, options);
+    this.name = 'PhargusConfigError';
     this.source = source;
     this.key = key;
   }
@@ -50,7 +50,7 @@ function validateInteger(
   max: number,
 ): void {
   if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < min || value > max) {
-    throw new ArgusConfigError(
+    throw new PhargusConfigError(
       source,
       key,
       `expected an integer from ${String(min)} to ${String(max)}, got ${describe(value)}`,
@@ -68,7 +68,7 @@ function describe(value: unknown): string {
   return typeof value;
 }
 
-/** Validate one already-typed value for a known key. Throws ArgusConfigError. */
+/** Validate one already-typed value for a known key. Throws PhargusConfigError. */
 export function validateConfigValue(source: string, key: AgentConfigKey, value: unknown): void {
   switch (key) {
     case 'intervalMs':
@@ -79,12 +79,12 @@ export function validateConfigValue(source: string, key: AgentConfigKey, value: 
       return;
     case 'enabled':
       if (typeof value !== 'boolean') {
-        throw new ArgusConfigError(source, key, `expected a boolean, got ${describe(value)}`);
+        throw new PhargusConfigError(source, key, `expected a boolean, got ${describe(value)}`);
       }
       return;
     case 'output':
       if (typeof value !== 'string' || value.length === 0) {
-        throw new ArgusConfigError(
+        throw new PhargusConfigError(
           source,
           key,
           `expected a non-empty string, got ${describe(value)}`,

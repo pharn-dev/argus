@@ -1,7 +1,7 @@
 // Benchmark target: one HTTP server running one workload, under one agent variant. Forked by
 // bench/overhead.mjs; measures itself between the parent's 'start' and 'stop' requests.
 //
-// Variants that preload the agent (`idle`, `full`) get `--import argus/agent` from the parent.
+// Variants that preload the agent (`idle`, `full`) get `--import @pharn-dev/phargus/agent` from the parent.
 // `tracing` and `samplers` load the library API (no auto-start) here, from BENCH_AGENT_INDEX.
 import { createWriteStream } from 'node:fs';
 import http from 'node:http';

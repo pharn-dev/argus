@@ -62,7 +62,7 @@ function encodeMappings(lines: Segment[][]): string {
 
 describe('analyzer stack symbolization', () => {
   it('AC-1: maps frames through adjacent and inline source maps and returns unmapped frames unchanged, in order', async () => {
-    const dir = await realpath(await mkdtemp(join(tmpdir(), 'argus-symbolize-ac1-')));
+    const dir = await realpath(await mkdtemp(join(tmpdir(), 'phargus-symbolize-ac1-')));
     try {
       // Built file 1: adjacent `.map` file named by its sourceMappingURL comment.
       const adjacentFile = join(dir, 'adjacent.js');

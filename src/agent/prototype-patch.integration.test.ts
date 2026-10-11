@@ -62,7 +62,7 @@ function runChild(script: string): { status: number | null; stdout: string; stde
 }
 
 beforeAll(() => {
-  outDir = mkdtempSync(join(tmpdir(), 'argus-patch-'));
+  outDir = mkdtempSync(join(tmpdir(), 'phargus-patch-'));
   const esmDir = join(outDir, 'esm');
   const cjsDir = join(outDir, 'cjs');
   compile(esmDir, ['--module', 'NodeNext', '--moduleResolution', 'NodeNext']);
@@ -188,7 +188,7 @@ process.stdout.write(JSON.stringify({ ticks }));
     const { ticks } = JSON.parse(child.stdout) as { ticks: number };
     expect(ticks).toBeGreaterThanOrEqual(3);
     const warnings = child.stderr.match(
-      /ArgusSamplerWarning: sampler tick failed: onSample exploded/g,
+      /PhargusSamplerWarning: sampler tick failed: onSample exploded/g,
     );
     expect(warnings, child.stderr).toHaveLength(1);
   }, 60_000);

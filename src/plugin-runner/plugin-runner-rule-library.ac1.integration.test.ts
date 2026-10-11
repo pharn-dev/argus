@@ -33,9 +33,9 @@ type RuleLibraryModule = {
   BuiltinRuleId: { EVENT_LOOP_LAG: string; HEAP_GROWTH: string; GC_PAUSE_SHARE: string };
 };
 
-const LAG_ID = 'argus/event-loop-lag';
-const HEAP_ID = 'argus/heap-growth';
-const GC_ID = 'argus/gc-pause-share';
+const LAG_ID = 'phargus/event-loop-lag';
+const HEAP_ID = 'phargus/heap-growth';
+const GC_ID = 'phargus/gc-pause-share';
 
 /** 1 s windows: start = 1000 * (index + 1), end = start + 1000. */
 function windowAt(

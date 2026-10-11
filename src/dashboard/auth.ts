@@ -3,7 +3,7 @@ import type { IncomingMessage } from 'node:http';
 import { isIPv4 } from 'node:net';
 
 /** The cookie the `?token=` exchange sets. Its value is an HMAC of the token, never the token. */
-export const SESSION_COOKIE = 'argus_token';
+export const SESSION_COOKIE = 'phargus_token';
 
 function unbracket(host: string): string {
   return host.startsWith('[') && host.endsWith(']') ? host.slice(1, -1) : host;

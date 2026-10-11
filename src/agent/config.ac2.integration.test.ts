@@ -20,7 +20,7 @@ type ConfigModuleUnderTest = {
 const dirs: string[] = [];
 
 async function makeTempDir(): Promise<string> {
-  const dir = await mkdtemp(path.join(tmpdir(), 'argus-config-ac2-'));
+  const dir = await mkdtemp(path.join(tmpdir(), 'phargus-config-ac2-'));
   dirs.push(dir);
   return dir;
 }
@@ -30,7 +30,7 @@ afterEach(async () => {
 });
 
 describe('agent config — AC-2', () => {
-  it('AC-2: a CommonJS argus.config.js (module.exports) and an ESM argus.config.js (export default) each supply their interval, queue bound and output', async () => {
+  it('AC-2: a CommonJS phargus.config.js (module.exports) and an ESM phargus.config.js (export default) each supply their interval, queue bound and output', async () => {
     const { loadAgentConfig } = (await import('./index.js')) as unknown as ConfigModuleUnderTest;
 
     const cjsDir = await makeTempDir();
@@ -41,7 +41,7 @@ describe('agent config — AC-2', () => {
       'utf8',
     );
     await writeFile(
-      path.join(cjsDir, 'argus.config.js'),
+      path.join(cjsDir, 'phargus.config.js'),
       `module.exports = { intervalMs: 321, queueBound: 77, output: ${JSON.stringify(cjsOutput)} };\n`,
       'utf8',
     );
@@ -50,7 +50,7 @@ describe('agent config — AC-2', () => {
     const esmOutput = path.join(esmDir, 'esm-out.ndjson');
     await writeFile(path.join(esmDir, 'package.json'), JSON.stringify({ type: 'module' }), 'utf8');
     await writeFile(
-      path.join(esmDir, 'argus.config.js'),
+      path.join(esmDir, 'phargus.config.js'),
       `export default { intervalMs: 654, queueBound: 88, output: ${JSON.stringify(esmOutput)} };\n`,
       'utf8',
     );

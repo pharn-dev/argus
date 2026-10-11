@@ -64,9 +64,9 @@ function compile(sources: string[], outDir: string, moduleArgs: string[], type: 
   writeFileSync(join(outDir, '..', 'package.json'), JSON.stringify({ type }));
 }
 
-/** A private copy of the package: both builds of src/agent and the real `exports`, named "argus". */
+/** A private copy of the package: both builds of src/agent and the real `exports`, named "phargus". */
 function buildTempPackage(): string {
-  const pkgDir = mkdtempSync(join(tmpdir(), 'argus-span-export-ac1-'));
+  const pkgDir = mkdtempSync(join(tmpdir(), 'phargus-span-export-ac1-'));
   const sources = agentSources();
   const esmDir = join(pkgDir, 'dist', 'esm', 'agent');
   const cjsDir = join(pkgDir, 'dist', 'cjs', 'agent');
@@ -85,7 +85,7 @@ function buildTempPackage(): string {
   writeFileSync(
     join(pkgDir, 'package.json'),
     JSON.stringify({
-      name: 'argus',
+      name: 'phargus',
       version: '0.0.0',
       private: true,
       type: 'module',
@@ -103,11 +103,11 @@ afterAll(() => {
   }
 });
 
-/** The child's env: the parent's minus every ARGUS_* name (an unknown one warns on stderr). */
+/** The child's env: the parent's minus every PHARGUS_* name (an unknown one warns on stderr). */
 function childEnv(extra: Record<string, string>): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
   for (const [name, value] of Object.entries(process.env)) {
-    if (value === undefined || name.startsWith('ARGUS_') || name === 'NODE_OPTIONS') {
+    if (value === undefined || name.startsWith('PHARGUS_') || name === 'NODE_OPTIONS') {
       continue;
     }
     env[name] = value;
@@ -168,10 +168,10 @@ function runChild(dir: string, outFile: string): SpawnSyncReturns<string> {
   writeFileSync(app, APP);
   return spawnSync(
     process.execPath,
-    ['--import', 'argus/agent', app, String(INTERVAL_MS), TRACEPARENT],
+    ['--import', 'phargus/agent', app, String(INTERVAL_MS), TRACEPARENT],
     {
       cwd: dir,
-      env: childEnv({ ARGUS_OUTPUT: outFile, ARGUS_INTERVAL_MS: String(INTERVAL_MS) }),
+      env: childEnv({ PHARGUS_OUTPUT: outFile, PHARGUS_INTERVAL_MS: String(INTERVAL_MS) }),
       encoding: 'utf8',
       timeout: 30_000,
     },
@@ -194,7 +194,7 @@ function readLines(file: string): Array<Record<string, unknown>> {
 }
 
 describe('agent span export over NDJSON — AC-1', () => {
-  it('AC-1: node --import argus/agent writes one span line per HTTP request to the ARGUS_OUTPUT file, beside unchanged sample lines', () => {
+  it('AC-1: node --import phargus/agent writes one span line per HTTP request to the PHARGUS_OUTPUT file, beside unchanged sample lines', () => {
     pkgDir ??= buildTempPackage();
     const outFile = join(pkgDir, 'spans-out.ndjson');
     const child = runChild(pkgDir, outFile);

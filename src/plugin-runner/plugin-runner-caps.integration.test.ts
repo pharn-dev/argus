@@ -35,7 +35,7 @@ function failureOf(result: RuleRunResult): { code: string; message: string } {
 let dir: string;
 
 beforeAll(async () => {
-  dir = await mkdtemp(join(tmpdir(), 'argus-plugin-caps-'));
+  dir = await mkdtemp(join(tmpdir(), 'phargus-plugin-caps-'));
 });
 
 afterAll(async () => {
@@ -43,7 +43,7 @@ afterAll(async () => {
 });
 
 describe('plugin rule result caps (F-07)', () => {
-  it('rejects a rule returning 1M findings with ARGUS_RULE_INVALID_RESULT and bounded host memory', async () => {
+  it('rejects a rule returning 1M findings with PHARGUS_RULE_INVALID_RESULT and bounded host memory', async () => {
     const runner = createPluginRunner({ memoryLimitMb: 256, timeoutMs: 20_000 });
     try {
       // Warm the sandbox so the child's own start-up is not counted.

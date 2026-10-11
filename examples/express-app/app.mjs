@@ -1,4 +1,4 @@
-import 'argus/agent';
+import '@pharn-dev/phargus/agent';
 import { createServer } from 'node:http';
 import { performance } from 'node:perf_hooks';
 

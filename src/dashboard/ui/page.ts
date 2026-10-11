@@ -9,14 +9,14 @@ export function renderPage(): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta name="argus-events" content="events">
-<title>Argus</title>
+<meta name="phargus-events" content="events">
+<title>Phargus</title>
 <link rel="stylesheet" href="app.css">
 <script src="app.js" defer></script>
 </head>
 <body>
 <header>
-<h1>Argus</h1>
+<h1>Phargus</h1>
 <p id="status">connecting</p>
 </header>
 <main>

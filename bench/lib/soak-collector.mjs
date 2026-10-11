@@ -1,22 +1,22 @@
 // Soak target: the analysis side. Started by bench/soak.mjs with --expose-gc; reads the agent's
 // NDJSON on stdin into a collector and, for the whole run, keeps every other module busy:
-//   - argus/dashboard serves the collector; the harness churns SSE clients against it;
-//   - argus/otel exporters flood a dead endpoint (bounded queues must drop, not grow);
-//   - argus/analyzer symbolizes on a persistent pool and on a fresh pool per call (worker churn);
-//   - argus/plugin-runner runs the built-in rules, plus a rule that times out (sandbox respawn).
+//   - @pharn-dev/phargus/dashboard serves the collector; the harness churns SSE clients against it;
+//   - @pharn-dev/phargus/otel exporters flood a dead endpoint (bounded queues must drop, not grow);
+//   - @pharn-dev/phargus/analyzer symbolizes on a persistent pool and on a fresh pool per call (worker churn);
+//   - @pharn-dev/phargus/plugin-runner runs the built-in rules, plus a rule that times out (sandbox respawn).
 import { once } from 'node:events';
 import http from 'node:http';
-import { createSymbolizationPool, symbolizeStackFrames } from 'argus/analyzer';
-import { createCollector } from 'argus/collector';
-import { createDashboardServer } from 'argus/dashboard';
-import { createOtlpMetricsExporter, createOtlpTraceExporter } from 'argus/otel';
+import { createSymbolizationPool, symbolizeStackFrames } from '@pharn-dev/phargus/analyzer';
+import { createCollector } from '@pharn-dev/phargus/collector';
+import { createDashboardServer } from '@pharn-dev/phargus/dashboard';
+import { createOtlpMetricsExporter, createOtlpTraceExporter } from '@pharn-dev/phargus/otel';
 import {
   createPluginRunner,
   eventLoopLagRule,
   gcPauseShareRule,
   heapGrowthRule,
   runRules,
-} from 'argus/plugin-runner';
+} from '@pharn-dev/phargus/plugin-runner';
 import { describe, sleep } from './common.mjs';
 import { die, send, serve } from './ipc.mjs';
 import { heapAfterGc, resourceSnapshot, trackWorkers } from './resources.mjs';
@@ -153,7 +153,7 @@ async function main() {
     }
   }, FLOOD_EVERY_MS);
 
-  const frames = [{ url: import.meta.resolve('argus/agent'), line: 1, column: 1 }];
+  const frames = [{ url: import.meta.resolve('@pharn-dev/phargus/agent'), line: 1, column: 1 }];
   const pool = createSymbolizationPool({ size: 2 });
   const symbolizer = repeat(SYMBOLIZE_EVERY_MS, async (tick) => {
     try {

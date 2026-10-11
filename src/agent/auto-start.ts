@@ -10,13 +10,13 @@ import type { AgentSample } from './sampler-controller.js';
 import type { SpanDrain } from './span-buffer.js';
 import type { AgentLossCounters, AgentSampleLine } from './span-record.js';
 
-const AGENT_KEY = Symbol.for('argus.agent');
+const AGENT_KEY = Symbol.for('phargus.agent');
 
 type AgentGlobal = { [AGENT_KEY]?: true };
 
 let reported = false;
 
-/** Write at most one `[argus]` line per process; reporting itself never throws. */
+/** Write at most one `[phargus]` line per process; reporting itself never throws. */
 function reportOnce(err: unknown): void {
   if (reported) {
     return;
@@ -25,7 +25,7 @@ function reportOnce(err: unknown): void {
   try {
     const message = err instanceof Error ? err.message : String(err);
     const oneLine = message.replace(/\s+/g, ' ').trim();
-    process.stderr.write(`[argus] agent disabled: ${oneLine}\n`);
+    process.stderr.write(`[phargus] agent disabled: ${oneLine}\n`);
   } catch {
     // Reporting must never throw into the monitored process; stderr is the only channel.
   }

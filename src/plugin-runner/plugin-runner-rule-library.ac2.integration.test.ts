@@ -54,7 +54,7 @@ function thrownBy(configure: () => unknown): unknown {
 describe('plugin-runner rule library — AC-2', () => {
   it('AC-2: an invalid built-in rule parameter throws a typed invalid-parameter error naming the rule id and the parameter, and no sandbox run starts', async () => {
     const mod = (await import('./index.js')) as unknown as RuleLibraryModule;
-    expect(mod.RuleErrorCode.INVALID_PARAMETER).toBe('ARGUS_RULE_INVALID_PARAMETER');
+    expect(mod.RuleErrorCode.INVALID_PARAMETER).toBe('PHARGUS_RULE_INVALID_PARAMETER');
 
     const cases: {
       label: string;
@@ -65,32 +65,32 @@ describe('plugin-runner rule library — AC-2', () => {
       {
         label: 'negative threshold',
         configure: () => mod.eventLoopLagRule({ thresholdNs: -1 }),
-        ruleId: 'argus/event-loop-lag',
+        ruleId: 'phargus/event-loop-lag',
         parameter: 'thresholdNs',
       },
       {
         label: 'zero window count',
         configure: () => mod.eventLoopLagRule({ windows: 0 }),
-        ruleId: 'argus/event-loop-lag',
+        ruleId: 'phargus/event-loop-lag',
         parameter: 'windows',
       },
       {
         label: 'non-integer window count',
         configure: () => mod.heapGrowthRule({ windows: 2.5 }),
-        ruleId: 'argus/heap-growth',
+        ruleId: 'phargus/heap-growth',
         parameter: 'windows',
       },
       {
         label: 'wrong type',
         configure: () => mod.gcPauseShareRule({ thresholdPerMille: '100' }),
-        ruleId: 'argus/gc-pause-share',
+        ruleId: 'phargus/gc-pause-share',
         parameter: 'thresholdPerMille',
       },
     ];
 
-    expect(mod.BuiltinRuleId.EVENT_LOOP_LAG).toBe('argus/event-loop-lag');
-    expect(mod.BuiltinRuleId.HEAP_GROWTH).toBe('argus/heap-growth');
-    expect(mod.BuiltinRuleId.GC_PAUSE_SHARE).toBe('argus/gc-pause-share');
+    expect(mod.BuiltinRuleId.EVENT_LOOP_LAG).toBe('phargus/event-loop-lag');
+    expect(mod.BuiltinRuleId.HEAP_GROWTH).toBe('phargus/heap-growth');
+    expect(mod.BuiltinRuleId.GC_PAUSE_SHARE).toBe('phargus/gc-pause-share');
 
     const produced: RuleDescriptorUnderTest[] = [];
     for (const testCase of cases) {
@@ -101,7 +101,7 @@ describe('plugin-runner rule library — AC-2', () => {
       });
       expect(error, testCase.label).toBeInstanceOf(mod.RuleParameterError);
       const typed = error as ParameterErrorUnderTest;
-      expect(typed.code, testCase.label).toBe('ARGUS_RULE_INVALID_PARAMETER');
+      expect(typed.code, testCase.label).toBe('PHARGUS_RULE_INVALID_PARAMETER');
       expect(typed.code, testCase.label).toBe(mod.RuleErrorCode.INVALID_PARAMETER);
       expect(typed.ruleId, testCase.label).toBe(testCase.ruleId);
       expect(typed.parameter, testCase.label).toBe(testCase.parameter);

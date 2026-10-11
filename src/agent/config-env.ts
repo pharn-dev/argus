@@ -1,12 +1,12 @@
 import path from 'node:path';
-import { ArgusConfigError, validateConfigValue } from './config-schema.js';
+import { PhargusConfigError, validateConfigValue } from './config-schema.js';
 import type { AgentConfig, AgentConfigKey } from './config-schema.js';
 
 const VARIABLES: Readonly<Record<string, AgentConfigKey>> = {
-  ARGUS_INTERVAL_MS: 'intervalMs',
-  ARGUS_OUTPUT: 'output',
-  ARGUS_QUEUE_BOUND: 'queueBound',
-  ARGUS_ENABLED: 'enabled',
+  PHARGUS_INTERVAL_MS: 'intervalMs',
+  PHARGUS_OUTPUT: 'output',
+  PHARGUS_QUEUE_BOUND: 'queueBound',
+  PHARGUS_ENABLED: 'enabled',
 };
 
 function parse(name: string, key: AgentConfigKey, text: string): unknown {
@@ -14,7 +14,7 @@ function parse(name: string, key: AgentConfigKey, text: string): unknown {
     case 'intervalMs':
     case 'queueBound':
       if (!/^[0-9]+$/.test(text)) {
-        throw new ArgusConfigError(
+        throw new PhargusConfigError(
           name,
           key,
           `expected a non-negative integer, got ${JSON.stringify(text)}`,
@@ -28,7 +28,7 @@ function parse(name: string, key: AgentConfigKey, text: string): unknown {
       if (text === 'false' || text === '0') {
         return false;
       }
-      throw new ArgusConfigError(
+      throw new PhargusConfigError(
         name,
         key,
         `expected true, false, 1 or 0, got ${JSON.stringify(text)}`,
@@ -54,13 +54,13 @@ function editDistance(a: string, b: string): number {
 
 const SUGGESTION_MAX_DISTANCE = 3;
 
-/** The closest known variable to an unknown ARGUS_* name, when it is plausibly a typo. */
+/** The closest known variable to an unknown PHARGUS_* name, when it is plausibly a typo. */
 function suggest(name: string): string | undefined {
-  const typed = name.slice('ARGUS_'.length);
+  const typed = name.slice('PHARGUS_'.length);
   let best: string | undefined;
   let bestDistance = Number.POSITIVE_INFINITY;
   for (const known of Object.keys(VARIABLES)) {
-    const distance = editDistance(typed, known.slice('ARGUS_'.length));
+    const distance = editDistance(typed, known.slice('PHARGUS_'.length));
     if (distance < bestDistance) {
       best = known;
       bestDistance = distance;
@@ -72,7 +72,7 @@ function suggest(name: string): string | undefined {
     : undefined;
 }
 
-/** The warning text for an ignored, unknown ARGUS_* variable. */
+/** The warning text for an ignored, unknown PHARGUS_* variable. */
 export function unknownVariableWarning(name: string): string {
   const suggestion = suggest(name);
   return `ignoring unknown environment variable ${name}${
@@ -81,7 +81,7 @@ export function unknownVariableWarning(name: string): string {
 }
 
 /**
- * Map ARGUS_* variables to config keys. Other variables are ignored. An unknown ARGUS_ name is
+ * Map PHARGUS_* variables to config keys. Other variables are ignored. An unknown PHARGUS_ name is
  * reported once through `warn` and ignored; an invalid value for a known name throws.
  */
 export function readConfigEnv(
@@ -91,7 +91,7 @@ export function readConfigEnv(
 ): Partial<AgentConfig> {
   const result: Record<string, unknown> = {};
   for (const [name, text] of Object.entries(env)) {
-    if (!name.startsWith('ARGUS_') || text === undefined) {
+    if (!name.startsWith('PHARGUS_') || text === undefined) {
       continue;
     }
     if (!Object.hasOwn(VARIABLES, name)) {

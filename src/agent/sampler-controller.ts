@@ -23,7 +23,7 @@ export type SamplerController = {
 export type SamplerControllerOptions = {
   /**
    * Called when a tick fails (taking a sample or `onSample` threw). The controller keeps ticking.
-   * Defaults to a process warning (`ArgusSamplerWarning`) on the first failure of each run of
+   * Defaults to a process warning (`PhargusSamplerWarning`) on the first failure of each run of
    * consecutive failures.
    */
   onError?: (error: unknown) => void;
@@ -31,7 +31,7 @@ export type SamplerControllerOptions = {
 
 function warn(error: unknown): void {
   const message = error instanceof Error ? error.message : String(error);
-  process.emitWarning(`sampler tick failed: ${message}`, 'ArgusSamplerWarning');
+  process.emitWarning(`sampler tick failed: ${message}`, 'PhargusSamplerWarning');
 }
 
 export function createSamplerController(

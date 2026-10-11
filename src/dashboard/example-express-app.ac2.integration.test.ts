@@ -33,7 +33,7 @@ const DASHBOARD_LINE = /^\[express-app\] dashboard listening on http:\/\/127\.0\
 
 const lockDir = join(
   tmpdir(),
-  `argus-dist-build-${createHash('sha256').update(repoRoot).digest('hex').slice(0, 16)}.lock`,
+  `phargus-dist-build-${createHash('sha256').update(repoRoot).digest('hex').slice(0, 16)}.lock`,
 );
 
 function errorCode(err: unknown): unknown {
@@ -143,7 +143,7 @@ async function ensureFreshDist(): Promise<void> {
 function exampleEnv(): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...process.env };
   for (const key of Object.keys(env)) {
-    if (key.startsWith('ARGUS_')) delete env[key];
+    if (key.startsWith('PHARGUS_')) delete env[key];
   }
   env['APP_PORT'] = '0';
   env['DASHBOARD_PORT'] = '0';

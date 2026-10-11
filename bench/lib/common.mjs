@@ -14,18 +14,21 @@ export function sleep(ms) {
 }
 
 /**
- * Resolve the built `argus/agent` entry through the package's own `exports` (self-reference by
- * package name), so the harness measures exactly what `--import argus/agent` loads for a user.
+ * Resolve the built `@pharn-dev/phargus/agent` entry through the package's own `exports` (self-reference by
+ * package name), so the harness measures exactly what `--import @pharn-dev/phargus/agent` loads for a user.
  * Throws with a hint when `dist/` has not been built.
  */
 export function resolveAgent() {
   let agentUrl;
   try {
-    agentUrl = import.meta.resolve('argus/agent');
+    agentUrl = import.meta.resolve('@pharn-dev/phargus/agent');
   } catch (err) {
-    throw new Error(`cannot resolve argus/agent; run \`npm run build\` first (${describe(err)})`, {
-      cause: err,
-    });
+    throw new Error(
+      `cannot resolve @pharn-dev/phargus/agent; run \`npm run build\` first (${describe(err)})`,
+      {
+        cause: err,
+      },
+    );
   }
   // The library API without the auto-start side effect. It is not an `exports` subpath, so it is
   // derived from the resolved entry: dist/esm/agent/index.js sits next to dist/esm/agent/auto.js.
@@ -38,11 +41,11 @@ export function resolveAgent() {
   return { agentUrl, indexUrl };
 }
 
-/** The parent environment without any ARGUS_* variable (an unknown one disables the agent). */
+/** The parent environment without any PHARGUS_* variable (an unknown one disables the agent). */
 export function cleanEnv(extra) {
   const env = {};
   for (const [name, value] of Object.entries(process.env)) {
-    if (!name.startsWith('ARGUS_')) env[name] = value;
+    if (!name.startsWith('PHARGUS_')) env[name] = value;
   }
   return { ...env, ...extra };
 }

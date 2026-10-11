@@ -45,7 +45,7 @@ const HELP = `Usage: node bench/soak.mjs [options]
 
   --duration <s>          total soak seconds (default 120)
   --baseline <s>          when the heap baseline is taken (default min(30, duration / 4))
-  --interval-ms <n>       agent sampling interval, ARGUS_INTERVAL_MS (default 100)
+  --interval-ms <n>       agent sampling interval, PHARGUS_INTERVAL_MS (default 100)
   --connections <n>       keep-alive connections of HTTP load (default 8)
   --sse-concurrency <n>   SSE connect/read/disconnect loops (default 10)
   --stalled-clients <n>   SSE clients connected for the whole run that never read (default 5)
@@ -125,7 +125,7 @@ async function main() {
     throw new Error('--stalled-clients must be a non-negative integer');
   }
   const { agentUrl } = resolveAgent();
-  const cwd = await mkdtemp(path.join(os.tmpdir(), 'argus-soak-'));
+  const cwd = await mkdtemp(path.join(os.tmpdir(), 'phargus-soak-'));
   const startedAt = new Date().toISOString();
   log(
     `${opts.durationMs / 1000} s soak, heap baseline at ${opts.baselineMs / 1000} s, agent interval ` +
@@ -140,7 +140,7 @@ async function main() {
   });
   const app = forkChild(APP, {
     execArgv: ['--expose-gc', '--import', agentUrl],
-    env: cleanEnv({ ARGUS_INTERVAL_MS: String(opts.intervalMs), ARGUS_OUTPUT: 'stdout' }),
+    env: cleanEnv({ PHARGUS_INTERVAL_MS: String(opts.intervalMs), PHARGUS_OUTPUT: 'stdout' }),
     cwd,
     stdout: 'pipe',
   });
@@ -298,7 +298,7 @@ async function main() {
     );
     check(
       'agent stayed enabled',
-      !app.stderr().includes('[argus]'),
+      !app.stderr().includes('[phargus]'),
       app.stderr().trim() === '' ? 'no agent stderr' : app.stderr().trim(),
     );
     check(
@@ -339,7 +339,7 @@ async function main() {
   const info = result.info;
   const rows = result.checks.map((c) => [c.ok ? 'pass' : 'FAIL', c.name, c.detail]);
   process.stdout.write(
-    `Argus soak — node ${process.version}, ${process.platform} ${process.arch}, ` +
+    `Phargus soak — node ${process.version}, ${process.platform} ${process.arch}, ` +
       `${opts.durationMs / 1000} s, agent interval ${opts.intervalMs} ms\n\n` +
       table(['result', 'check', 'detail'], rows) +
       '\n',
@@ -376,7 +376,7 @@ async function main() {
       `${JSON.stringify(
         {
           schema: 1,
-          tool: 'argus bench/soak.mjs',
+          tool: 'phargus bench/soak.mjs',
           startedAt,
           finishedAt: new Date().toISOString(),
           commit: gitCommit(),

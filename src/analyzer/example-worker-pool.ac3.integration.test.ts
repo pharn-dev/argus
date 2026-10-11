@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 const repoRoot = resolve(fileURLToPath(new URL('.', import.meta.url)), '..', '..');
 const exampleDir = join(repoRoot, 'examples', 'worker-pool');
 const SOURCE_EXTENSIONS = new Set(['.mjs', '.js', '.cjs', '.ts', '.mts', '.cts']);
-const ARGUS_SPECIFIER = /^argus\/[a-z-]+$/;
+const PHARGUS_SPECIFIER = /^@pharn-dev\/phargus\/[a-z-]+$/;
 
 function listFiles(dir: string): string[] {
   const files: string[] = [];
@@ -48,7 +48,7 @@ function moduleSpecifiers(text: string): Specifiers {
 }
 
 describe('examples/worker-pool: package-only imports and README', () => {
-  it('AC-3: every Argus import in the example is a bare argus/<subpath> specifier and the README has the build and run commands', () => {
+  it('AC-3: every Phargus import in the example is a bare @pharn-dev/phargus/<subpath> specifier and the README has the build and run commands', () => {
     expect(existsSync(exampleDir), `${exampleDir} must exist`).toBe(true);
     expect(statSync(exampleDir).isDirectory()).toBe(true);
 
@@ -65,8 +65,8 @@ describe('examples/worker-pool: package-only imports and README', () => {
       ).toBe(found.dynamicCalls);
       for (const spec of found.literal) {
         expect(
-          spec.startsWith('node:') || ARGUS_SPECIFIER.test(spec),
-          `${rel}: module specifier '${spec}' must be a node: builtin or a bare argus/<subpath>`,
+          spec.startsWith('node:') || PHARGUS_SPECIFIER.test(spec),
+          `${rel}: module specifier '${spec}' must be a node: builtin or a bare @pharn-dev/phargus/<subpath>`,
         ).toBe(true);
         expect(
           /(^|\/)(src|dist)\//.test(spec),
@@ -75,7 +75,7 @@ describe('examples/worker-pool: package-only imports and README', () => {
         allSpecifiers.push(spec);
       }
     }
-    expect(allSpecifiers).toContain('argus/agent');
+    expect(allSpecifiers).toContain('@pharn-dev/phargus/agent');
 
     const readme = join(exampleDir, 'README.md');
     expect(existsSync(readme), `${readme} must exist`).toBe(true);

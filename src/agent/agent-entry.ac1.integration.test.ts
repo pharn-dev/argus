@@ -61,9 +61,9 @@ function compile(sources: string[], outDir: string, moduleArgs: string[], type: 
   writeFileSync(join(outDir, '..', 'package.json'), JSON.stringify({ type }));
 }
 
-/** A private copy of the package: both builds of src/agent and the real `exports`, named "argus". */
+/** A private copy of the package: both builds of src/agent and the real `exports`, named "phargus". */
 function buildTempPackage(): string {
-  const pkgDir = mkdtempSync(join(tmpdir(), 'argus-entry-ac1-'));
+  const pkgDir = mkdtempSync(join(tmpdir(), 'phargus-entry-ac1-'));
   const sources = agentSources();
   const esmDir = join(pkgDir, 'dist', 'esm', 'agent');
   const cjsDir = join(pkgDir, 'dist', 'cjs', 'agent');
@@ -82,7 +82,7 @@ function buildTempPackage(): string {
   writeFileSync(
     join(pkgDir, 'package.json'),
     JSON.stringify({
-      name: 'argus',
+      name: 'phargus',
       version: '0.0.0',
       private: true,
       type: 'module',
@@ -104,11 +104,11 @@ afterAll(() => {
   }
 });
 
-/** The child's env: the parent's minus every ARGUS_* name (an unknown one warns on stderr). */
+/** The child's env: the parent's minus every PHARGUS_* name (an unknown one warns on stderr). */
 function childEnv(extra: Record<string, string>): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
   for (const [name, value] of Object.entries(process.env)) {
-    if (value === undefined || name.startsWith('ARGUS_') || name === 'NODE_OPTIONS') {
+    if (value === undefined || name.startsWith('PHARGUS_') || name === 'NODE_OPTIONS') {
       continue;
     }
     env[name] = value;
@@ -147,7 +147,7 @@ function runChild(
   env: Record<string, string>,
 ): SpawnSyncReturns<string> {
   const app = writeApp(dir);
-  return spawnSync(process.execPath, [preload, 'argus/agent', app, String(INTERVAL_MS)], {
+  return spawnSync(process.execPath, [preload, 'phargus/agent', app, String(INTERVAL_MS)], {
     cwd: dir,
     env: childEnv(env),
     encoding: 'utf8',
@@ -182,36 +182,36 @@ function expectNdjsonFile(file: string): void {
   }
 }
 
-describe('argus/agent entry — AC-1', () => {
-  it('AC-1: node --require argus/agent streams NDJSON samples to the ARGUS_OUTPUT file and the app exits 0 on its own', () => {
+describe('phargus/agent entry — AC-1', () => {
+  it('AC-1: node --require phargus/agent streams NDJSON samples to the PHARGUS_OUTPUT file and the app exits 0 on its own', () => {
     const dir = tempPackage();
     const outFile = join(dir, 'require-out.ndjson');
     rmSync(outFile, { force: true });
     const child = runChild(dir, '--require', {
-      ARGUS_OUTPUT: outFile,
-      ARGUS_INTERVAL_MS: String(INTERVAL_MS),
+      PHARGUS_OUTPUT: outFile,
+      PHARGUS_INTERVAL_MS: String(INTERVAL_MS),
     });
     expectCleanExit(child);
     expectNdjsonFile(outFile);
   }, 300_000);
 
-  it('AC-1: node --import argus/agent streams NDJSON samples to the ARGUS_OUTPUT file and the app exits 0 on its own', () => {
+  it('AC-1: node --import phargus/agent streams NDJSON samples to the PHARGUS_OUTPUT file and the app exits 0 on its own', () => {
     const dir = tempPackage();
     const outFile = join(dir, 'import-out.ndjson');
     rmSync(outFile, { force: true });
     const child = runChild(dir, '--import', {
-      ARGUS_OUTPUT: outFile,
-      ARGUS_INTERVAL_MS: String(INTERVAL_MS),
+      PHARGUS_OUTPUT: outFile,
+      PHARGUS_INTERVAL_MS: String(INTERVAL_MS),
     });
     expectCleanExit(child);
     expectNdjsonFile(outFile);
   }, 300_000);
 
-  it("AC-1: node --require argus/agent with ARGUS_OUTPUT=stdout prints samples and still prints the app's last console.log after them", () => {
+  it("AC-1: node --require phargus/agent with PHARGUS_OUTPUT=stdout prints samples and still prints the app's last console.log after them", () => {
     const dir = tempPackage();
     const child = runChild(dir, '--require', {
-      ARGUS_OUTPUT: 'stdout',
-      ARGUS_INTERVAL_MS: String(INTERVAL_MS),
+      PHARGUS_OUTPUT: 'stdout',
+      PHARGUS_INTERVAL_MS: String(INTERVAL_MS),
     });
     expectCleanExit(child);
     const lines = child.stdout.split('\n').filter((l) => l.length > 0);

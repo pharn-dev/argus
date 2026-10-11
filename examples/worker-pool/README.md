@@ -1,8 +1,8 @@
 # worker-pool example
 
-Argus watching a process that uses Worker Threads. One `import 'argus/agent'` line turns the agent on;
+Phargus watching a process that uses Worker Threads. One `import '@pharn-dev/phargus/agent'` line turns the agent on;
 the example then runs CPU-heavy tasks on their own threads, takes an on-demand heap snapshot, and
-analyses it on the `argus/analyzer` worker pool so the main event loop is never blocked.
+analyses it on the `@pharn-dev/phargus/analyzer` worker pool so the main event loop is never blocked.
 
 ## Run it
 
@@ -13,7 +13,7 @@ npm run build
 node examples/worker-pool/index.mjs
 ```
 
-The example has no `package.json` of its own: `argus/agent` and `argus/analyzer` resolve through the
+The example has no `package.json` of its own: `@pharn-dev/phargus/agent` and `@pharn-dev/phargus/analyzer` resolve through the
 root package's `exports`, so they need the build above.
 
 ## What you'll see
@@ -28,8 +28,8 @@ The example's own lines carry a `[worker-pool] ` prefix:
 [worker-pool] done
 ```
 
-The interleaved JSON lines are the agent's NDJSON samples. Set `ARGUS_OUTPUT=<absolute file path>`
-to write them to a file instead. `ARGUS_OUTPUT=none` turns the agent off entirely, so no samples are
+The interleaved JSON lines are the agent's NDJSON samples. Set `PHARGUS_OUTPUT=<absolute file path>`
+to write them to a file instead. `PHARGUS_OUTPUT=none` turns the agent off entirely, so no samples are
 collected at all.
 
 The tick count shows the main thread kept running while the analyzer worker parsed the snapshot.

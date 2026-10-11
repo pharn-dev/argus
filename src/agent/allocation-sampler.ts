@@ -33,7 +33,7 @@ function positiveInteger(
     return fallback;
   }
   if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
-    throw new TypeError(`argus: sampleAllocations option ${name} must be a positive integer`);
+    throw new TypeError(`phargus: sampleAllocations option ${name} must be a positive integer`);
   }
   return value;
 }
@@ -52,7 +52,7 @@ export async function sampleAllocations(
   options: AllocationSamplingOptions = {},
 ): Promise<AllocationSite[]> {
   if (typeof options !== 'object' || options === null) {
-    throw new TypeError('argus: sampleAllocations options must be an object');
+    throw new TypeError('phargus: sampleAllocations options must be an object');
   }
   const samplingInterval = positiveInteger(
     options,
@@ -66,13 +66,13 @@ export async function sampleAllocations(
   );
   if (durationMs > MAX_DURATION_MS) {
     throw new TypeError(
-      `argus: sampleAllocations option durationMs must not exceed ${MAX_DURATION_MS}`,
+      `phargus: sampleAllocations option durationMs must not exceed ${MAX_DURATION_MS}`,
     );
   }
   const limit = positiveInteger(options, 'limit', DEFAULT_ALLOCATION_SITE_LIMIT);
 
   if (inProgress) {
-    throw new Error('argus: an allocation sampling session is already in progress');
+    throw new Error('phargus: an allocation sampling session is already in progress');
   }
   inProgress = true;
   try {
@@ -130,12 +130,12 @@ export async function sampleAllocations(
     const suffix =
       cleanupErrors.length > 0 ? `; cleanup also failed: ${cleanupErrors.join('; ')}` : '';
     if (failure !== undefined) {
-      throw new Error(`argus: allocation sampling failed: ${describe(failure.error)}${suffix}`, {
+      throw new Error(`phargus: allocation sampling failed: ${describe(failure.error)}${suffix}`, {
         cause: failure.error,
       });
     }
     if (cleanupErrors.length > 0) {
-      throw new Error(`argus: allocation sampling cleanup failed: ${cleanupErrors.join('; ')}`, {
+      throw new Error(`phargus: allocation sampling cleanup failed: ${cleanupErrors.join('; ')}`, {
         cause: cleanupCause,
       });
     }

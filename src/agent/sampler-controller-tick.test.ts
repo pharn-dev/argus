@@ -62,6 +62,6 @@ describe('sampler controller — tick failures (F-12)', () => {
       process.off('warning', onWarning);
     }
     expect(ticks).toBeGreaterThanOrEqual(2);
-    expect(warnings.some((w) => w.name === 'ArgusSamplerWarning')).toBe(true);
+    expect(warnings.some((w) => w.name === 'PhargusSamplerWarning')).toBe(true);
   });
 });

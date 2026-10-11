@@ -2,11 +2,11 @@ import { stat, readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { types } from 'node:util';
-import { ArgusConfigError, isConfigKey, validateConfigValue } from './config-schema.js';
+import { PhargusConfigError, isConfigKey, validateConfigValue } from './config-schema.js';
 import type { AgentConfig } from './config-schema.js';
 
-const JSON_NAME = 'argus.config.json';
-const JS_NAME = 'argus.config.js';
+const JSON_NAME = 'phargus.config.json';
+const JS_NAME = 'phargus.config.js';
 
 async function exists(cwd: string, name: string): Promise<boolean> {
   try {
@@ -16,7 +16,7 @@ async function exists(cwd: string, name: string): Promise<boolean> {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return false;
     }
-    throw new ArgusConfigError(name, undefined, 'cannot be accessed', { cause: error });
+    throw new PhargusConfigError(name, undefined, 'cannot be accessed', { cause: error });
   }
 }
 
@@ -27,12 +27,12 @@ async function loadRaw(cwd: string, name: string): Promise<unknown> {
     try {
       text = await readFile(file, 'utf8');
     } catch (error) {
-      throw new ArgusConfigError(name, undefined, 'cannot be read', { cause: error });
+      throw new PhargusConfigError(name, undefined, 'cannot be read', { cause: error });
     }
     try {
       return JSON.parse(text) as unknown;
     } catch (error) {
-      throw new ArgusConfigError(name, undefined, 'not valid JSON', { cause: error });
+      throw new PhargusConfigError(name, undefined, 'not valid JSON', { cause: error });
     }
   }
   try {
@@ -42,16 +42,16 @@ async function loadRaw(cwd: string, name: string): Promise<unknown> {
       ? (loaded as { default?: unknown }).default
       : loaded;
   } catch (error) {
-    throw new ArgusConfigError(name, undefined, 'failed to load', { cause: error });
+    throw new PhargusConfigError(name, undefined, 'failed to load', { cause: error });
   }
 }
 
-/** Read argus.config.json or argus.config.js from `cwd` (no parent search). Absent -> {}. */
+/** Read phargus.config.json or phargus.config.js from `cwd` (no parent search). Absent -> {}. */
 export async function readConfigFile(cwd: string): Promise<Partial<AgentConfig>> {
   const hasJson = await exists(cwd, JSON_NAME);
   const hasJs = await exists(cwd, JS_NAME);
   if (hasJson && hasJs) {
-    throw new ArgusConfigError(
+    throw new PhargusConfigError(
       `${JSON_NAME} and ${JS_NAME}`,
       undefined,
       'both exist; keep only one',
@@ -63,12 +63,12 @@ export async function readConfigFile(cwd: string): Promise<Partial<AgentConfig>>
   const name = hasJson ? JSON_NAME : JS_NAME;
   const raw = await loadRaw(cwd, name);
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
-    throw new ArgusConfigError(name, undefined, 'must export or contain a plain object');
+    throw new PhargusConfigError(name, undefined, 'must export or contain a plain object');
   }
   const result: Record<string, unknown> = {};
   for (const key of Object.keys(raw)) {
     if (!isConfigKey(key)) {
-      throw new ArgusConfigError(name, key, 'unknown key');
+      throw new PhargusConfigError(name, key, 'unknown key');
     }
     const value = (raw as Record<string, unknown>)[key];
     validateConfigValue(name, key, value);

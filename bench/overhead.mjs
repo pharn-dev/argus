@@ -91,7 +91,7 @@ function variantSpec(variant, { agentUrl, indexUrl }) {
       return { execArgv: [], env: {} };
     case 'idle':
       // Loaded, then switched off by config: the cost of having the agent installed but disabled.
-      return { execArgv: ['--import', agentUrl], env: { ARGUS_ENABLED: 'false' } };
+      return { execArgv: ['--import', agentUrl], env: { PHARGUS_ENABLED: 'false' } };
     case 'full':
       // The agent's defaults: tracing plus every sampler, NDJSON to stdout (here /dev/null).
       return { execArgv: ['--import', agentUrl], env: {} };
@@ -105,7 +105,7 @@ function variantSpec(variant, { agentUrl, indexUrl }) {
 
 async function runCell(opts, agent, workload, variant, round) {
   const spec = variantSpec(variant, agent);
-  const cwd = await mkdtemp(path.join(os.tmpdir(), 'argus-bench-'));
+  const cwd = await mkdtemp(path.join(os.tmpdir(), 'phargus-bench-'));
   const target = forkChild(TARGET, {
     execArgv: [...opts.nodeArgs, ...spec.execArgv],
     env: cleanEnv({ ...spec.env, BENCH_WORKLOAD: workload, BENCH_VARIANT: variant }),
@@ -140,7 +140,7 @@ async function runCell(opts, agent, workload, variant, round) {
       problems.push(`${server.errors} server errors (first: ${server.firstError})`);
     }
     if (client.requests === 0) problems.push('no request completed in the measured window');
-    if (target.stderr().includes('[argus]')) {
+    if (target.stderr().includes('[phargus]')) {
       problems.push(`agent reported on stderr: ${target.stderr().trim()}`);
     }
     if (problems.length > 0) throw new Error(problems.join('; '));
@@ -287,7 +287,7 @@ async function main() {
   const summary = summarize(cells, opts);
   const result = {
     schema: 1,
-    tool: 'argus bench/overhead.mjs',
+    tool: 'phargus bench/overhead.mjs',
     startedAt,
     finishedAt: new Date().toISOString(),
     commit: gitCommit(),
@@ -311,7 +311,7 @@ async function main() {
   await mkdir(path.dirname(opts.out), { recursive: true });
   await writeFile(opts.out, `${JSON.stringify(result, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
   process.stdout.write(
-    `Argus agent overhead — node ${process.version}, ${result.platform}, ${result.cpus.count} × ${result.cpus.model}\n` +
+    `Phargus agent overhead — node ${process.version}, ${result.platform}, ${result.cpus.count} × ${result.cpus.model}\n` +
       `${opts.connections} connections, ${opts.durationMs / 1000} s measured after ${opts.warmupMs / 1000} s warm-up, ` +
       `median of ${opts.rounds} round(s); ± is the rps coefficient of variation; deltas are versus "none".\n` +
       render(summary, opts) +

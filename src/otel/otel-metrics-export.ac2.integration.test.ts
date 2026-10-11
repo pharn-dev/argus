@@ -131,13 +131,13 @@ describe('otel metrics export — AC-2', () => {
       const metrics = body.resourceMetrics[0]?.scopeMetrics[0]?.metrics ?? [];
       const byName = new Map(metrics.map((metric) => [metric.name, metric]));
 
-      const lagPoints = byName.get('argus.event_loop.lag.max')?.gauge?.dataPoints ?? [];
+      const lagPoints = byName.get('phargus.event_loop.lag.max')?.gauge?.dataPoints ?? [];
       expect(lagPoints.map((point) => point.asInt)).toEqual(['5000000', '6000000']);
       expect(lagPoints.map((point) => point.timeUnixNano)).toEqual([
         '1700000001000000000',
         '1700000002000000000',
       ]);
-      const gcPoints = byName.get('argus.gc.count')?.sum?.dataPoints ?? [];
+      const gcPoints = byName.get('phargus.gc.count')?.sum?.dataPoints ?? [];
       expect(gcPoints.map((point) => point.asInt)).toEqual(['7', '9']);
 
       expect(exporter.droppedBatches).toBe(0);

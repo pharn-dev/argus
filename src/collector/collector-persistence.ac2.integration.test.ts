@@ -52,7 +52,7 @@ describe('collector persistence — AC-2', () => {
   it('AC-2: restores the most recent valid windows, skips a corrupt line and a truncated last line, then appends new windows after them', async () => {
     const collectorModule = (await import('./index.js')) as unknown as CollectorModule;
 
-    const dir = await mkdtemp(join(tmpdir(), 'argus-persist-ac2-'));
+    const dir = await mkdtemp(join(tmpdir(), 'phargus-persist-ac2-'));
     try {
       const path = join(dir, 'windows.ndjson');
       const stored = Array.from({ length: 12 }, (_, index) => makeWindow(index * 1000, index));

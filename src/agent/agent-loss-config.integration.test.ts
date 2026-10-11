@@ -60,9 +60,9 @@ function compile(sources: string[], outDir: string, moduleArgs: string[], type: 
   writeFileSync(join(outDir, '..', 'package.json'), JSON.stringify({ type }));
 }
 
-/** A private copy of the package: both builds of src/agent and the real `exports`, named "argus". */
+/** A private copy of the package: both builds of src/agent and the real `exports`, named "phargus". */
 function buildTempPackage(): string {
-  const pkgDir = mkdtempSync(join(tmpdir(), 'argus-loss-config-'));
+  const pkgDir = mkdtempSync(join(tmpdir(), 'phargus-loss-config-'));
   const sources = agentSources();
   const esmDir = join(pkgDir, 'dist', 'esm', 'agent');
   const cjsDir = join(pkgDir, 'dist', 'cjs', 'agent');
@@ -81,7 +81,7 @@ function buildTempPackage(): string {
   writeFileSync(
     join(pkgDir, 'package.json'),
     JSON.stringify({
-      name: 'argus',
+      name: 'phargus',
       version: '0.0.0',
       private: true,
       type: 'module',
@@ -103,11 +103,11 @@ afterAll(() => {
   }
 });
 
-/** The child's env: the parent's minus every ARGUS_* name and NODE_OPTIONS. */
+/** The child's env: the parent's minus every PHARGUS_* name and NODE_OPTIONS. */
 function childEnv(extra: Record<string, string>): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
   for (const [name, value] of Object.entries(process.env)) {
-    if (value === undefined || name.startsWith('ARGUS_') || name === 'NODE_OPTIONS') {
+    if (value === undefined || name.startsWith('PHARGUS_') || name === 'NODE_OPTIONS') {
       continue;
     }
     env[name] = value;
@@ -125,7 +125,7 @@ function runChild(
   const app = join(dir, 'loss-config-app.mjs');
   // Stay alive for several sample intervals, then exit on its own.
   writeFileSync(app, "setTimeout(() => console.log('app ran'), 400);\n");
-  return spawnSync(process.execPath, [preload, 'argus/agent', app], {
+  return spawnSync(process.execPath, [preload, 'phargus/agent', app], {
     cwd: dir,
     env: childEnv(env),
     encoding: 'utf8',
@@ -137,16 +137,16 @@ type SampleLine = { timestamp: number; dropped?: { samples: unknown; spans: unkn
 
 const PRELOADS = ['--require', '--import'] as const;
 
-describe('argus/agent — unknown variables, loss accounting, output file mode', () => {
+describe('phargus/agent — unknown variables, loss accounting, output file mode', () => {
   for (const preload of PRELOADS) {
-    it(`${preload}: ARGUS_FOO warns once and is ignored; the agent still starts and writes samples carrying dropped counters to a 0600 file`, () => {
+    it(`${preload}: PHARGUS_FOO warns once and is ignored; the agent still starts and writes samples carrying dropped counters to a 0600 file`, () => {
       const dir = tempPackage();
       const output = join(dir, `out-${preload.slice(2)}.ndjson`);
       rmSync(output, { force: true });
       const child = runChild(dir, preload, {
-        ARGUS_FOO: '1',
-        ARGUS_OUTPUT: output,
-        ARGUS_INTERVAL_MS: String(INTERVAL_MS),
+        PHARGUS_FOO: '1',
+        PHARGUS_OUTPUT: output,
+        PHARGUS_INTERVAL_MS: String(INTERVAL_MS),
       });
 
       expect(child.error, `child failed to run: ${String(child.error)}`).toBeUndefined();
@@ -156,8 +156,8 @@ describe('argus/agent — unknown variables, loss accounting, output file mode',
 
       const stderrLines = child.stderr.split('\n').filter((l) => l.length > 0);
       expect(stderrLines, `exactly one stderr line:\n${child.stderr}`).toHaveLength(1);
-      expect(stderrLines[0]).toMatch(/^\[argus\] warning: /);
-      expect(stderrLines[0]).toContain('ARGUS_FOO');
+      expect(stderrLines[0]).toMatch(/^\[phargus\] warning: /);
+      expect(stderrLines[0]).toContain('PHARGUS_FOO');
       expect(child.stderr).not.toContain('agent disabled');
 
       expect(existsSync(output), `no output file:\n${child.stderr}`).toBe(true);

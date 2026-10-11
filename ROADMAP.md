@@ -1,4 +1,4 @@
-# Argus — Build Order
+# Phargus — Build Order
 
 We build the **full** product. Nothing here is optional and nothing is deferred
 to a "later" phase. This document is **build order, not scope-cutting** — the
@@ -28,11 +28,11 @@ Where the built code differs from a step's wording below:
 
 ## S1 — Agent core: the one-liner
 
-- `require('argus/agent')` + `--require` preload, zero third-party deps.
+- `require('@pharn-dev/phargus/agent')` + `--require` preload, zero third-party deps.
 - Event loop lag + memory sampling.
 - GC hook (`--trace-gc`) and stream backpressure probes.
 - NDJSON export stream with proper backpressure.
-- Config loading (env + `argus.config`).
+- Config loading (env + `phargus.config`).
 - Outcome: attach to a script, see all raw runtime signals flowing out.
 
 ## S2 — Collector pipeline

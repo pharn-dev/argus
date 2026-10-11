@@ -1,11 +1,11 @@
 import type { RuleDescriptor } from './rule-descriptor.js';
 import { assertParamsObject, readIntegerParam } from './rule-parameter-error.js';
 
-/** Ids of the built-in rules. The `argus/` prefix cannot come from a rules-directory file name. */
+/** Ids of the built-in rules. The `phargus/` prefix cannot come from a rules-directory file name. */
 export const BuiltinRuleId = Object.freeze({
-  EVENT_LOOP_LAG: 'argus/event-loop-lag',
-  HEAP_GROWTH: 'argus/heap-growth',
-  GC_PAUSE_SHARE: 'argus/gc-pause-share',
+  EVENT_LOOP_LAG: 'phargus/event-loop-lag',
+  HEAP_GROWTH: 'phargus/heap-growth',
+  GC_PAUSE_SHARE: 'phargus/gc-pause-share',
 } as const);
 
 export type EventLoopLagParams = { thresholdNs?: number; windows?: number };

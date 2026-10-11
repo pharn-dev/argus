@@ -66,7 +66,7 @@ function encodeMappings(lines: Segment[][]): string {
 
 describe('analyzer stack symbolization', () => {
   it('AC-2: attaches a typed error to frames of a malformed source map and still maps the other frames', async () => {
-    const dir = await realpath(await mkdtemp(join(tmpdir(), 'argus-symbolize-ac2-')));
+    const dir = await realpath(await mkdtemp(join(tmpdir(), 'phargus-symbolize-ac2-')));
     try {
       // Built file whose adjacent `.map` file is not valid JSON.
       const badFile = join(dir, 'bad.js');

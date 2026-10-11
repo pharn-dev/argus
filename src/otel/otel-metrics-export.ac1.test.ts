@@ -50,13 +50,13 @@ describe('otel metrics export — AC-1', () => {
     const byName = new Map(metrics.map((metric) => [metric.name, metric]));
 
     const gauges: [string, number][] = [
-      ['argus.event_loop.lag.max', 5000000],
-      ['argus.event_loop.lag.p99', 4000000],
-      ['argus.event_loop.lag.mean', 2000000],
-      ['argus.memory.heap_used.last', 1000],
-      ['argus.memory.heap_used.max', 2000],
-      ['argus.memory.rss.last', 3000],
-      ['argus.memory.rss.max', 4000],
+      ['phargus.event_loop.lag.max', 5000000],
+      ['phargus.event_loop.lag.p99', 4000000],
+      ['phargus.event_loop.lag.mean', 2000000],
+      ['phargus.memory.heap_used.last', 1000],
+      ['phargus.memory.heap_used.max', 2000],
+      ['phargus.memory.rss.last', 3000],
+      ['phargus.memory.rss.max', 4000],
     ];
     for (const [name, value] of gauges) {
       const points = byName.get(name)?.gauge?.dataPoints;
@@ -65,7 +65,7 @@ describe('otel metrics export — AC-1', () => {
       expect(points?.[0]?.timeUnixNano, name).toBe('1700000001000000000');
     }
 
-    const sum = byName.get('argus.gc.count')?.sum;
+    const sum = byName.get('phargus.gc.count')?.sum;
     expect(sum?.aggregationTemporality).toBe(1);
     expect(sum?.isMonotonic).toBe(true);
     expect(sum?.dataPoints).toHaveLength(1);

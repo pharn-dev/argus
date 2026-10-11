@@ -7,7 +7,7 @@ import { defaultAgentConfig, loadAgentConfig } from './index.js';
 const dirs: string[] = [];
 
 async function makeTempDir(): Promise<string> {
-  const dir = await mkdtemp(path.join(tmpdir(), 'argus-config-unknown-'));
+  const dir = await mkdtemp(path.join(tmpdir(), 'phargus-config-unknown-'));
   dirs.push(dir);
   return dir;
 }
@@ -16,18 +16,18 @@ afterEach(async () => {
   await Promise.all(dirs.splice(0).map((d) => rm(d, { recursive: true, force: true })));
 });
 
-describe('agent config — unknown ARGUS_* variables (F-09)', () => {
+describe('agent config — unknown PHARGUS_* variables (F-09)', () => {
   it('warns once per unknown variable, naming it, and ignores it', async () => {
     const cwd = await makeTempDir();
     const warnings: string[] = [];
     const config = await loadAgentConfig(
       cwd,
-      { ARGUS_FOO: '1', ARGUS_INTERVAL_MS: '250' },
+      { PHARGUS_FOO: '1', PHARGUS_INTERVAL_MS: '250' },
       { onWarning: (message) => warnings.push(message) },
     );
     expect(config).toEqual({ ...defaultAgentConfig, intervalMs: 250 });
     expect(warnings).toHaveLength(1);
-    expect(warnings[0]).toContain('ARGUS_FOO');
+    expect(warnings[0]).toContain('PHARGUS_FOO');
     expect(warnings[0]).not.toContain('did you mean');
   });
 
@@ -36,19 +36,19 @@ describe('agent config — unknown ARGUS_* variables (F-09)', () => {
     const warnings: string[] = [];
     await loadAgentConfig(
       cwd,
-      { ARGUS_OUTPT: 'none', ARGUS_INTERVAL: '5' },
+      { PHARGUS_OUTPT: 'none', PHARGUS_INTERVAL: '5' },
       { onWarning: (message) => warnings.push(message) },
     );
     expect(warnings).toEqual([
-      'ignoring unknown environment variable ARGUS_OUTPT (did you mean ARGUS_OUTPUT?)',
-      'ignoring unknown environment variable ARGUS_INTERVAL (did you mean ARGUS_INTERVAL_MS?)',
+      'ignoring unknown environment variable PHARGUS_OUTPT (did you mean PHARGUS_OUTPUT?)',
+      'ignoring unknown environment variable PHARGUS_INTERVAL (did you mean PHARGUS_INTERVAL_MS?)',
     ]);
   });
 
   it('still fails on an invalid value for a known variable', async () => {
     const cwd = await makeTempDir();
     await expect(
-      loadAgentConfig(cwd, { ARGUS_QUEUE_BOUND: 'lots' }, { onWarning: () => undefined }),
-    ).rejects.toThrow(/ARGUS_QUEUE_BOUND/);
+      loadAgentConfig(cwd, { PHARGUS_QUEUE_BOUND: 'lots' }, { onWarning: () => undefined }),
+    ).rejects.toThrow(/PHARGUS_QUEUE_BOUND/);
   });
 });

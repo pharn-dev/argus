@@ -102,7 +102,7 @@ describe('agent HTTP span recording — AC-3', () => {
     sent.push(await send(port, 'GET', '/first'));
     sent.push(await send(port, 'POST', '/second'));
     sent.push(await send(port, 'GET', '/missing'));
-    sent.push(await send(port, 'GET', '/search?q=argus&page=2'));
+    sent.push(await send(port, 'GET', '/search?q=phargus&page=2'));
     sent.push(await send(port, 'DELETE', '/last'));
     await settle();
     const finishedAt = Date.now();
