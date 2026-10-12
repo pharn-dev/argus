@@ -38,6 +38,11 @@ export type DashboardServerOptions = {
    */
   allowedHosts?: readonly string[];
   heartbeatMs?: number;
+  /**
+   * Live events held per client while its socket is backed up (default 1000); past that the
+   * oldest is dropped and counted in `droppedEvents`. The initial replay of the collector's
+   * buffers on connect does not count against it and is never dropped.
+   */
   maxBufferedEvents?: number;
   onError?: (error: Error) => void;
 };
@@ -204,24 +209,20 @@ export async function createDashboardServer(
     });
     clients.add(client);
 
-    // Snapshot and subscribe in one synchronous block: nothing is missed or duplicated.
-    const windows = collector.windows.snapshot();
-    const alerts = collector.alerts.snapshot();
-    const spans = collector.spans.snapshot();
+    // Snapshot, replay and subscribe in one synchronous block: nothing is missed or duplicated.
+    // The replay is one write past the live-event drop queue, so a new client always gets the
+    // whole history; most important first, in case the client goes away part-way.
+    const replay = [
+      ...collector.alerts.snapshot().map((a) => formatEvent('alert', a)),
+      ...collector.windows.snapshot().map((w) => formatEvent('window', w)),
+      ...collector.spans.snapshot().map((s) => formatEvent('span', s)),
+    ].join('');
+    client.replay(replay);
     const unsubscribe = collector.subscribe({
       window: (w): void => client.send(formatEvent('window', w)),
       alert: (a): void => client.send(formatEvent('alert', a)),
       span: (s): void => client.send(formatEvent('span', s)),
     });
-    for (const w of windows) {
-      client.send(formatEvent('window', w));
-    }
-    for (const a of alerts) {
-      client.send(formatEvent('alert', a));
-    }
-    for (const s of spans) {
-      client.send(formatEvent('span', s));
-    }
 
     let done = false;
     const cleanup = (): void => {

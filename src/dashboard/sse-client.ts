@@ -8,6 +8,12 @@ export type SseClientOptions = {
 };
 
 export type SseClient = {
+  /**
+   * Writes the connect-time replay in one call, past the drop queue, so none of it is ever
+   * dropped. Its size is already bounded by the collector's ring buffers. Call it once, before the
+   * first `send`; live events sent after it queue behind it as usual.
+   */
+  replay(chunk: string): void;
   send(chunk: string): void;
   heartbeat(): void;
   readonly dropped: number;
@@ -42,6 +48,14 @@ export function createSseClient(res: ServerResponse, options: SseClientOptions):
   res.on('drain', onDrain);
 
   return {
+    replay(chunk: string): void {
+      if (ended || chunk === '') {
+        return;
+      }
+      if (!res.write(chunk)) {
+        blocked = true;
+      }
+    },
     send(chunk: string): void {
       if (ended) {
         return;

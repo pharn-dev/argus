@@ -68,4 +68,23 @@ describe('SSE client with a stalled reader', () => {
     expect(written).toEqual(Array.from({ length: 10 }, (_, k) => `e${50_000 - 10 + k}`));
     client.end();
   });
+
+  it('writes the replay whole past the queue, then still bounds the live events behind it', () => {
+    const { res, written, unblock } = stalledResponse();
+    let drops = 0;
+    const client = createSseClient(res, { maxBufferedEvents: 10, onDrop: () => (drops += 1) });
+
+    const replay = Array.from({ length: 5_000 }, (_, k) => `r${k}`).join('');
+    client.replay(replay); // larger than the queue; the socket now reports backpressure
+    expect(written).toEqual([replay]);
+    for (let i = 0; i < 100; i += 1) {
+      client.send(`e${i}`);
+    }
+    expect(drops).toBe(100 - 10);
+
+    written.length = 0;
+    unblock();
+    expect(written).toEqual(Array.from({ length: 10 }, (_, k) => `e${100 - 10 + k}`));
+    client.end();
+  });
 });

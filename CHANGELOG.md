@@ -16,6 +16,14 @@ All notable changes to Phargus are recorded here. The format follows
   `true` for the publish and release jobs to run. Checks for the release notes, the version files
   and the workflow run under `npm test`.
 
+### Fixed
+
+- Dashboard: a client that connects to `/events` now receives the collector's whole history
+  (every buffered alert, window and span) instead of losing part of it to the live-event drop
+  queue; with full buffers it previously got no alerts and a truncated window history. The replay
+  is written in one call outside that queue, alerts first, then windows, then spans.
+  `maxBufferedEvents` and `droppedEvents` now cover live events only.
+
 ## [0.1.0] - 2026-10-12
 
 First release of Phargus (`@pharn-dev/phargus`).
