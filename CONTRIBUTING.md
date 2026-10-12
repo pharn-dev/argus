@@ -58,6 +58,9 @@ CodeQL (`Analyze (javascript-typescript)`) and `gitleaks` run as well. A separat
 `check:install` uses temporary consumer projects and installs lockfile-pinned TypeScript, Node
 types and `isolated-vm`; it needs registry access and the native addon build prerequisites. The job names are a contract with the branch ruleset:
 renaming one means updating the ruleset too.
+The ruleset also requires two checks from the Socket Security GitHub App, `Socket Security: Project
+Report` and `Socket Security: Pull Request Alerts`. No workflow in this repo produces them; if Socket
+renames a check, the ruleset must be edited.
 
 A `nightly` workflow, not a PR check, runs `node bench/overhead.mjs` (agent-on versus agent-off;
 informational, tables in the job summary) and `node bench/soak.mjs` (fails on heap growth or leaked
