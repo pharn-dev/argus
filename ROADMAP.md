@@ -8,7 +8,7 @@ dashboard has anything to show. That's all the ordering means.
 
 Calendar is yours to set; the ordering is the point.
 
-**Status:** S0 to S7 are implemented on `main`. S8 (first npm release and launch) is on hold.
+**Status:** S0 to S7 are implemented on `main`. S8 is in progress: version 0.1.0 is prepared for the first npm release; npm publication and launch are pending.
 Where the built code differs from a step's wording below:
 
 - S1: GC events come from a `PerformanceObserver`, not a `--trace-gc` hook.

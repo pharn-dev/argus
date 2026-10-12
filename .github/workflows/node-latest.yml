@@ -34,3 +34,12 @@ jobs:
         run: npm run build
       - name: Check exports (ESM + CJS)
         run: npm run check:exports
+      - name: Check package contents and Node floor
+        run: npm run check:package
+      - name: Pack
+        id: pack
+        run: node scripts/pack-release.mjs "$RUNNER_TEMP/pkg"
+      - name: Smoke the packed package
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+        run: npm run check:install -- "$RUNNER_TEMP/pkg/$TARBALL"

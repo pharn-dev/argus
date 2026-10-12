@@ -18,6 +18,8 @@ npm install
 npm run build           # dual build into dist/: ESM (dist/esm) + CJS (dist/cjs)
 npm run check:exports   # after build: every `exports` subpath loads via import and require
 npm run check:package   # after build: tarball contents, source maps, and engines.node == .nvmrc
+node scripts/pack-release.mjs /tmp/phargus-package
+npm run check:install -- /tmp/phargus-package/pharn-dev-phargus-0.1.0.tgz
 npm run typecheck       # tsc --noEmit over src/ and the repo's own scripts and configs
 npm test
 npm run lint
@@ -40,19 +42,21 @@ npm run format        # or format:check in CI
 
 Every PR runs these as separate jobs, and all of them are required status checks on `main`:
 
-| Job          | Command                                                                |
-| ------------ | ---------------------------------------------------------------------- |
-| Format check | `npm run format:check`                                                 |
-| Lint         | `npm run lint`                                                         |
-| Typecheck    | `npm run typecheck`                                                    |
-| Test         | `npm test`                                                             |
-| Build        | `npm run build`, `npm run check:exports`, then `npm run check:package` |
-| Action pins  | `npm run check:pins` (every Action pinned to a SHA)                    |
+| Job          | Command                                                                          |
+| ------------ | -------------------------------------------------------------------------------- |
+| Format check | `npm run format:check`                                                           |
+| Lint         | `npm run lint`                                                                   |
+| Typecheck    | `npm run typecheck`                                                              |
+| Test         | `npm test`                                                                       |
+| Build        | build, exports, package contents, and `check:install` against the packed tarball |
+| Action pins  | `npm run check:pins` (every Action pinned to a SHA)                              |
 
 Every required job runs on the Node version in `.nvmrc`, which is the `engines` floor.
 
 CodeQL (`Analyze (javascript-typescript)`) and `gitleaks` run as well. A separate, non-required
-`node-latest` workflow smoke-tests Node 24. The job names are a contract with the branch ruleset:
+`node-latest` workflow tests Node 24, including installation of the packed package.
+`check:install` uses temporary consumer projects and installs lockfile-pinned TypeScript, Node
+types and `isolated-vm`; it needs registry access and the native addon build prerequisites. The job names are a contract with the branch ruleset:
 renaming one means updating the ruleset too.
 The ruleset also requires two checks from the Socket Security GitHub App, `Socket Security: Project
 Report` and `Socket Security: Pull Request Alerts`. No workflow in this repo produces them; if Socket

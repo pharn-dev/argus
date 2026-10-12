@@ -5,9 +5,9 @@ Phargus runs **inside** the Node.js process it observes, and its dashboard expos
 the product, not an afterthought. We welcome coordinated disclosure of any vulnerability in this
 repository.
 
-> **Status:** Phargus is pre-release. Roadmap steps S0 to S7 are implemented on `main`, but no version
-> has been published yet, so there is nothing to patch in the wild today. Reports against `main` are
-> welcome and are handled the same way.
+> **Status:** Version 0.1.0 is prepared for the first npm release; publication is pending. Roadmap
+> steps S0 to S7 are implemented on `main`. Reports against `main` are welcome and are handled
+> according to this policy.
 
 ## What Phargus is, and its security surface
 

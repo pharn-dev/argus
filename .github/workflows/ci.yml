@@ -105,6 +105,13 @@ jobs:
       # carries its sources, every "exports" target ships, and engines.node matches .nvmrc.
       - name: Check package contents and Node floor
         run: npm run check:package
+      - name: Pack
+        id: pack
+        run: node scripts/pack-release.mjs "$RUNNER_TEMP/pkg"
+      - name: Smoke the packed package
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+        run: npm run check:install -- "$RUNNER_TEMP/pkg/$TARBALL"
 
   action-pins:
     name: Action pins

@@ -1,6 +1,6 @@
 {
   "name": "@pharn-dev/phargus",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "All-seeing runtime diagnostics for Node.js. Event loop lag, memory, GC, stream backpressure and request tracing from a single require \u2014 zero dependencies in the agent, no hosted account. An optional in-package collector and live dashboard turn the agent's output into windows, alerts and a browser view.",
   "keywords": [
     "nodejs",
@@ -24,7 +24,6 @@
   "license": "Apache-2.0",
   "author": "Przemek Galarowicz",
   "type": "module",
-  "private": true,
   "engines": {
     "node": ">=22.18.0",
     "npm": ">=10"
@@ -122,7 +121,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "check:install": "node scripts/check-install.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

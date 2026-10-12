@@ -7,9 +7,15 @@ All notable changes to Phargus are recorded here. The format follows
 
 ## [Unreleased]
 
-Nothing has been published to npm yet. Everything below is on `main`.
+Planned first release: **0.1.0**. npm publication is pending. The release date and versioned
+heading will be set when the release is cut.
 
 ### Added
+
+- Release preparation workflow that validates a tarball without publishing, with explicit opt-in
+  for later GitHub Release publishing.
+- Installed-package checks for ESM/CJS imports and types, analyzer workers, plugin sandbox, and
+  the agent → collector → dashboard SSE flow.
 
 - Single npm package with subpath exports, built as both ESM and CommonJS.
 - Open-source baseline: `README.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `docs/THREAT-MODEL.md`,
