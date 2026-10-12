@@ -1,54 +1,80 @@
-# Phargus
+<p align="center">
+  <img src="./docs/assets/phargus-logo.svg" alt="Phargus" width="96">
+</p>
 
-> All-seeing runtime diagnostics for Node.js.
+<h1 align="center">Phargus</h1>
 
-Phargus is a runtime diagnostics agent for Node.js. One line loads the agent into your process; it
-samples event loop lag, memory, GC and stream backpressure, traces incoming HTTP requests, and
-writes everything as NDJSON. An optional collector and a small dashboard, shipped in the same
-package, turn that stream into time windows, alerts and a live page in your browser. They are
-libraries you run in your own process, not a service: the agent works on its own and has **zero
-external dependencies**, with no hosted account and no separate backend to deploy.
+<p align="center"><strong>All-seeing runtime diagnostics for Node.js.</strong></p>
 
-> **Status: 0.1.0, the first release, is being published to npm.** Roadmap steps S0 to S7 are
-> implemented on `main` (agent, collector, dashboard, tracing, V8 and memory depth, plugin runner,
-> OpenTelemetry export; see [`ROADMAP.md`](./ROADMAP.md)). Until the package is available on npm,
-> try `@pharn-dev/phargus` from a locally built tarball (below).
+<p align="center">
+  One line in your process. Event loop lag, memory, GC, stream backpressure and request traces.<br>
+  Zero dependencies in the agent, no hosted account, no separate backend.
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@pharn-dev/phargus"><img alt="npm" src="https://img.shields.io/npm/v/@pharn-dev/phargus?label=npm"></a>
+  <a href="https://github.com/pharn-dev/phargus/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/pharn-dev/phargus/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/pharn-dev/phargus/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/pharn-dev/phargus/actions/workflows/codeql.yml/badge.svg"></a>
+  <a href="https://github.com/pharn-dev/phargus/actions/workflows/gitleaks.yml"><img alt="Secrets" src="https://github.com/pharn-dev/phargus/actions/workflows/gitleaks.yml/badge.svg"></a>
+  <a href="./LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/license-Apache--2.0-green"></a>
+  <a href="./package.json"><img alt="Node" src="https://img.shields.io/badge/node-%3E%3D22.18-339933"></a>
+</p>
+
+```bash
+npm install @pharn-dev/phargus
+node --import @pharn-dev/phargus/agent app.mjs
+```
+
+<p align="center">
+  <img src="./docs/assets/dashboard.gif" alt="The Phargus dashboard: event loop lag, memory and GC cards, alerts firing and resolving, and a waterfall of recent requests" width="640">
+</p>
+
+> **Status: 0.1.0, the first release, is on npm.** Roadmap steps S0 to S7 are implemented (agent,
+> collector, dashboard, tracing, V8 and memory depth, plugin runner, OpenTelemetry export; see
+> [`ROADMAP.md`](./ROADMAP.md)).
+
+## Contents
+
+- [Why Phargus](#why-phargus)
+- [Quick start](#quick-start)
+- [Configuration](#configuration)
+- [What you get](#what-you-get)
+- [How it fits together](#how-it-fits-together)
+- [Safety and limits](#safety-and-limits)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Security](#security)
+- [License](#license)
+
+---
 
 ## Why Phargus
 
-- [clinic.js](https://clinicjs.org/) is heavy and one-shot: capture, then analyze offline.
-- OpenTelemetry is powerful but takes real setup for a quick look.
-- Hosted APMs cost money and require an account.
+Phargus is for a quick look at a live process: one line, in-process, no account.
 
-Phargus is meant for a quick look at a live process: one line, in-process, no account. The agent's
-zero-dependency rule is never relaxed.
+|                     | One-line setup | Runs in the live process | Needs an account  | Analysis              |
+| ------------------- | -------------- | ------------------------ | ----------------- | --------------------- |
+| [clinic.js][clinic] | no             | one-shot capture         | no                | offline, after        |
+| OpenTelemetry       | no             | yes                      | no, but a backend | in your backend       |
+| Hosted APMs         | yes            | yes                      | **yes**, and paid | in the vendor's UI    |
+| **Phargus**         | **yes**        | **yes**                  | **no**            | live, in your browser |
 
-## Requirements
+The agent's zero-dependency rule is never relaxed: `src/agent` imports Node core only, and an ESLint
+rule enforces it.
 
-**Node.js 22.18 or newer** (`engines.node` is `>=22.18.0`; [`.nvmrc`](./.nvmrc) pins the tested
-floor). On Node 22, request tracing is noticeably more expensive for promise-heavy code than on
-Node 24; see [`docs/LIMITS.md`](./docs/LIMITS.md#1-cost-and-overhead).
+[clinic]: https://clinicjs.org/
 
-## Install
+---
 
-Once the first release is published:
+## Quick start
+
+**Requires Node.js 22.18 or newer** (`engines.node` is `>=22.18.0`; [`.nvmrc`](./.nvmrc) pins the
+tested floor). On Node 22, request tracing is noticeably more expensive for promise-heavy code than
+on Node 24; see [`docs/LIMITS.md`](./docs/LIMITS.md#1-cost-and-overhead).
 
 ```bash
 npm install @pharn-dev/phargus
 ```
-
-## Try it from source
-
-```bash
-git clone https://github.com/pharn-dev/phargus.git
-cd phargus
-npm ci
-npm pack                       # builds dist/ and writes pharn-dev-phargus-0.1.0.tgz
-cd /path/to/your-app
-npm install /path/to/phargus/pharn-dev-phargus-0.1.0.tgz
-```
-
-## Usage
 
 Load the agent first, before your own code:
 
@@ -68,25 +94,13 @@ node --import @pharn-dev/phargus/agent app.mjs     # ESM app
 ```
 
 By default the agent writes one sample line per second (about 2 KB) to **your process's stdout**,
-plus one line per traced request. Choose the destination with `PHARGUS_OUTPUT`:
+plus one line per traced request. That is all the agent does on its own.
 
-| Variable              | Default  | Meaning                                                   |
-| --------------------- | -------- | --------------------------------------------------------- |
-| `PHARGUS_OUTPUT`      | `stdout` | `stdout`, `none` (agent off), or a file path              |
-| `PHARGUS_INTERVAL_MS` | `1000`   | sampling interval                                         |
-| `PHARGUS_QUEUE_BOUND` | `1024`   | lines held per output queue before the oldest are dropped |
-| `PHARGUS_ENABLED`     | `true`   | `false` or `0` turns the agent off                        |
+### Add the live dashboard
 
-The same keys (`output`, `intervalMs`, `queueBound`, `enabled`) can go in `phargus.config.json` or
-`phargus.config.js` in the working directory. An unknown `PHARGUS_*` variable prints one warning on
-stderr and is ignored. An invalid value disables the agent with one `[phargus] agent disabled: ...`
-line on stderr; your app keeps running.
-
-### Getting to the dashboard
-
-The agent does not start a server. You wire `@pharn-dev/phargus/collector` and `@pharn-dev/phargus/dashboard` to the agent's
-NDJSON, usually in a second process. A minimal version, assuming your app writes nothing else to
-stdout:
+The agent does not start a server. You wire `@pharn-dev/phargus/collector` and
+`@pharn-dev/phargus/dashboard` to the agent's NDJSON, usually in a second process. A minimal version,
+assuming your app writes nothing else to stdout:
 
 ```js
 // collect.mjs — run as: node --import @pharn-dev/phargus/agent app.mjs | node collect.mjs
@@ -108,6 +122,7 @@ await collector.consume(records(process.stdin));
 
 [`examples/express-app`](./examples/express-app) is the complete version: it forks the app, reads
 its stdout into a collector with an alert rule, serves the dashboard, and shuts both down cleanly.
+The recording above is that example.
 
 **Dashboard access.**
 
@@ -123,69 +138,78 @@ its stdout into a collector with an alert rule, serves the dashboard, and shuts 
   reach the dashboard by another name, list that name in `allowedHosts`.
 - The dashboard is plain HTTP. For remote access use an SSH tunnel or a TLS-terminating proxy.
 
+---
+
+## Configuration
+
+Choose where the agent writes with `PHARGUS_OUTPUT`:
+
+| Variable              | Default  | Meaning                                                   |
+| --------------------- | -------- | --------------------------------------------------------- |
+| `PHARGUS_OUTPUT`      | `stdout` | `stdout`, `none` (agent off), or a file path              |
+| `PHARGUS_INTERVAL_MS` | `1000`   | sampling interval                                         |
+| `PHARGUS_QUEUE_BOUND` | `1024`   | lines held per output queue before the oldest are dropped |
+| `PHARGUS_ENABLED`     | `true`   | `false` or `0` turns the agent off                        |
+
+The same keys (`output`, `intervalMs`, `queueBound`, `enabled`) can go in `phargus.config.json` or
+`phargus.config.js` in the working directory. An unknown `PHARGUS_*` variable prints one warning on
+stderr and is ignored. An invalid value disables the agent with one `[phargus] agent disabled: ...`
+line on stderr; your app keeps running.
+
+---
+
 ## What you get
 
-- **Runtime samples** (every interval): event loop delay (min, max, mean, p50, p99), memory
-  (`heapUsed`, `heapTotal`, `rss`, `external`, `arrayBuffers`), V8 heap space statistics, GC count,
-  total and max pause and counts by kind (from `PerformanceObserver`), and stream backpressure: how
-  often and how long writes stalled, grouped by the call site that wrote.
-- **Backpressure coverage**: `Writable` subclasses, `fs.WriteStream`, `Duplex`, `Transform`,
-  `PassThrough`, `net.Socket`, `tls.TLSSocket`, `http.ServerResponse` and `http.ClientRequest`.
-- **Request tracing**: each request to a `node:http` or `node:https` server gets a trace id (or
-  continues an incoming W3C `traceparent`), carried through its async work by `AsyncLocalStorage`
-  with no change to your code. Spans record method, path without the query string, status and
-  duration. `currentTraceId()` reads the id anywhere in that request's async work.
-- **Loss accounting**: output queues are bounded and drop the oldest lines; every sample line
-  carries cumulative `dropped: { samples, spans }` counters.
-- **V8 and memory tools** (library API): on-demand heap snapshots (`takeHeapSnapshot`), snapshot
-  summaries and diffs and stack-trace symbolization in a Worker Thread pool (`@pharn-dev/phargus/analyzer`),
-  allocation sampling (`sampleAllocations`), and a parser for `node --trace-deopt` output
-  (`createDeoptParser`). The parser does not capture that output; you feed it the lines.
-- **Collector** (`@pharn-dev/phargus/collector`): fixed time windows with integer math, threshold alerts, alert
-  sinks (stdout, file, webhook), and opt-in persistence of recent windows to an append-only file.
-- **Dashboard** (`@pharn-dev/phargus/dashboard`): vanilla JS, no framework, no bundler, live over Server-Sent
-  Events. Shows the latest event loop, memory and GC figures, alerts, and a waterfall of recent
-  requests.
-- **Custom rules** (`@pharn-dev/phargus/plugin-runner`): user rules run in an `isolated-vm` sandbox in a child
-  process, with a memory limit, a timeout and capped results. `isolated-vm` is an optional peer
-  dependency.
-- **OpenTelemetry export** (`@pharn-dev/phargus/otel`): opt-in OTLP/HTTP JSON export of windows as metrics and
-  spans as traces, using Node core `fetch` only.
+| Capability          | What it covers                                                                                                                                                                                                                                                                                                                | Import                             |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| **Runtime samples** | Event loop delay (min, max, mean, p50, p99); memory (`heapUsed`, `heapTotal`, `rss`, `external`, `arrayBuffers`); V8 heap space statistics; GC count, total and max pause and counts by kind                                                                                                                                  | `@pharn-dev/phargus/agent`         |
+| **Backpressure**    | How often and how long writes stalled, grouped by the call site that wrote. Covers `Writable` subclasses, `fs.WriteStream`, `Duplex`, `Transform`, `PassThrough`, `net.Socket`, `tls.TLSSocket`, `http.ServerResponse` and `http.ClientRequest`                                                                               | `@pharn-dev/phargus/agent`         |
+| **Request tracing** | Each request to a `node:http` or `node:https` server gets a trace id (or continues an incoming W3C `traceparent`), carried by `AsyncLocalStorage` with no change to your code. Spans record method, path without the query string, status and duration. `currentTraceId()` reads the id anywhere in that request's async work | `@pharn-dev/phargus/agent`         |
+| **Loss accounting** | Output queues are bounded and drop the oldest lines; every sample line carries cumulative `dropped: { samples, spans }` counters                                                                                                                                                                                              | `@pharn-dev/phargus/agent`         |
+| **V8 and memory**   | On-demand heap snapshots (`takeHeapSnapshot`); snapshot summaries, diffs and stack-trace symbolization in a Worker Thread pool; allocation sampling (`sampleAllocations`); a parser for `node --trace-deopt` output (`createDeoptParser`, you feed it the lines)                                                              | `@pharn-dev/phargus/analyzer`      |
+| **Collector**       | Fixed time windows with integer math, threshold alerts, alert sinks (stdout, file, webhook), opt-in persistence of recent windows to an append-only file                                                                                                                                                                      | `@pharn-dev/phargus/collector`     |
+| **Dashboard**       | Vanilla JS, no framework, no bundler, live over Server-Sent Events: latest event loop, memory and GC figures, alerts, and a waterfall of recent requests                                                                                                                                                                      | `@pharn-dev/phargus/dashboard`     |
+| **Custom rules**    | User rules run in an `isolated-vm` sandbox in a child process, with a memory limit, a timeout and capped results. `isolated-vm` is an optional peer dependency                                                                                                                                                                | `@pharn-dev/phargus/plugin-runner` |
+| **OpenTelemetry**   | Opt-in OTLP/HTTP JSON export of windows as metrics and spans as traces, using Node core `fetch` only                                                                                                                                                                                                                          | `@pharn-dev/phargus/otel`          |
 
 [`FEATURES.md`](./FEATURES.md) lists the full scope with the status of each item.
 
+---
+
 ## How it fits together
 
-```
-your process                          a second process (or the same one)
-┌──────────────────────────────┐      ┌──────────────────────────────────────────┐
-│ app code                     │      │ collector: windows, alerts, sinks        │
-│ agent: samplers,             │NDJSON│ dashboard: SSE to the browser            │
-│ HTTP tracing, bounded output │─────▶│ otel, plugin-runner (opt-in)              │
-└──────────────────────────────┘      └──────────────────────────────────────────┘
+```mermaid
+flowchart LR
+  subgraph app["your process"]
+    code["app code"] --- agent["agent<br/>samplers, HTTP tracing,<br/>bounded output"]
+  end
+  subgraph second["a second process (or the same one)"]
+    collector["collector<br/>windows, alerts, sinks"] --> dashboard["dashboard<br/>SSE to the browser"]
+    collector -.-> otel["otel<br/>(opt-in)"]
+    collector -.-> rules["plugin-runner<br/>(opt-in)"]
+  end
+  agent -- "NDJSON" --> collector
 ```
 
 The agent never waits for the consumer: if the reader is slow, the agent drops the oldest queued
 lines and counts them, so a slow consumer cannot slow your app.
 
-| Module (`src/…`) | Import as                          | Role                                                            |
-| ---------------- | ---------------------------------- | --------------------------------------------------------------- |
-| `agent`          | `@pharn-dev/phargus/agent`         | Samples and traces inside your process. Node core only.         |
-| `collector`      | `@pharn-dev/phargus/collector`     | Aggregates samples into windows and alerts (stream pipeline).   |
-| `analyzer`       | `@pharn-dev/phargus/analyzer`      | Heap-snapshot and stack-trace analysis in Worker Threads.       |
-| `dashboard`      | `@pharn-dev/phargus/dashboard`     | SSE server and static UI over a collector.                      |
-| `plugin-runner`  | `@pharn-dev/phargus/plugin-runner` | Optional sandbox for user-written diagnostic rules.             |
-| `otel`           | `@pharn-dev/phargus/otel`          | Opt-in OTLP/HTTP JSON metrics and trace export. Node core only. |
-
 Phargus is one npm package: the six modules are subpath exports, shipped as both ESM and CommonJS.
-See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the data flow and module boundaries.
+`analyzer` runs its CPU-heavy work in Worker Threads. See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for
+the data flow and module boundaries.
+
+---
 
 ## Safety and limits
 
-- **Overhead is measured, not assumed.** `bench/overhead.mjs` measures agent-on versus agent-off
-  on several HTTP workloads, and `bench/soak.mjs` checks for leaks under load; a nightly workflow
-  runs both (see [`bench/README.md`](./bench/README.md)). The benchmark is informational: no gate
-  fails on an overhead regression. Measure on your own workload.
+| Claim                                      | The check behind it                                                                                                                                                                                                                                |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The agent has no third-party dependencies  | An ESLint rule limits `src/agent` to `node:` builtins and its own files, and bars imports from the other modules                                                                                                                                   |
+| Every subpath loads as ESM and as CommonJS | `npm run check:exports` loads each `exports` entry via `import` and `require`                                                                                                                                                                      |
+| The published tarball is what we intend    | `npm run check:package` checks tarball contents, source maps and `engines.node` against `.nvmrc`                                                                                                                                                   |
+| Overhead is measured, not assumed          | `bench/overhead.mjs` (agent on versus off, several HTTP workloads) and `bench/soak.mjs` (leaks under load), run nightly. Informational: no gate fails on a regression, so measure on your own workload. See [`bench/README.md`](./bench/README.md) |
+| No secrets in the repository               | gitleaks on every push, plus CodeQL                                                                                                                                                                                                                |
+
 - **Prototype patches are reversible and never throw.** The backpressure probe wraps `write` on
   the stream prototypes and tracing wraps `Server.prototype.emit`; disabling them never removes a
   wrapper another library installed later.
@@ -194,12 +218,28 @@ See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the data flow and module boundari
 - **Heap snapshots and traces can contain sensitive data.** See [`SECURITY.md`](./SECURITY.md),
   [`docs/THREAT-MODEL.md`](./docs/THREAT-MODEL.md) and [`docs/LIMITS.md`](./docs/LIMITS.md).
 
+---
+
+## Documentation
+
+| Document                                         | What is in it                                     |
+| ------------------------------------------------ | ------------------------------------------------- |
+| [`FEATURES.md`](./FEATURES.md)                   | Full feature scope and status                     |
+| [`ARCHITECTURE.md`](./ARCHITECTURE.md)           | Data flow and who may import what                 |
+| [`docs/PERMISSIONS.md`](./docs/PERMISSIONS.md)   | Node permission-model flags per module            |
+| [`docs/LIMITS.md`](./docs/LIMITS.md)             | Cost, overhead and known limits                   |
+| [`docs/THREAT-MODEL.md`](./docs/THREAT-MODEL.md) | What Phargus defends against and what it does not |
+| [`ROADMAP.md`](./ROADMAP.md)                     | Build order and status                            |
+| [`CHANGELOG.md`](./CHANGELOG.md)                 | Release notes                                     |
+
+---
+
 ## Contributing
 
 Contributions are welcome. Start with [`CONTRIBUTING.md`](./CONTRIBUTING.md), which lists the rules
-pull requests are checked against, then [`CLAUDE.md`](./CLAUDE.md) for the hard constraints. Look
-for issues labeled `good-first-issue`. By participating you agree to follow the
-[Code of Conduct](./CODE_OF_CONDUCT.md).
+pull requests are checked against and how to build from source, then [`CLAUDE.md`](./CLAUDE.md) for
+the hard constraints. Look for issues labeled `good-first-issue`. By participating you agree to
+follow the [Code of Conduct](./CODE_OF_CONDUCT.md).
 
 ## Security
 
