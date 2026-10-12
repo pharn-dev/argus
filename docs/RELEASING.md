@@ -1,7 +1,7 @@
 # Releasing Phargus
 
-A maintainer decides when to release and what the version is. Version 0.1.0 is prepared for the
-first public release; npm publication is pending. Preparing an artifact does not publish it.
+A maintainer decides when to release and what the version is. Version 0.1.0 is the first public
+release; its npm publication follows the manual bootstrap below. Preparing an artifact does not publish it.
 
 ## Prepare the repository and artifact
 
