@@ -2,10 +2,19 @@
 
 All notable changes to Phargus are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
-[Semantic Versioning](https://semver.org/). Releases are cut by hand; see
-[`docs/RELEASING.md`](./docs/RELEASING.md).
+[Semantic Versioning](https://semver.org/). Releases publish when a version-bump PR merges to
+`main`; see [`docs/RELEASING.md`](./docs/RELEASING.md).
 
 ## [Unreleased]
+
+### Changed
+
+- Releases now publish on merge: a PR that bumps the version (with its lockfile and a
+  `## [X.Y.Z]` section here) is the release. Every push to `main` runs the jobs gate, build,
+  publish and release, which release only when `package.json`'s version has no tag yet; the GitHub
+  Release notes are that version's section of this file. `NPM_PUBLISH_ENABLED` still has to be
+  `true` for the publish and release jobs to run. Checks for the release notes, the version files
+  and the workflow run under `npm test`.
 
 ## [0.1.0] - 2026-10-12
 

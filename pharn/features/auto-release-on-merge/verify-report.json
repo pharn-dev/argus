@@ -1,0 +1,125 @@
+{
+  "feature": "auto-release-on-merge",
+  "gates": {
+    "build": 0,
+    "format:check": 0,
+    "instruction-growth": 0,
+    "lint": 0,
+    "reconcile": 0,
+    "test": 0,
+    "typecheck": 0
+  },
+  "verdict": "PASS",
+  "failing_gates": [],
+  "gate_run": {
+    "stamp_sha256": "e1925f5d734c3f999187be7fbd98d2bc01c6f964a58cbceaf29494dff55861e4",
+    "source": "discover",
+    "fingerprint": {
+      "algo": "worktree-fingerprint/2+sha256",
+      "final": "d683256ffcd2311ae53bbb4caaca53e7acd180a4a7449c73e4409b9308ddb603"
+    }
+  },
+  "ac_gate": {
+    "mode": "test-first",
+    "verdict": "PASS",
+    "reason": null,
+    "evidence": [],
+    "acs": [
+      {
+        "id": "AC-1",
+        "level": "integration",
+        "tests": [
+          "src/release/release-notes.ac1.integration.test.ts::scripts/release-notes.mjs › AC-1: never matches a version containing RegExp metacharacters as a pattern",
+          "src/release/release-notes.ac1.integration.test.ts::scripts/release-notes.mjs › AC-1: prints the section body and exits 0 when another version heading follows",
+          "src/release/release-notes.ac1.integration.test.ts::scripts/release-notes.mjs › AC-1: refuses a malformed version with one stderr line and no stdout",
+          "src/release/release-notes.ac1.integration.test.ts::scripts/release-notes.mjs › AC-1: refuses a repeated heading with one stderr line and no stdout",
+          "src/release/release-notes.ac1.integration.test.ts::scripts/release-notes.mjs › AC-1: refuses an absent heading with one stderr line and no stdout",
+          "src/release/release-notes.ac1.integration.test.ts::scripts/release-notes.mjs › AC-1: refuses an empty body with one stderr line and no stdout",
+          "src/release/release-notes.ac1.integration.test.ts::scripts/release-notes.mjs › AC-1: stops the body at the link-reference block"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-2",
+        "level": "integration",
+        "tests": [
+          "src/release/release-consistency.ac2.integration.test.ts::scripts/check-release-consistency.mjs › AC-2: fails for a bumped version that has no CHANGELOG section",
+          "src/release/release-consistency.ac2.integration.test.ts::scripts/check-release-consistency.mjs › AC-2: fails when package-lock.json carries another version than package.json",
+          "src/release/release-consistency.ac2.integration.test.ts::scripts/check-release-consistency.mjs › AC-2: passes for an unbumped scratch copy (the control for the failures below)",
+          "src/release/release-consistency.ac2.integration.test.ts::scripts/check-release-consistency.mjs › AC-2: passes for the repository at HEAD"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-3",
+        "level": "integration",
+        "tests": [
+          "src/release/publish-workflow.ac3.integration.test.ts::scripts/check-publish-workflow.mjs › AC-3: accepts the committed .github/workflows/publish.yml",
+          "src/release/publish-workflow.ac3.integration.test.ts::scripts/check-publish-workflow.mjs › AC-3: rejects a gate decide step whose exit-2 case no longer releases (shown by executing it)",
+          "src/release/publish-workflow.ac3.integration.test.ts::scripts/check-publish-workflow.mjs › AC-3: rejects a release job whose if: lacks the NPM_PUBLISH_ENABLED == 'true' clause",
+          "src/release/publish-workflow.ac3.integration.test.ts::scripts/check-publish-workflow.mjs › AC-3: rejects an added pull_request trigger",
+          "src/release/publish-workflow.ac3.integration.test.ts::scripts/check-publish-workflow.mjs › AC-3: rejects cancel-in-progress set to true",
+          "src/release/publish-workflow.ac3.integration.test.ts::scripts/check-publish-workflow.mjs › AC-3: rejects contents: write added to the publish job",
+          "src/release/publish-workflow.ac3.integration.test.ts::scripts/check-publish-workflow.mjs › AC-3: rejects id-token: write added to the build job"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      }
+    ],
+    "unmapped_anomalies": [],
+    "note": "an AC is delivered = a locked, once-red test titled AC-<n>:, in a file mapped to AC-<n>, passed on this head run. PHARN does not judge whether that test fully captures the AC's intent."
+  },
+  "completeness": {
+    "plan": "pharn/features/auto-release-on-merge/PLAN.md",
+    "repoDir": ".",
+    "declared": [
+      "scripts/changelog-section.mjs",
+      "scripts/release-notes.mjs",
+      "scripts/check-release-consistency.mjs",
+      "scripts/workflow-yaml.mjs",
+      "scripts/check-publish-workflow.mjs",
+      ".github/workflows/publish.yml",
+      "scripts/pack-release.mjs",
+      "docs/RELEASING.md",
+      "CHANGELOG.md",
+      "CONTRIBUTING.md",
+      "CLAUDE.md"
+    ],
+    "skipped": [],
+    "missing": [],
+    "complete": true,
+    "verdict": "complete"
+  },
+  "verifiers": {
+    "registered": 0,
+    "findings": []
+  },
+  "gate_reuse": {
+    "reused": []
+  },
+  "head_install": {
+    "state": "clean",
+    "why": null,
+    "family": "npm",
+    "lockfile": "package-lock.json",
+    "counts": {
+      "changed": 0,
+      "missing": 0,
+      "extraneous": 0,
+      "missing_unchecked": 24
+    }
+  },
+  "reconcile_detail": {
+    "state": "parsed",
+    "exit": 0,
+    "verdict": "CLEAN",
+    "escapes": [],
+    "escapes_total": 0,
+    "merged_count": 0
+  }
+}

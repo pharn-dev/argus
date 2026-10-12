@@ -167,11 +167,13 @@ These aren't bolted on — each is load-bearing in the design:
 
 ## Open-source-from-day-one
 
-- Conventional commits; releases are manual (version bump PR → GitHub Release → CI publishes to
-  npm with provenance). `CHANGELOG.md` is kept by hand. See `docs/RELEASING.md`.
+- Conventional commits; releases publish on merge: a PR that bumps `package.json`,
+  `package-lock.json` and adds a `## [X.Y.Z]` section to `CHANGELOG.md` is the release — CI
+  publishes to npm with provenance, then tags and creates the GitHub Release. `CHANGELOG.md` is
+  kept by hand. See `docs/RELEASING.md`.
 - `CONTRIBUTING.md`, labeled `good-first-issue`s.
 - CI/CD via GitHub Actions (format, lint, typecheck, test, build, action pins, CodeQL, gitleaks;
-  release on GitHub Release).
+  release on merge of a version bump).
 - OpenTelemetry instrumentation is a natural integration target — Phargus emitting
   OTel traces/metrics turns it into a credible observability story (and is itself
   a portfolio signal). Treat OTel export as a first-class optional output, not the
