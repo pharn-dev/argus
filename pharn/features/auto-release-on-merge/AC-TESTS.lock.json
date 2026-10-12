@@ -1,0 +1,97 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "auto-release-on-merge",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "auto-release-on-merge",
+    "spec_content_hash": "1ee5d88ae90de129442872ff2317020b40a5fe3015c11007b6ab95ecb2522715"
+  },
+  "mapping": {
+    "path": "pharn/features/auto-release-on-merge/AC-TESTS.md",
+    "sha256": "48c9bb8d0016b0c6ac9643cfa75a8d2a5d250259e97dda832bf87184278a80bf"
+  },
+  "files": [
+    {
+      "path": "src/release/publish-workflow.ac3.integration.test.ts",
+      "sha256": "607f34b92ffc0884df7be143c0e9516f9a7f90772ab420a10d0ce01d51217ab1"
+    },
+    {
+      "path": "src/release/release-consistency.ac2.integration.test.ts",
+      "sha256": "05abfd40c63306afcdf797c51860476ea7a68077b65fd2296d5cd4a58117d585"
+    },
+    {
+      "path": "src/release/release-notes.ac1.integration.test.ts",
+      "sha256": "9987d93e9eb69ce72038e0ac292038b68635ee4470b999374b14e677d1d40215"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "2155fc73f9b19b47557e667448e27f4c9452892673083001cafbbf731e69bebe",
+    "files_sha256": "f62f8ab5cc2898816095e840f7dff59d66b09afadf9a21bc5d3ca7f4ad854b7c",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "33eca282ce2ce32ddfbfc5e2c9e83d47ba260192b863f6fbb0db30f5d7e97253"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/release/release-notes.ac1.integration.test.ts::scripts/release-notes.mjs › AC-1: never matches a version containing RegExp metacharacters as a pattern",
+          "src/release/release-notes.ac1.integration.test.ts::scripts/release-notes.mjs › AC-1: prints the section body and exits 0 when another version heading follows",
+          "src/release/release-notes.ac1.integration.test.ts::scripts/release-notes.mjs › AC-1: refuses a malformed version with one stderr line and no stdout",
+          "src/release/release-notes.ac1.integration.test.ts::scripts/release-notes.mjs › AC-1: refuses a repeated heading with one stderr line and no stdout",
+          "src/release/release-notes.ac1.integration.test.ts::scripts/release-notes.mjs › AC-1: refuses an absent heading with one stderr line and no stdout",
+          "src/release/release-notes.ac1.integration.test.ts::scripts/release-notes.mjs › AC-1: refuses an empty body with one stderr line and no stdout",
+          "src/release/release-notes.ac1.integration.test.ts::scripts/release-notes.mjs › AC-1: stops the body at the link-reference block"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/release/release-consistency.ac2.integration.test.ts::scripts/check-release-consistency.mjs › AC-2: fails for a bumped version that has no CHANGELOG section",
+          "src/release/release-consistency.ac2.integration.test.ts::scripts/check-release-consistency.mjs › AC-2: fails when package-lock.json carries another version than package.json",
+          "src/release/release-consistency.ac2.integration.test.ts::scripts/check-release-consistency.mjs › AC-2: passes for an unbumped scratch copy (the control for the failures below)",
+          "src/release/release-consistency.ac2.integration.test.ts::scripts/check-release-consistency.mjs › AC-2: passes for the repository at HEAD"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/release/publish-workflow.ac3.integration.test.ts::scripts/check-publish-workflow.mjs › AC-3: accepts the committed .github/workflows/publish.yml",
+          "src/release/publish-workflow.ac3.integration.test.ts::scripts/check-publish-workflow.mjs › AC-3: rejects a gate decide step whose exit-2 case no longer releases (shown by executing it)",
+          "src/release/publish-workflow.ac3.integration.test.ts::scripts/check-publish-workflow.mjs › AC-3: rejects a release job whose if: lacks the NPM_PUBLISH_ENABLED == 'true' clause",
+          "src/release/publish-workflow.ac3.integration.test.ts::scripts/check-publish-workflow.mjs › AC-3: rejects an added pull_request trigger",
+          "src/release/publish-workflow.ac3.integration.test.ts::scripts/check-publish-workflow.mjs › AC-3: rejects cancel-in-progress set to true",
+          "src/release/publish-workflow.ac3.integration.test.ts::scripts/check-publish-workflow.mjs › AC-3: rejects contents: write added to the publish job",
+          "src/release/publish-workflow.ac3.integration.test.ts::scripts/check-publish-workflow.mjs › AC-3: rejects id-token: write added to the build job"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}
