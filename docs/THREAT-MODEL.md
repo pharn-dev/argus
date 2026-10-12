@@ -1,7 +1,7 @@
 # Phargus — Threat Model
 
-> **Status: pre-release.** Roadmap steps S0 to S7 are implemented on `main`; nothing is published
-> to npm yet (see [`ROADMAP.md`](../ROADMAP.md)). This document is the security design the code is
+> **Status: 0.1.0, the first release.** Roadmap steps S0 to S7 are implemented on `main`; npm
+> publication of 0.1.0 is in progress (see [`ROADMAP.md`](../ROADMAP.md)). This document is the security design the code is
 > held to. Each row is marked:
 >
 > - **Enforced today**: the code does what the row says, and a named test in this repository fails

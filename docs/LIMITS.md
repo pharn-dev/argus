@@ -1,7 +1,7 @@
 # Phargus — Limits
 
-What Phargus does **not** guarantee, stated plainly. Phargus is pre-release (S0 to S7 implemented, not
-yet published). These are the design's inherent limits and the known gaps in what is built. For the
+What Phargus does **not** guarantee, stated plainly. Phargus 0.1.0 is its first release (S0 to S7
+implemented). These are the design's inherent limits and the known gaps in what is built. For the
 security design see [`THREAT-MODEL.md`](./THREAT-MODEL.md).
 
 ## 1. Cost and overhead

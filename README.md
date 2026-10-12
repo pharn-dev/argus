@@ -9,10 +9,10 @@ package, turn that stream into time windows, alerts and a live page in your brow
 libraries you run in your own process, not a service: the agent works on its own and has **zero
 external dependencies**, with no hosted account and no separate backend to deploy.
 
-> **Status: 0.1.0 prepared for the first npm release; publication is pending.** Roadmap steps
-> S0 to S7 are implemented on `main` (agent, collector, dashboard, tracing, V8 and memory depth,
-> plugin runner, OpenTelemetry export; see [`ROADMAP.md`](./ROADMAP.md)). Until publication, try
-> `@pharn-dev/phargus` from a locally built tarball (below).
+> **Status: 0.1.0, the first release, is being published to npm.** Roadmap steps S0 to S7 are
+> implemented on `main` (agent, collector, dashboard, tracing, V8 and memory depth, plugin runner,
+> OpenTelemetry export; see [`ROADMAP.md`](./ROADMAP.md)). Until the package is available on npm,
+> try `@pharn-dev/phargus` from a locally built tarball (below).
 
 ## Why Phargus
 

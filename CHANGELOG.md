@@ -7,8 +7,9 @@ All notable changes to Phargus are recorded here. The format follows
 
 ## [Unreleased]
 
-Planned first release: **0.1.0**. npm publication is pending. The release date and versioned
-heading will be set when the release is cut.
+## [0.1.0] - 2026-10-12
+
+First release of Phargus (`@pharn-dev/phargus`).
 
 ### Added
 
