@@ -179,9 +179,10 @@ describe('dashboard SSE server — AC-1', () => {
         data: JSON.parse(event.data[0] ?? '') as unknown,
       }));
 
+      // The replay puts alerts first, then windows.
       expect(parsed.slice(0, replayCount)).toEqual([
-        ...preWindows.map((window) => ({ event: 'window', data: window })),
         ...preAlerts.map((alert) => ({ event: 'alert', data: alert })),
+        ...preWindows.map((window) => ({ event: 'window', data: window })),
       ]);
       expect(parsed.slice(replayCount)).toEqual([
         { event: 'window', data: newWindows[0] },
