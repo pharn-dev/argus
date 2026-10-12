@@ -99,8 +99,10 @@ names and configuration are documented in `README.md`.
 - **Conventional Commits** (`feat:`, `fix:`, `chore:`, …). PRs are squash-merged, so the PR title
   becomes the commit message on `main` — write it in that style.
 - Add a line under **Unreleased** in `CHANGELOG.md` for any user-visible change.
-- Releases are cut by a maintainer by hand (version bump, GitHub Release, npm publish through CI):
-  see [`docs/RELEASING.md`](./docs/RELEASING.md).
+- Releases publish when a version bump merges to `main`: a PR that bumps `package.json`,
+  `package-lock.json` and adds a `## [X.Y.Z]` section to `CHANGELOG.md` is the release, and a merge
+  without a bump releases nothing. Whether a PR bumps is the author's and reviewer's call; see
+  [`docs/RELEASING.md`](./docs/RELEASING.md).
 - Keep PRs focused; one logical change per PR.
 
 ## Good first issues
