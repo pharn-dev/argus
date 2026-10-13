@@ -99,26 +99,27 @@ plus one line per traced request. That is all the agent does on its own.
 ### Add the live dashboard
 
 The agent does not start a server. You wire `@pharn-dev/phargus/collector` and
-`@pharn-dev/phargus/dashboard` to the agent's NDJSON, usually in a second process. A minimal version,
-assuming your app writes nothing else to stdout:
+`@pharn-dev/phargus/dashboard` to the agent's NDJSON, usually in a second process. A minimal version:
 
 ```js
 // collect.mjs — run as: node --import @pharn-dev/phargus/agent app.mjs | node collect.mjs
-import { createInterface } from 'node:readline';
-import { createCollector } from '@pharn-dev/phargus/collector';
+import { pipeline } from 'node:stream/promises';
+import { createCollector, createNdjsonDecoder } from '@pharn-dev/phargus/collector';
 import { createDashboardServer } from '@pharn-dev/phargus/dashboard';
-
-async function* records(input) {
-  for await (const line of createInterface({ input, crlfDelay: Infinity })) {
-    if (line.trim() !== '') yield JSON.parse(line);
-  }
-}
 
 const collector = createCollector({ windowMs: 1000, capacity: 300 });
 const dashboard = await createDashboardServer({ collector, host: '127.0.0.1', port: 7070 });
 process.stderr.write(`phargus dashboard on ${dashboard.url}\n`);
-await collector.consume(records(process.stdin));
+const decoder = createNdjsonDecoder();
+await pipeline(process.stdin, decoder, (records) => collector.consume(records));
 ```
+
+Your app may write to the same stdout. Lines that are not JSON objects (plain text, truncated
+lines) and lines longer than `maxLineBytes` (1 MiB by default) are skipped and counted as
+`decoder.invalid` and `decoder.oversized`; JSON objects that are not agent records, such as the
+lines of a JSON logger, and agent-shaped records that cannot be aggregated are skipped and counted
+as `collector.ignored`. Neither is thrown. Pass `onSkipped` to `createNdjsonDecoder` or `onIgnored`
+to `createCollector` to see each skipped line or record.
 
 [`examples/express-app`](./examples/express-app) is the complete version: it forks the app, reads
 its stdout into a collector with an alert rule, serves the dashboard, and shuts both down cleanly.

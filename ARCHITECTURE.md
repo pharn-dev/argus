@@ -68,11 +68,16 @@ that reads the app's stdout, so aggregation and serving never use the app's even
    spans cannot evict samples. One `stream/promises` `pipeline()` writes to stdout or a file
    without ever making the app wait. Every sample line carries cumulative
    `dropped: { samples, spans }` counters.
-3. **Aggregation (collector).** `collector.consume()` takes parsed records (the caller turns NDJSON
-   lines into objects) and runs a `pipeline()` of Transform streams: span records go to a ring
-   buffer, samples become fixed time windows with integer math, windows go to an optional
-   append-only file and to the alert evaluator, and alerts go to the sinks. Ring buffers bound
-   windows, alerts and spans.
+3. **Aggregation (collector).** `createNdjsonDecoder()` turns the byte stream into parsed objects
+   with bounded memory per line, skipping and counting lines that are not JSON objects
+   (`invalid`) or are longer than `maxLineBytes` (`oversized`). `collector.consume()` takes any
+   parsed records and runs a `pipeline()` of Transform streams. A record guard comes first: it
+   forwards sample and span records and skips and counts the rest in `collector.ignored`, as
+   `foreign` (not agent data) or `malformed` (agent-shaped but unusable), with an optional
+   `onIgnored` hook. Then span records go to a ring buffer, samples become fixed time windows with
+   integer math, windows go to an optional append-only file and to the alert evaluator, and
+   alerts go to the sinks. Ring buffers bound windows, alerts and spans. The wiring is
+   `pipeline(input, createNdjsonDecoder(), (records) => collector.consume(records))`.
 4. **Delivery (dashboard).** `createDashboardServer({ collector, host, port })` subscribes to the
    collector and serves the UI and an SSE endpoint. Each SSE client has its own bounded queue; a
    stalled client loses its oldest events, never the server's memory.

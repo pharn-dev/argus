@@ -1,4 +1,4 @@
-import { createCollector } from '@pharn-dev/phargus/collector';
+import { createCollector, createNdjsonDecoder } from '@pharn-dev/phargus/collector';
 import { createDashboardServer } from '@pharn-dev/phargus/dashboard';
 import { fork } from 'node:child_process';
 import { pipeline } from 'node:stream/promises';
@@ -12,7 +12,7 @@ const HOST = '127.0.0.1';
 const DEFAULT_APP_PORT = 3000;
 const DEFAULT_DASHBOARD_PORT = 7070;
 const DEFAULT_INTERVAL_MS = '250';
-const MAX_LINE_LENGTH = 1024 * 1024;
+const MAX_LINE_BYTES = 1024 * 1024;
 const STARTUP_TIMEOUT_MS = 20_000;
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 const ALERT_THRESHOLD_NS = 50_000_000;
@@ -32,46 +32,6 @@ function readPort(name, fallback) {
     throw new Error(`${name} must be an integer from 0 to 65535, got ${JSON.stringify(raw)}`);
   }
   return Number(raw);
-}
-
-function parseLine(line, lineNumber) {
-  if (line.length > MAX_LINE_LENGTH) {
-    throw new Error(`NDJSON line ${lineNumber} is longer than ${MAX_LINE_LENGTH} characters`);
-  }
-  const trimmed = line.trim();
-  if (trimmed === '') return undefined;
-  try {
-    return JSON.parse(trimmed);
-  } catch (err) {
-    throw new Error(`malformed NDJSON on line ${lineNumber}: ${describe(err)}`, { cause: err });
-  }
-}
-
-// Turn the app's stdout into parsed NDJSON objects. A malformed or oversized line is an error.
-async function* decodeNdjson(source) {
-  source.setEncoding('utf8');
-  let pending = '';
-  let lineNumber = 0;
-  for await (const chunk of source) {
-    pending += chunk;
-    let start = 0;
-    let newline = pending.indexOf('\n', start);
-    while (newline !== -1) {
-      lineNumber += 1;
-      const record = parseLine(pending.slice(start, newline), lineNumber);
-      if (record !== undefined) yield record;
-      start = newline + 1;
-      newline = pending.indexOf('\n', start);
-    }
-    pending = pending.slice(start);
-    if (pending.length > MAX_LINE_LENGTH) {
-      throw new Error(`NDJSON line ${lineNumber + 1} is longer than ${MAX_LINE_LENGTH} characters`);
-    }
-  }
-  if (pending.trim() !== '') {
-    const record = parseLine(pending, lineNumber + 1);
-    if (record !== undefined) yield record;
-  }
 }
 
 // Resolve with { error } instead of rejecting, so every outcome is collected, none is lost.
@@ -160,7 +120,10 @@ async function main() {
       },
     ],
   });
-  const consumed = settle(collector.consume(decodeNdjson(child.stdout)));
+  // The app may log to its own stdout too: the decoder skips lines that are not JSON objects, the
+  // collector skips objects that are not agent records, and both count what they skip.
+  const decoder = createNdjsonDecoder({ maxLineBytes: MAX_LINE_BYTES });
+  const consumed = settle(pipeline(child.stdout, decoder, (records) => collector.consume(records)));
   const stderrForwarded = settle(pipeline(child.stderr, process.stderr, { end: false }));
 
   let dashboard;
@@ -187,6 +150,11 @@ async function main() {
       await exited;
       for (const result of await Promise.all([consumed, stderrForwarded])) {
         if (result.error !== undefined) fail(result.error);
+      }
+      if (decoder.invalid > 0 || decoder.oversized > 0 || collector.ignored > 0) {
+        logError(
+          `skipped ${decoder.invalid} non-JSON lines, ${decoder.oversized} oversized lines and ${collector.ignored} non-agent records from the app's stdout`,
+        );
       }
       if (dashboard !== undefined) {
         const closed = await settle(dashboard.close());

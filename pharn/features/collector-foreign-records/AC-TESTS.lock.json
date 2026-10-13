@@ -1,0 +1,83 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "collector-foreign-records",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "collector-foreign-records",
+    "spec_content_hash": "2353b763b429ce0c87605f61c7ab705b18f5d411456d705a3fda9277b3cd25f9"
+  },
+  "mapping": {
+    "path": "pharn/features/collector-foreign-records/AC-TESTS.md",
+    "sha256": "320ca91f154a1834c0fa67d32da8216fa23dccb8e1a5cc17b7806a0dd4a5bee1"
+  },
+  "files": [
+    {
+      "path": "src/collector/collector-foreign-records.ac1.test.ts",
+      "sha256": "24646fc23ba95326285dac971c39b1e15935acaf7fb1a77ceca584b4a6aa48ce"
+    },
+    {
+      "path": "src/collector/collector-foreign-records.ac2.test.ts",
+      "sha256": "a3ce818d3c506d04d25682862e6683bdba98765973c7a17169e2ab2c703d613f"
+    },
+    {
+      "path": "src/collector/collector-foreign-records.ac3.integration.test.ts",
+      "sha256": "ce1dffcdaa8705a06a7575b495e63b0dca95ca2efd0d341925acf8397f2ecc4d"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "9068d6aa896e5b46c49155b3aa927afc52dd851db37e84699422e68b82821c6c",
+    "files_sha256": "e55b9fff47cd0f39996290f526779f98116be2115e8c22b08107a68829077e35",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "281ea7fb314db2291ceb86e4d9b4e4890ef3fdaf1eec60250ab3d3ef5e8fd49f"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/collector/collector-foreign-records.ac1.test.ts::collector NDJSON decoder — AC-1 › AC-1: decodes mixed stdout split across chunk boundaries, emits only the JSON objects in order, and counts 3 invalid and 1 oversized line with 4 hook calls"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/collector/collector-foreign-records.ac2.test.ts::collector record guard — AC-2 › AC-2: consume() resolves over mixed records, aggregates only the samples, keeps the span, and skips and counts 3 records (malformed only for the sample-shaped one)"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/collector/collector-foreign-records.ac3.integration.test.ts::collector over mixed stdout — AC-3 › AC-3: pipeline(bytes, decoder, consume) over mixed stdout resolves; windows and spans equal a clean run, collector.ignored counts the pino lines, the decoder counts text, truncated and over-long lines"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration",
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}
