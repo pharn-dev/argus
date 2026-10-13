@@ -11,8 +11,10 @@ Only the agent runs **inside** the process you want to observe. It samples, trac
 NDJSON to stdout or a file; it starts no server. Everything else is a library you wire to that
 stream: the collector aggregates it, the dashboard serves the collector's output to a browser, and
 the OpenTelemetry exporter and plugin runner read the collector's windows. You can run those in the
-monitored process, but the shipped example (`examples/express-app`) runs them in a second process
-that reads the app's stdout, so aggregation and serving never use the app's event loop.
+monitored process, but the usual setup runs them in a second process that reads the app's stdout,
+so aggregation and serving never use the app's event loop. `phargus serve` (`src/cli`) is that second
+process for the collector and dashboard; `examples/express-app` wires the same libraries by hand,
+with an alert rule.
 
 ```
 ┌──────────────── monitored Node.js process ─────────────────┐
@@ -30,7 +32,7 @@ that reads the app's stdout, so aggregation and serving never use the app's even
 └─────────────────────────────┬──────────────────────────────┘
                               │ NDJSON (sample lines carry dropped counters)
                               ▼
-┌──────── collector / dashboard process (wired by the user) ─────────┐
+┌──── collector / dashboard process (phargus serve, or your own) ────┐
 │ @pharn-dev/phargus/collector                                                    │
 │  └─ pipeline(): spans → ring buffer │ samples → windows →          │
 │     persistence (opt-in) → alerts → sinks (stdout/file/webhook)    │
