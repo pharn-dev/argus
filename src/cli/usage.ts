@@ -19,15 +19,20 @@ Options:
   --host <address>       Address to bind (default: 127.0.0.1). A non-loopback host needs a token.
   --token <value>        Require this token (Authorization: Bearer, or open /?token=<value> once).
                          Prefer PHARGUS_TOKEN: a flag shows up in the process list.
+  --allowed-host <host>  Also answer requests whose Host header names <host> (repeatable).
+                         A bare name matches any port; host:port matches exactly. Use it
+                         when the browser reaches the dashboard by another name or IP, for
+                         example --host 0.0.0.0 in a container. It does not replace the token.
   --window-ms <n>        Aggregation window in milliseconds (default: 1000)
   --max-line-bytes <n>   Longest accepted input line in bytes (default: 1048576)
   -h, --help             Print this help and exit
   -v, --version          Print the version and exit
 
 Environment:
-  PHARGUS_TOKEN          Token, used when --token is not given. Set it on the phargus side
-                         of the pipe only, not on the monitored app.
+  PHARGUS_TOKEN          Token, used when --token is not given.
   PHARGUS_DEBUG          Any non-empty value prints stack traces with errors.
+                         The agent ignores both variables, so an environment shared with
+                         the monitored app is fine.
 
 Exit codes:
   0  help, version, or a graceful shutdown on SIGINT/SIGTERM

@@ -45,6 +45,18 @@ describe('agent config — unknown PHARGUS_* variables (F-09)', () => {
     ]);
   });
 
+  it("ignores the CLI's PHARGUS_TOKEN and PHARGUS_DEBUG silently", async () => {
+    const cwd = await makeTempDir();
+    const warnings: string[] = [];
+    const config = await loadAgentConfig(
+      cwd,
+      { PHARGUS_TOKEN: 'secret', PHARGUS_DEBUG: '1', PHARGUS_FOO: '1' },
+      { onWarning: (message) => warnings.push(message) },
+    );
+    expect(config).toEqual(defaultAgentConfig);
+    expect(warnings).toEqual(['ignoring unknown environment variable PHARGUS_FOO']);
+  });
+
   it('still fails on an invalid value for a known variable', async () => {
     const cwd = await makeTempDir();
     await expect(

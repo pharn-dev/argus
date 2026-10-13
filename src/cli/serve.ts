@@ -70,6 +70,7 @@ export async function runServe(
       host: options.host,
       port: options.port,
       ...(options.token === undefined ? {} : { token: options.token }),
+      allowedHosts: options.allowedHosts,
       onError: (error) => {
         write(`dashboard error: ${describeError(error, debug)}`);
       },
