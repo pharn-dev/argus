@@ -1,0 +1,214 @@
+{
+  "feature": "phargus-serve-cli",
+  "gates": {
+    "build": 0,
+    "format:check": 0,
+    "instruction-growth": 0,
+    "lint": 0,
+    "reconcile": 0,
+    "test": 0,
+    "typecheck": 0
+  },
+  "verdict": "PASS",
+  "failing_gates": [],
+  "gate_run": {
+    "stamp_sha256": "2d2d8ddabc244ce6f80d91f18aeac7b3108429093e62108c0e81e8f55f61845f",
+    "source": "discover",
+    "fingerprint": {
+      "algo": "worktree-fingerprint/2+sha256",
+      "final": "311d27aa356bdba8c629abaa38a4439be8e0c681808c0ccd227683dbd49f68cf"
+    }
+  },
+  "ac_gate": {
+    "mode": "test-first",
+    "verdict": "PASS",
+    "reason": null,
+    "evidence": [],
+    "acs": [
+      {
+        "id": "AC-1",
+        "level": "integration",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac1.integration.test.ts::phargus CLI: --help and --version › AC-1: --help exits 0 and prints to stdout a usage text naming serve and --port, --host, --token, --window-ms and --max-line-bytes",
+          "src/cli/phargus-serve-cli.ac1.integration.test.ts::phargus CLI: --help and --version › AC-1: --version exits 0 and prints to stdout the package.json's version"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-2",
+        "level": "integration",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac2.integration.test.ts::phargus serve: unknown flags and bad flag values are usage errors › AC-2: serve [ '--bogus' ] exits 2 and its stderr names --bogus with no stack-trace line",
+          "src/cli/phargus-serve-cli.ac2.integration.test.ts::phargus serve: unknown flags and bad flag values are usage errors › AC-2: serve [ '--max-line-bytes', '0' ] exits 2 and its stderr names --max-line-bytes with no stack-trace line",
+          "src/cli/phargus-serve-cli.ac2.integration.test.ts::phargus serve: unknown flags and bad flag values are usage errors › AC-2: serve [ '--port', '70000' ] exits 2 and its stderr names --port with no stack-trace line",
+          "src/cli/phargus-serve-cli.ac2.integration.test.ts::phargus serve: unknown flags and bad flag values are usage errors › AC-2: serve [ '--port', 'abc' ] exits 2 and its stderr names --port with no stack-trace line",
+          "src/cli/phargus-serve-cli.ac2.integration.test.ts::phargus serve: unknown flags and bad flag values are usage errors › AC-2: serve [ '--window-ms', '0' ] exits 2 and its stderr names --window-ms with no stack-trace line"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-3",
+        "level": "integration",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac3.integration.test.ts::phargus serve: the token gate › AC-3: serve --host 0.0.0.0 --port 0 with no --token and no PHARGUS_TOKEN exits 2 saying a token is required for a non-loopback host",
+          "src/cli/phargus-serve-cli.ac3.integration.test.ts::phargus serve: the token gate › AC-3: with PHARGUS_TOKEN set, serve --port 0 on loopback answers GET /events with 401 without credentials and 200 with Authorization: Bearer <token>"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-4",
+        "level": "integration",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac4.integration.test.ts::phargus serve: stdin with mixed agent and log lines › AC-4: prints the dashboard URL, streams windows over SSE, reports the input end with the skip and ignored counts, and keeps serving after stdin ends"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-5",
+        "level": "integration",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac5.integration.test.ts::phargus serve: a real agent-instrumented app piped in › AC-5: an app started with --import of the built agent, its stdout piped into serve --port 0 together with plain-text log lines, yields a window event from the real agent's samples"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-6",
+        "level": "integration",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac6.integration.test.ts::phargus serve: file and stdin input › AC-6: serve --port 0 - reads the same content from stdin and an SSE client receives a window event",
+          "src/cli/phargus-serve-cli.ac6.integration.test.ts::phargus serve: file and stdin input › AC-6: serve --port 0 <file> replays an NDJSON capture and an SSE client receives a window event",
+          "src/cli/phargus-serve-cli.ac6.integration.test.ts::phargus serve: file and stdin input › AC-6: serve --port 0 <missing path> exits 1 with a stderr message naming the path and no stack-trace line"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-7",
+        "level": "integration",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac7.integration.test.ts::phargus serve: graceful shutdown on a signal › AC-7: on SIGINT with stdin still open and an SSE client connected, serve exits 0 within 10 s, the SSE response ends and stderr reports the counts",
+          "src/cli/phargus-serve-cli.ac7.integration.test.ts::phargus serve: graceful shutdown on a signal › AC-7: on SIGTERM with stdin still open and an SSE client connected, serve exits 0 within 10 s, the SSE response ends and stderr reports the counts"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-8",
+        "level": "integration",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac8.integration.test.ts::phargus serve: a port already in use › AC-8: serve --port <a bound port> exits 1 naming the port with no stack-trace line, and with PHARGUS_DEBUG=1 still exits 1 with a stack-trace line"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-9",
+        "level": "integration",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac9.integration.test.ts::phargus CLI: the packed tarball ships the bin › AC-9: npm pack's manifest maps bin phargus to a file in the tarball whose first line is #!/usr/bin/env node and whose mode is executable"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-10",
+        "level": "integration",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac10.integration.test.ts::ESLint boundary: the agent may not import the CLI's source › AC-10: linting a src/agent/ file that imports '../cli/serve.js' with the repo's ESLint config reports a no-restricted-imports error for that import"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      }
+    ],
+    "unmapped_anomalies": [],
+    "note": "an AC is delivered = a locked, once-red test titled AC-<n>:, in a file mapped to AC-<n>, passed on this head run. PHARN does not judge whether that test fully captures the AC's intent."
+  },
+  "completeness": {
+    "plan": "pharn/features/phargus-serve-cli/PLAN.md",
+    "repoDir": ".",
+    "declared": [
+      "src/cli/bin.ts",
+      "src/cli/main.ts",
+      "src/cli/args.ts",
+      "src/cli/usage.ts",
+      "src/cli/version.ts",
+      "src/cli/report.ts",
+      "src/cli/input.ts",
+      "src/cli/serve.ts",
+      "src/dashboard/index.ts",
+      "tsconfig.cjs.json",
+      "package.json",
+      "scripts/build.mjs",
+      "scripts/check-exports.mjs",
+      "scripts/check-package.mts",
+      "scripts/check-install.mjs",
+      "eslint.config.mjs",
+      "examples/express-app/app.mjs",
+      "examples/express-app/README.md",
+      "README.md",
+      "FEATURES.md",
+      "ARCHITECTURE.md",
+      "docs/THREAT-MODEL.md",
+      "CHANGELOG.md"
+    ],
+    "skipped": [],
+    "missing": [],
+    "complete": true,
+    "verdict": "complete"
+  },
+  "verifiers": {
+    "registered": 0,
+    "findings": []
+  },
+  "gate_reuse": {
+    "reused": [
+      {
+        "id": "typecheck",
+        "stage": "regress",
+        "side": "head",
+        "seq": 3
+      },
+      {
+        "id": "build",
+        "stage": "regress",
+        "side": "head",
+        "seq": 4
+      }
+    ]
+  },
+  "head_install": {
+    "state": "clean",
+    "why": null,
+    "family": "npm",
+    "lockfile": "package-lock.json",
+    "counts": {
+      "changed": 0,
+      "missing": 0,
+      "extraneous": 0,
+      "missing_unchecked": 24
+    }
+  },
+  "reconcile_detail": {
+    "state": "parsed",
+    "exit": 0,
+    "verdict": "CLEAN",
+    "escapes": [],
+    "escapes_total": 0,
+    "merged_count": 0
+  }
+}

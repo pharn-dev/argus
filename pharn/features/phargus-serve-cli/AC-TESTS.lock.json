@@ -1,0 +1,161 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "phargus-serve-cli",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "phargus-serve-cli",
+    "spec_content_hash": "0c1f884c4ecd195fe4165072ffce115b9c3923058dc80ee2b497975f26519759"
+  },
+  "mapping": {
+    "path": "pharn/features/phargus-serve-cli/AC-TESTS.md",
+    "sha256": "6e988794dcc010b094c611eab4830480cbe482fe1f8001060068170c05f191fa"
+  },
+  "files": [
+    {
+      "path": "src/cli/phargus-serve-cli.ac1.integration.test.ts",
+      "sha256": "b435c7667d6b5ed04773daf8a6d3c86cf6c60647e130a56fc994cbb2fc1e47e5"
+    },
+    {
+      "path": "src/cli/phargus-serve-cli.ac10.integration.test.ts",
+      "sha256": "bb93c2fdf072d19d3ff117b99ad42e6467cc17a862086daa61c4efbd118d9dca"
+    },
+    {
+      "path": "src/cli/phargus-serve-cli.ac2.integration.test.ts",
+      "sha256": "a6178fb71693686f93346727f51896bbde8b9f142aee90f5509ddab6c988ba43"
+    },
+    {
+      "path": "src/cli/phargus-serve-cli.ac3.integration.test.ts",
+      "sha256": "2b243ecab0ff857aff71f26c84cef733a11c8910de07409ee0cf66ffcc7cfeeb"
+    },
+    {
+      "path": "src/cli/phargus-serve-cli.ac4.integration.test.ts",
+      "sha256": "f2c99b6961ef7597537e97a3217ad206402093a18f24cf718be74684bad16efe"
+    },
+    {
+      "path": "src/cli/phargus-serve-cli.ac5.integration.test.ts",
+      "sha256": "933279795d106364e27841ad24b541848eaf2067a4684f925aa1435c7f6392f9"
+    },
+    {
+      "path": "src/cli/phargus-serve-cli.ac6.integration.test.ts",
+      "sha256": "febad7ec193e84ecc79e616f2344219cd9a9d68f8a9309044054066b746879ac"
+    },
+    {
+      "path": "src/cli/phargus-serve-cli.ac7.integration.test.ts",
+      "sha256": "40ef92a04e86ac8940b0d152d33e08fa07c283630b15d380a0c84aab3e41c737"
+    },
+    {
+      "path": "src/cli/phargus-serve-cli.ac8.integration.test.ts",
+      "sha256": "9cb2f26c7821386bf008791acbd814f660c9464e6917b5e8dbb921ae239a3fbd"
+    },
+    {
+      "path": "src/cli/phargus-serve-cli.ac9.integration.test.ts",
+      "sha256": "ecc8584ac599eb9e2626af90583cb789b5fde6dbe9e12c5962aaae3147cdee50"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "1bb0e6a5788c99edeebb8909e64228c1a6f8990b4d76f4c42182d4a35d7183bb",
+    "files_sha256": "94c65710375b09187987d5023e22ab8a7f037a067ad24c3da424b5bc68d3e604",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "4068001f2aa381293e089bed5a731676fe9beed4dc5bb5ff202efe559499b508"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac1.integration.test.ts::phargus CLI: --help and --version › AC-1: --help exits 0 and prints to stdout a usage text naming serve and --port, --host, --token, --window-ms and --max-line-bytes",
+          "src/cli/phargus-serve-cli.ac1.integration.test.ts::phargus CLI: --help and --version › AC-1: --version exits 0 and prints to stdout the package.json's version"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac2.integration.test.ts::phargus serve: unknown flags and bad flag values are usage errors › AC-2: serve [ '--bogus' ] exits 2 and its stderr names --bogus with no stack-trace line",
+          "src/cli/phargus-serve-cli.ac2.integration.test.ts::phargus serve: unknown flags and bad flag values are usage errors › AC-2: serve [ '--max-line-bytes', '0' ] exits 2 and its stderr names --max-line-bytes with no stack-trace line",
+          "src/cli/phargus-serve-cli.ac2.integration.test.ts::phargus serve: unknown flags and bad flag values are usage errors › AC-2: serve [ '--port', '70000' ] exits 2 and its stderr names --port with no stack-trace line",
+          "src/cli/phargus-serve-cli.ac2.integration.test.ts::phargus serve: unknown flags and bad flag values are usage errors › AC-2: serve [ '--port', 'abc' ] exits 2 and its stderr names --port with no stack-trace line",
+          "src/cli/phargus-serve-cli.ac2.integration.test.ts::phargus serve: unknown flags and bad flag values are usage errors › AC-2: serve [ '--window-ms', '0' ] exits 2 and its stderr names --window-ms with no stack-trace line"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac3.integration.test.ts::phargus serve: the token gate › AC-3: serve --host 0.0.0.0 --port 0 with no --token and no PHARGUS_TOKEN exits 2 saying a token is required for a non-loopback host",
+          "src/cli/phargus-serve-cli.ac3.integration.test.ts::phargus serve: the token gate › AC-3: with PHARGUS_TOKEN set, serve --port 0 on loopback answers GET /events with 401 without credentials and 200 with Authorization: Bearer <token>"
+        ]
+      },
+      {
+        "id": "AC-4",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac4.integration.test.ts::phargus serve: stdin with mixed agent and log lines › AC-4: prints the dashboard URL, streams windows over SSE, reports the input end with the skip and ignored counts, and keeps serving after stdin ends"
+        ]
+      },
+      {
+        "id": "AC-5",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac5.integration.test.ts::phargus serve: a real agent-instrumented app piped in › AC-5: an app started with --import of the built agent, its stdout piped into serve --port 0 together with plain-text log lines, yields a window event from the real agent's samples"
+        ]
+      },
+      {
+        "id": "AC-6",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac6.integration.test.ts::phargus serve: file and stdin input › AC-6: serve --port 0 - reads the same content from stdin and an SSE client receives a window event",
+          "src/cli/phargus-serve-cli.ac6.integration.test.ts::phargus serve: file and stdin input › AC-6: serve --port 0 <file> replays an NDJSON capture and an SSE client receives a window event",
+          "src/cli/phargus-serve-cli.ac6.integration.test.ts::phargus serve: file and stdin input › AC-6: serve --port 0 <missing path> exits 1 with a stderr message naming the path and no stack-trace line"
+        ]
+      },
+      {
+        "id": "AC-7",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac7.integration.test.ts::phargus serve: graceful shutdown on a signal › AC-7: on SIGINT with stdin still open and an SSE client connected, serve exits 0 within 10 s, the SSE response ends and stderr reports the counts",
+          "src/cli/phargus-serve-cli.ac7.integration.test.ts::phargus serve: graceful shutdown on a signal › AC-7: on SIGTERM with stdin still open and an SSE client connected, serve exits 0 within 10 s, the SSE response ends and stderr reports the counts"
+        ]
+      },
+      {
+        "id": "AC-8",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac8.integration.test.ts::phargus serve: a port already in use › AC-8: serve --port <a bound port> exits 1 naming the port with no stack-trace line, and with PHARGUS_DEBUG=1 still exits 1 with a stack-trace line"
+        ]
+      },
+      {
+        "id": "AC-9",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac9.integration.test.ts::phargus CLI: the packed tarball ships the bin › AC-9: npm pack's manifest maps bin phargus to a file in the tarball whose first line is #!/usr/bin/env node and whose mode is executable"
+        ]
+      },
+      {
+        "id": "AC-10",
+        "tests": [
+          "src/cli/phargus-serve-cli.ac10.integration.test.ts::ESLint boundary: the agent may not import the CLI's source › AC-10: linting a src/agent/ file that imports '../cli/serve.js' with the repo's ESLint config reports a no-restricted-imports error for that import"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}

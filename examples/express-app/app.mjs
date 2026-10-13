@@ -124,9 +124,9 @@ if (port === undefined) {
         return;
       }
       if (typeof process.send !== 'function') {
-        logError('no IPC channel: start this app through index.mjs');
-        process.exitCode = 1;
-        shutdown();
+        // Started on its own, e.g. `node app.mjs | phargus serve`: no parent to tell, so say where
+        // it listens on stderr (stdout carries the agent's NDJSON) and keep serving.
+        logError(`listening on http://${HOST}:${address.port}`);
         return;
       }
       console.log(`express-app: listening on http://${HOST}:${address.port}`);

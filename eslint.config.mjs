@@ -66,8 +66,32 @@ export default tseslint.config(
               message: 'agent code may import only node: builtins and its own files.',
             },
             {
-              regex: '(^|/)(collector|analyzer|dashboard|plugin-runner|otel)(/|$)',
+              regex: '(^|/)(collector|analyzer|dashboard|plugin-runner|otel|cli)(/|$)',
               message: 'The agent must not import from other modules of this package.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // The CLI is a thin executable over the public APIs: Node core, plus the collector and
+    // dashboard through their entrypoints. Nothing imports it back.
+    files: ['src/cli/**/*.ts'],
+    ignores: ['src/cli/**/*.test.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^(?!node:|\\.)',
+              message: 'CLI code may import only node: builtins and this package.',
+            },
+            {
+              regex: '^\\.\\./(?!(collector|dashboard)/index\\.js$)',
+              message:
+                'The CLI may reach other modules only through the collector and dashboard entrypoints.',
             },
           ],
         },

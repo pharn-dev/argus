@@ -98,8 +98,54 @@ plus one line per traced request. That is all the agent does on its own.
 
 ### Add the live dashboard
 
-The agent does not start a server. You wire `@pharn-dev/phargus/collector` and
-`@pharn-dev/phargus/dashboard` to the agent's NDJSON, usually in a second process. A minimal version:
+The agent does not start a server. The `phargus` command reads the agent's NDJSON and serves the
+dashboard, so the whole setup is two commands:
+
+```bash
+npm install @pharn-dev/phargus
+node --import @pharn-dev/phargus/agent app.mjs | npx phargus serve
+```
+
+`phargus serve` prints `phargus: dashboard at http://127.0.0.1:7070` on stderr; open that address.
+Your app's stdout is the pipe, so it may log there too: lines that are not agent data are skipped
+and counted.
+
+#### `phargus serve`
+
+```text
+phargus serve [options] [file|-]
+```
+
+| Option                 | Default     | Meaning                                                                    |
+| ---------------------- | ----------- | -------------------------------------------------------------------------- |
+| `--port <n>`           | `7070`      | Port to listen on, `0` to `65535`. `0` picks a free port.                  |
+| `--host <address>`     | `127.0.0.1` | Address to bind. A non-loopback host needs a token.                        |
+| `--token <value>`      | none        | Require a token. Prefer `PHARGUS_TOKEN`: a flag shows in the process list. |
+| `--window-ms <n>`      | `1000`      | Aggregation window in milliseconds.                                        |
+| `--max-line-bytes <n>` | `1048576`   | Longest accepted input line in bytes.                                      |
+| `-h`, `--help`         |             | Print the usage text.                                                      |
+| `-v`, `--version`      |             | Print the version.                                                         |
+
+- **Input.** stdin by default (or `-`). Give a file path to replay a capture: redirect the app's
+  stdout to a file, then run `npx phargus serve capture.ndjson`. The server keeps running after
+  the input ends, serving what it collected, until you stop it.
+- **Token.** On loopback no token is needed. For any other `--host` set one, with
+  `PHARGUS_TOKEN=... npx phargus serve --host 0.0.0.0`; without it the command exits with code 2
+  before binding. Set `PHARGUS_TOKEN` and `PHARGUS_DEBUG` on the `phargus serve` side of the pipe
+  only: the agent warns about unknown `PHARGUS_*` variables in the app's own environment. See
+  [Dashboard access](#using-the-library-apis) for how browsers and scripts present the token.
+- **Diagnostics go to stderr only.** The dashboard URL, a line when the input ends, and a
+  `counts:` line (`decoder.invalid`, `decoder.oversized`, `collector.ignored`,
+  `dashboard.droppedEvents`) when the input ends and again at exit. Errors print without a stack;
+  set `PHARGUS_DEBUG=1` to get one.
+- **Exit codes.** `0` for help, version and a graceful stop on `SIGINT` or `SIGTERM`; `1` for a
+  runtime error (unreadable file, port in use) or a shutdown that did not finish in 5 seconds;
+  `2` for a usage error (unknown flag, bad value, non-loopback host without a token).
+
+#### Using the library APIs
+
+To embed the collector and dashboard in your own process, wire `@pharn-dev/phargus/collector` and
+`@pharn-dev/phargus/dashboard` yourself. A minimal version, which is what `phargus serve` does:
 
 ```js
 // collect.mjs — run as: node --import @pharn-dev/phargus/agent app.mjs | node collect.mjs

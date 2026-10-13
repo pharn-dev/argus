@@ -21,8 +21,12 @@ Status legend:
 - ✅ Dual package: ESM + CJS, six subpath exports.
 - ✅ Config via env vars (`PHARGUS_OUTPUT`, `PHARGUS_INTERVAL_MS`, `PHARGUS_QUEUE_BOUND`,
   `PHARGUS_ENABLED`) + `phargus.config.{js,json}`. Unknown `PHARGUS_*` variables warn and are ignored.
+- ✅ CLI: `phargus serve` reads the agent's NDJSON from stdin or a file and serves the dashboard,
+  so `node --import @pharn-dev/phargus/agent app.mjs | npx phargus serve` is the whole setup.
+  Loopback by default; a non-loopback `--host` requires a token. ESM-only, not an `exports` subpath.
 - 🟡 Works the same locally and in production. The agent does; the dashboard needs a collector
-  process wired by you (see `examples/express-app`), and the default output is the app's stdout.
+  process (`phargus serve`, or one you wire yourself as in `examples/express-app`), and the
+  default output is the app's stdout.
 - ⬜ Published to npm. On hold (S8); build from source for now.
 
 ## 2. Runtime metrics (the headline diagnostics)
@@ -64,7 +68,8 @@ Status legend:
 
 ## 5. Dashboard
 
-- ✅ Lightweight UI: vanilla JS, no framework, no bundler.
+- ✅ Lightweight UI: vanilla JS, no framework, no bundler. Started from the command line with
+  `phargus serve`, or from code with `createDashboardServer`.
 - ✅ Live updates over SSE (Server-Sent Events), bounded per client.
 - 🟡 Views for event loop lag, memory, GC, alerts and traces. There is no backpressure view yet;
   backpressure is in the windows on `/events`.

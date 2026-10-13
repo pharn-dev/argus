@@ -28,6 +28,9 @@
     "node": ">=22.18.0",
     "npm": ">=10"
   },
+  "bin": {
+    "phargus": "dist/esm/cli/bin.js"
+  },
   "exports": {
     "./agent": {
       "import": {
