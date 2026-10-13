@@ -74,6 +74,9 @@ try {
   await copyFile(new URL('./install-smoke.mjs', import.meta.url), join(consumer, 'smoke.mjs'));
   for (const format of ['import', 'require'])
     await run(process.execPath, ['smoke.mjs', format, 'core']);
+  // The bin must resolve and run from the installed tarball (npx phargus), not from the repo.
+  await npm(['exec', '--no', '--', 'phargus', '--help']);
+  console.log('ok   installed bin (npx phargus --help)');
 
   // Tooling is pinned to the lockfile and installed in the consumer; type resolution cannot fall
   // back to the repo's sources, aliases or node_modules.

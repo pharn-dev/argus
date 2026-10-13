@@ -7,7 +7,7 @@
 // that only named ../../../src/... would point at nothing. Declaration maps are off for the same
 // reason: they cannot embed sources, and without src/ they only send go-to-definition to a missing file.
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -22,4 +22,15 @@ for (const [project, outDir, type] of [
   execFileSync(process.execPath, [tsc, '-p', project], { cwd: root, stdio: 'inherit' });
   mkdirSync(`${root}${outDir}`, { recursive: true });
   writeFileSync(`${root}${outDir}/package.json`, `${JSON.stringify({ type })}\n`);
+}
+
+// Every "bin" target must keep its shebang through tsc and be executable on disk (npm also marks
+// bin targets executable inside the tarball).
+const manifest = JSON.parse(readFileSync(`${root}package.json`, 'utf8'));
+for (const [name, target] of Object.entries(manifest.bin ?? {})) {
+  const file = `${root}${target}`;
+  if (!readFileSync(file, 'utf8').startsWith('#!/usr/bin/env node\n')) {
+    throw new Error(`bin "${name}" (${target}) must start with "#!/usr/bin/env node"`);
+  }
+  chmodSync(file, 0o755);
 }

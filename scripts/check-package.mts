@@ -18,6 +18,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 interface PackageJson {
+  bin?: unknown;
   engines?: { node?: string };
   exports?: unknown;
 }
@@ -41,7 +42,8 @@ function describe(error: unknown): string {
 }
 
 // npm prints the pack listing as a JSON array with one entry per package; each entry has `files`.
-function packedPaths(): string[] {
+// The map is each shipped path to its tarball file mode.
+function packedFiles(): Map<string, number> {
   // When run through `npm run`, npm_execpath is npm's own CLI script: running it with this Node
   // avoids resolving an `npm` shim (which on Windows needs a shell). Otherwise use npm from PATH.
   const npmCli = process.env['npm_execpath'];
@@ -60,12 +62,14 @@ function packedPaths(): string[] {
   }
   const files = parsed[0]['files'];
   if (!Array.isArray(files)) throw new Error('npm pack --json entry has no files array');
-  return files.map((file: unknown) => {
+  const listed = new Map<string, number>();
+  for (const file of files as unknown[]) {
     if (!isRecord(file) || typeof file['path'] !== 'string') {
       throw new Error('npm pack --json listed a file without a path');
     }
-    return file['path'];
-  });
+    listed.set(file['path'], typeof file['mode'] === 'number' ? file['mode'] : 0);
+  }
+  return listed;
 }
 
 // Every string leaf of the "exports" map, as a package-relative path.
@@ -98,7 +102,8 @@ function checkSourceMap(path: string): void {
 }
 
 function checkTarball(pkg: PackageJson): number {
-  const paths = packedPaths();
+  const files = packedFiles();
+  const paths = [...files.keys()];
   const shipped = new Set(paths);
 
   if (
@@ -120,7 +125,29 @@ function checkTarball(pkg: PackageJson): number {
   for (const target of new Set(exportTargets(pkg.exports))) {
     if (!shipped.has(target)) problems.push(`${target}: named in "exports" but not in the tarball`);
   }
+  checkBin(pkg, files);
   return paths.length;
+}
+
+// "bin" must be a non-empty map whose targets ship in the tarball with an executable mode.
+function checkBin(pkg: PackageJson, files: ReadonlyMap<string, number>): void {
+  if (!isRecord(pkg.bin) || Object.keys(pkg.bin).length === 0) {
+    problems.push('package.json "bin" must be a non-empty object');
+    return;
+  }
+  for (const [name, value] of Object.entries(pkg.bin)) {
+    if (typeof value !== 'string') {
+      problems.push(`bin "${name}": target must be a string path`);
+      continue;
+    }
+    const target = value.replace(/^\.\//, '');
+    const mode = files.get(target);
+    if (mode === undefined) {
+      problems.push(`${target}: named in "bin" but not in the tarball`);
+    } else if ((mode & 0o111) === 0) {
+      problems.push(`${target}: bin "${name}" ships without an executable mode`);
+    }
+  }
 }
 
 function checkNodeFloor(pkg: PackageJson): void {

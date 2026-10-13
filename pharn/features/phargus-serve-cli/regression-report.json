@@ -1,0 +1,133 @@
+{
+  "base": "d697b7a02f27d9c502cc141d40f1c77ffc7747ef",
+  "inside": [
+    "ARCHITECTURE.md",
+    "CHANGELOG.md",
+    "FEATURES.md",
+    "README.md",
+    "docs/THREAT-MODEL.md",
+    "eslint.config.mjs",
+    "examples/express-app/README.md",
+    "examples/express-app/app.mjs",
+    "package.json",
+    "scripts/build.mjs",
+    "scripts/check-exports.mjs",
+    "scripts/check-install.mjs",
+    "scripts/check-package.mts",
+    "src/dashboard/index.ts",
+    "tsconfig.cjs.json",
+    "pharn/features/phargus-serve-cli/AC-TESTS.lock.json",
+    "pharn/features/phargus-serve-cli/AC-TESTS.md",
+    "pharn/features/phargus-serve-cli/BUILD.md",
+    "pharn/features/phargus-serve-cli/GRILL.md",
+    "pharn/features/phargus-serve-cli/PLAN.md",
+    "pharn/features/phargus-serve-cli/SPEC.md",
+    "src/cli/args.ts",
+    "src/cli/bin.ts",
+    "src/cli/input.ts",
+    "src/cli/main.ts",
+    "src/cli/phargus-serve-cli.ac1.integration.test.ts",
+    "src/cli/phargus-serve-cli.ac10.integration.test.ts",
+    "src/cli/phargus-serve-cli.ac2.integration.test.ts",
+    "src/cli/phargus-serve-cli.ac3.integration.test.ts",
+    "src/cli/phargus-serve-cli.ac4.integration.test.ts",
+    "src/cli/phargus-serve-cli.ac5.integration.test.ts",
+    "src/cli/phargus-serve-cli.ac6.integration.test.ts",
+    "src/cli/phargus-serve-cli.ac7.integration.test.ts",
+    "src/cli/phargus-serve-cli.ac8.integration.test.ts",
+    "src/cli/phargus-serve-cli.ac9.integration.test.ts",
+    "src/cli/report.ts",
+    "src/cli/serve.ts",
+    "src/cli/usage.ts",
+    "src/cli/version.ts"
+  ],
+  "outside_gates": {
+    "build": {
+      "base": 0,
+      "head": 0
+    },
+    "format:check": {
+      "base": 0,
+      "head": 0
+    },
+    "lint": {
+      "base": 0,
+      "head": 0
+    },
+    "test": {
+      "base": 0,
+      "head": 0
+    },
+    "typecheck": {
+      "base": 0,
+      "head": 0
+    }
+  },
+  "regressions": [],
+  "pre_existing": [],
+  "verdict": "no-regressions",
+  "gate_run": {
+    "base": {
+      "stamp_sha256": "93cbd37cea9b7886a87b84e1759ee908da09fb5f486b33146d43698a5d2aeb12",
+      "source": "discover",
+      "fingerprint": {
+        "algo": "worktree-fingerprint/2+sha256+entry-feature-dir",
+        "final": "7988c0ecd5fbc0bab389138606115d6ed28e87c1be70c0778f467e0c0bb0944f"
+      }
+    },
+    "head": {
+      "stamp_sha256": "2b1b7875a64d851609d2fb2a491c1f873d9c62e79d0bf3692bc34861b3db1776",
+      "source": "discover",
+      "fingerprint": {
+        "algo": "worktree-fingerprint/2+sha256",
+        "final": "311d27aa356bdba8c629abaa38a4439be8e0c681808c0ccd227683dbd49f68cf"
+      }
+    }
+  },
+  "base_evidence": {
+    "reused": false,
+    "miss": "no-record",
+    "requirement_sha256": "2368d8ea38e27686732bb859837e369b485dfe1acc60873956f63c24ff42522d",
+    "recorded": false,
+    "source": "entry",
+    "entry": {
+      "used": true,
+      "miss": null,
+      "offer_sha256": "71325c36e97155fb58895aabf358edcf30f60f265a7f2b0e9a7185b41eda0a7d",
+      "entry_stamp_sha256": "5b625946c8d8740aadfe65d3b0f955021ba0c7088df166208107958a24a3117a",
+      "base": "d697b7a02f27d9c502cc141d40f1c77ffc7747ef",
+      "run": {
+        "command": "pharn-loop",
+        "marker_sha256": "807f3015291697b85d92008e4cf375ca16b4d0b8bfb2ef0cf5b59085df267286"
+      },
+      "reused_ids": [
+        "test",
+        "lint",
+        "format:check",
+        "typecheck",
+        "build"
+      ],
+      "no_files_ids": [],
+      "ignored_ids": [
+        "test"
+      ]
+    }
+  },
+  "pre_run_snapshot": {
+    "status": "applied",
+    "unchanged": []
+  },
+  "head_install": {
+    "state": "clean",
+    "why": null,
+    "family": "npm",
+    "lockfile": "package-lock.json",
+    "counts": {
+      "changed": 0,
+      "missing": 0,
+      "extraneous": 0,
+      "missing_unchecked": 24
+    }
+  },
+  "base_source": "explicit"
+}

@@ -28,6 +28,22 @@ The app logs to its own stdout too (one plain-text line when it starts listening
 the stream through `createNdjsonDecoder` and the collector, which skip and count every line that is
 not agent data, so the app's own output does not break the collector.
 
+## With the CLI
+
+The same app works with the `phargus` command instead of `index.mjs`. Start it on its own, piped
+into `phargus serve`. From the repo root, after `npm run build`:
+
+```bash
+APP_PORT=3000 node examples/express-app/app.mjs | node dist/esm/cli/bin.js serve
+```
+
+(`app.mjs` loads the agent itself. In your own project, with the package installed, the second
+command is `npx phargus serve`.)
+
+Started this way `app.mjs` has no parent process, so it logs its address to stderr and keeps
+serving. `phargus serve` prints the dashboard address on stderr. There is no alert rule in this
+mode; `index.mjs` is the version that configures one.
+
 ## Configuration
 
 | Variable         | Default | Meaning                                       |

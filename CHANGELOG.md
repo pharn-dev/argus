@@ -7,6 +7,24 @@ All notable changes to Phargus are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `phargus serve`, a command-line way to get the dashboard without writing a collector. The
+  package now has a `bin`, so `node --import @pharn-dev/phargus/agent app.mjs | npx phargus serve`
+  reads the agent's NDJSON from stdin (or `-`), replays a capture file given as an argument,
+  aggregates it into windows and serves the dashboard. Flags: `--port` (default 7070), `--host`
+  (default `127.0.0.1`), `--token`, `--window-ms` (default 1000) and `--max-line-bytes`, plus
+  `--help` and `--version`. `PHARGUS_TOKEN` supplies the token, and a non-loopback `--host`
+  without one is refused with exit code 2 before anything binds. Diagnostics go to stderr only:
+  the dashboard URL, an input-ended line and a `counts:` line (`decoder.invalid`,
+  `decoder.oversized`, `collector.ignored`, `dashboard.droppedEvents`). The server keeps running
+  after the input ends. SIGINT and SIGTERM close the server and the collector and exit 0; a stuck
+  shutdown is forced out with exit code 1 after 5 seconds. Exit codes: 0 success, 1 runtime error
+  (unreadable file, port in use), 2 usage error. Errors print without a stack unless
+  `PHARGUS_DEBUG` is set. The CLI is ESM-only and is not an `exports` subpath.
+  `@pharn-dev/phargus/dashboard` now also exports `isLoopbackHost`. `npm run check:exports`,
+  `check:package` and `check:install` verify the `bin`.
+
 ### Fixed
 
 - OTLP exporters (`@pharn-dev/phargus/otel`) no longer lose spans and windows under load (review

@@ -11,8 +11,10 @@ Only the agent runs **inside** the process you want to observe. It samples, trac
 NDJSON to stdout or a file; it starts no server. Everything else is a library you wire to that
 stream: the collector aggregates it, the dashboard serves the collector's output to a browser, and
 the OpenTelemetry exporter and plugin runner read the collector's windows. You can run those in the
-monitored process, but the shipped example (`examples/express-app`) runs them in a second process
-that reads the app's stdout, so aggregation and serving never use the app's event loop.
+monitored process, but the usual setup runs them in a second process that reads the app's stdout,
+so aggregation and serving never use the app's event loop. `phargus serve` (`src/cli`) is that second
+process for the collector and dashboard; `examples/express-app` wires the same libraries by hand,
+with an alert rule.
 
 ```
 ┌──────────────── monitored Node.js process ─────────────────┐
@@ -30,7 +32,7 @@ that reads the app's stdout, so aggregation and serving never use the app's even
 └─────────────────────────────┬──────────────────────────────┘
                               │ NDJSON (sample lines carry dropped counters)
                               ▼
-┌──────── collector / dashboard process (wired by the user) ─────────┐
+┌──── collector / dashboard process (phargus serve, or your own) ────┐
 │ @pharn-dev/phargus/collector                                                    │
 │  └─ pipeline(): spans → ring buffer │ samples → windows →          │
 │     persistence (opt-in) → alerts → sinks (stdout/file/webhook)    │
@@ -101,6 +103,9 @@ that reads the app's stdout, so aggregation and serving never use the app's even
 - `src/plugin-runner` — isolated-vm sandbox; reads aggregated data only.
 - `src/otel` (`@pharn-dev/phargus/otel`) — opt-in OTLP/HTTP JSON metrics and trace export; Node core only,
   reads collector output. The agent never imports it.
+- `src/cli` — the `phargus` executable (`phargus serve`). Node core plus the collector and
+  dashboard entrypoints (`../collector/index.js`, `../dashboard/index.js`) only; an ESLint rule
+  enforces this. Nothing imports it, and the agent's ESLint rule rejects any import of it.
 
 `async_hooks` is imported in exactly one file: `src/agent/context.ts`.
 
@@ -127,6 +132,9 @@ that reads the app's stdout, so aggregation and serving never use the app's even
   `dist/esm`, `tsconfig.cjs.json` → `dist/cjs` (`npm run build`).
 - Every subpath ships dual ESM + CJS with a correct `exports` entry (separate types per format).
   Modules import each other by relative path; `package.json` has no `imports` field.
-- `npm run check:exports` loads every subpath through `import` and `require`;
-  `npm run check:package` checks the packed tarball's contents and that `engines.node` matches
-  `.nvmrc`.
+- `src/cli` is the exception: it is ESM-only (excluded from `tsconfig.cjs.json`) and is not an
+  `exports` subpath. `package.json` `bin` maps `phargus` to `dist/esm/cli/bin.js`, and
+  `scripts/build.mjs` checks its shebang and makes it executable.
+- `npm run check:exports` loads every subpath through `import` and `require` and runs
+  `phargus --help`; `npm run check:package` checks the packed tarball's contents (including that
+  each `bin` target ships executable) and that `engines.node` matches `.nvmrc`.
