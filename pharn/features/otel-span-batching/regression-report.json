@@ -1,0 +1,98 @@
+{
+  "base": "aad3a149e923b02fa1c22bd7b803bcdf64c5d437",
+  "inside": [
+    "CHANGELOG.md",
+    "FEATURES.md",
+    "README.md",
+    "docs/THREAT-MODEL.md",
+    "src/otel/otel-metrics-export.ac3.integration.test.ts",
+    "src/otel/otel-trace-export.ac3.integration.test.ts",
+    "src/otel/otlp-batch-queue.ts",
+    "src/otel/otlp-bounds.integration.test.ts",
+    "src/otel/otlp-exporter-options.ts",
+    "src/otel/otlp-exporter.ts",
+    "src/otel/otlp-trace-exporter.ts",
+    "pharn/features/otel-span-batching/AC-TESTS.lock.json",
+    "pharn/features/otel-span-batching/AC-TESTS.md",
+    "pharn/features/otel-span-batching/BUILD.md",
+    "pharn/features/otel-span-batching/GRILL.md",
+    "pharn/features/otel-span-batching/PLAN.md",
+    "pharn/features/otel-span-batching/SPEC.md",
+    "pharn/features/otel-span-batching/VERIFY.md",
+    "pharn/features/otel-span-batching/verify-report.json",
+    "src/otel/otel-span-batching.ac1.integration.test.ts",
+    "src/otel/otel-span-batching.ac10.test.ts",
+    "src/otel/otel-span-batching.ac2.integration.test.ts",
+    "src/otel/otel-span-batching.ac3.integration.test.ts",
+    "src/otel/otel-span-batching.ac4.integration.test.ts",
+    "src/otel/otel-span-batching.ac5.integration.test.ts",
+    "src/otel/otel-span-batching.ac6.integration.test.ts",
+    "src/otel/otel-span-batching.ac7.integration.test.ts",
+    "src/otel/otel-span-batching.ac8.integration.test.ts",
+    "src/otel/otel-span-batching.ac9.integration.test.ts",
+    "src/otel/otlp-drop-reporter.ts",
+    "src/otel/otlp-pending-items.ts"
+  ],
+  "outside_gates": {
+    "build": {
+      "base": 0,
+      "head": 0
+    },
+    "test": {
+      "base": 0,
+      "head": 1
+    },
+    "typecheck": {
+      "base": 0,
+      "head": 0
+    }
+  },
+  "regressions": [
+    "test"
+  ],
+  "pre_existing": [],
+  "verdict": "regressions",
+  "gate_run": {
+    "base": {
+      "stamp_sha256": "73c0fe621c51f6b92a1bbcc3c707b3ba33a287a8701fe83761441e61bde0212a",
+      "source": "discover",
+      "fingerprint": {
+        "algo": "worktree-fingerprint/2+sha256",
+        "final": "3638f50f1a84629fb1902979ded52f7585c3b760a771760bdee1948c63c6e28d"
+      }
+    },
+    "head": {
+      "stamp_sha256": "c9b387d62b134984e7bde8ed7865bd7e2b172503041426b3beae8bd708ac5378",
+      "source": "discover",
+      "fingerprint": {
+        "algo": "worktree-fingerprint/2+sha256",
+        "final": "f6720966b245568097b411a69ceb8b7b77c694035f70f9fe66e2c0be021f1c63"
+      }
+    }
+  },
+  "base_evidence": {
+    "reused": true,
+    "miss": null,
+    "requirement_sha256": "03e49477d4dd0743787da80d57cd9ca6794127e809ff9bbe395850053d8d5ad2",
+    "recorded": true,
+    "source": "reused",
+    "entry": null
+  },
+  "pre_run_snapshot": {
+    "status": "applied",
+    "unchanged": []
+  },
+  "head_install": {
+    "state": "clean",
+    "why": null,
+    "family": "npm",
+    "lockfile": "package-lock.json",
+    "counts": {
+      "changed": 0,
+      "missing": 0,
+      "extraneous": 0,
+      "missing_unchecked": 24
+    }
+  },
+  "base_source": "explicit"
+}

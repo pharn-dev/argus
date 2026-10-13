@@ -1,0 +1,197 @@
+{
+  "feature": "otel-span-batching",
+  "gates": {
+    "build": 0,
+    "format:check": 0,
+    "instruction-growth": 0,
+    "lint": 0,
+    "reconcile": 0,
+    "test": 1,
+    "typecheck": 0
+  },
+  "verdict": "FAIL",
+  "failing_gates": [
+    "test"
+  ],
+  "gate_run": {
+    "stamp_sha256": "187cd50e6c2378f4c7265202f5f6c4abc7862353bbc8d1d8f80105a06b261614",
+    "source": "discover",
+    "fingerprint": {
+      "algo": "worktree-fingerprint/2+sha256",
+      "final": "f6720966b245568097b411a69ceb8b7b77c694035f70f9fe66e2c0be021f1c63"
+    }
+  },
+  "ac_gate": {
+    "mode": "test-first",
+    "verdict": "PASS",
+    "reason": null,
+    "evidence": [],
+    "acs": [
+      {
+        "id": "AC-1",
+        "level": "integration",
+        "tests": [
+          "src/otel/otel-span-batching.ac1.integration.test.ts::otel span batching — AC-1 › AC-1: 500 spans through the listener reach a 5 ms endpoint coalesced in at most 5 POSTs with no loss"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-2",
+        "level": "integration",
+        "tests": [
+          "src/otel/otel-span-batching.ac2.integration.test.ts::otel span batching — AC-2 › AC-2: a full batch is sent at once, in order, one request at a time, and the rest waits for flush"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-3",
+        "level": "integration",
+        "tests": [
+          "src/otel/otel-span-batching.ac3.integration.test.ts::otel span batching — AC-3 › AC-3: with neither flush nor close, the flush timer sends the pending spans in one POST within 2500 ms"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-4",
+        "level": "integration",
+        "tests": [
+          "src/otel/otel-span-batching.ac4.integration.test.ts::otel span batching — AC-4 › AC-4: on overflow the oldest pending spans are dropped, counted, and reported a few times as \"dropped\""
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-5",
+        "level": "integration",
+        "tests": [
+          "src/otel/otel-span-batching.ac5.integration.test.ts::otel span batching — AC-5 › AC-5: the metrics exporter batches windows and drops the oldest ones on overflow"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-6",
+        "level": "integration",
+        "tests": [
+          "src/otel/otel-span-batching.ac6.integration.test.ts::otel span batching — AC-6 › AC-6: close() sends what is pending in one POST, a later span is dropped and counted, and close is idempotent"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-7",
+        "level": "integration",
+        "tests": [
+          "src/otel/otel-span-batching.ac7.integration.test.ts::otel span batching — AC-7 › AC-7: close() against a hung endpoint resolves within its bound, drops and reports what is pending"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-8",
+        "level": "integration",
+        "tests": [
+          "src/otel/otel-span-batching.ac8.integration.test.ts::otel span batching — AC-8 › AC-8: a 500 answer and a refused connection are counted as one failed batch of 3 items and reported, never thrown"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-9",
+        "level": "integration",
+        "tests": [
+          "src/otel/otel-span-batching.ac9.integration.test.ts::otel span batching — AC-9 › AC-9: a process that only creates both exporters exits by itself with code 0 within 5000 ms"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      },
+      {
+        "id": "AC-10",
+        "level": "unit",
+        "tests": [
+          "src/otel/otel-span-batching.ac10.test.ts::otel span batching — AC-10 › AC-10: the three new options reject invalid values with a RangeError naming them, and queueCapacity keeps its validation"
+        ],
+        "status": "passed",
+        "reason": null,
+        "detail": ""
+      }
+    ],
+    "unmapped_anomalies": [],
+    "note": "an AC is delivered = a locked, once-red test titled AC-<n>:, in a file mapped to AC-<n>, passed on this head run. PHARN does not judge whether that test fully captures the AC's intent."
+  },
+  "completeness": {
+    "plan": "pharn/features/otel-span-batching/PLAN.md",
+    "repoDir": ".",
+    "declared": [
+      "src/otel/otlp-pending-items.ts",
+      "src/otel/otlp-drop-reporter.ts",
+      "src/otel/otlp-batch-queue.ts",
+      "src/otel/otlp-exporter-options.ts",
+      "src/otel/otlp-trace-exporter.ts",
+      "src/otel/otlp-exporter.ts",
+      "src/otel/otlp-bounds.integration.test.ts",
+      "src/otel/otel-trace-export.ac3.integration.test.ts",
+      "src/otel/otel-metrics-export.ac3.integration.test.ts",
+      "docs/THREAT-MODEL.md",
+      "FEATURES.md",
+      "README.md",
+      "CHANGELOG.md"
+    ],
+    "skipped": [],
+    "missing": [],
+    "complete": true,
+    "verdict": "complete"
+  },
+  "verifiers": {
+    "registered": 0,
+    "findings": []
+  },
+  "gate_reuse": {
+    "reused": [
+      {
+        "id": "typecheck",
+        "stage": "regress",
+        "side": "head",
+        "seq": 1
+      },
+      {
+        "id": "build",
+        "stage": "regress",
+        "side": "head",
+        "seq": 2
+      }
+    ]
+  },
+  "head_install": {
+    "state": "clean",
+    "why": null,
+    "family": "npm",
+    "lockfile": "package-lock.json",
+    "counts": {
+      "changed": 0,
+      "missing": 0,
+      "extraneous": 0,
+      "missing_unchecked": 24
+    }
+  },
+  "reconcile_detail": {
+    "state": "parsed",
+    "exit": 0,
+    "verdict": "CLEAN",
+    "escapes": [],
+    "escapes_total": 0,
+    "merged_count": 0
+  }
+}
