@@ -18,6 +18,8 @@ export type ServeOptions = {
   port: number;
   host: string;
   token: string | undefined;
+  /** Extra `Host` names the dashboard answers, passed to `createDashboardServer`'s `allowedHosts`. */
+  allowedHosts: readonly string[];
   windowMs: number;
   maxLineBytes: number;
   input: ServeInput;
@@ -32,6 +34,8 @@ export const DEFAULT_WINDOW_MS = 1000;
 
 const DIGITS = /^[0-9]+$/;
 const PORT_DIGITS = /^[0-9]{1,5}$/;
+/** Characters that cannot appear in a `host` or `host:port` (a scheme, path, query or user part). */
+const NOT_A_HOST = /[\s/?#@\\]/;
 
 function parsePort(value: string): number {
   const port = PORT_DIGITS.test(value) ? Number(value) : Number.NaN;
@@ -39,6 +43,15 @@ function parsePort(value: string): number {
     throw new UsageError(`--port must be an integer from 0 to 65535, got "${value}"`);
   }
   return port;
+}
+
+function parseAllowedHost(value: string): string {
+  if (value.length === 0 || NOT_A_HOST.test(value)) {
+    throw new UsageError(
+      `--allowed-host must be a host name or host:port without a scheme or path, got "${value}"`,
+    );
+  }
+  return value;
 }
 
 function parsePositiveInteger(flag: string, value: string): number {
@@ -67,6 +80,7 @@ export function parseServeArgs(argv: readonly string[], env: NodeJS.ProcessEnv):
         port: { type: 'string' },
         host: { type: 'string' },
         token: { type: 'string' },
+        'allowed-host': { type: 'string', multiple: true },
         'window-ms': { type: 'string' },
         'max-line-bytes': { type: 'string' },
       },
@@ -126,6 +140,8 @@ export function parseServeArgs(argv: readonly string[], env: NodeJS.ProcessEnv):
     );
   }
 
+  const allowedHosts = (values['allowed-host'] ?? []).map(parseAllowedHost);
+
   const [spec] = rest;
   const input: ServeInput =
     spec === undefined || spec === '-' ? { kind: 'stdin' } : { kind: 'file', path: spec };
@@ -136,6 +152,7 @@ export function parseServeArgs(argv: readonly string[], env: NodeJS.ProcessEnv):
       port,
       host,
       token,
+      allowedHosts,
       windowMs,
       maxLineBytes: maxLineBytes ?? DEFAULT_MAX_LINE_BYTES,
       input,

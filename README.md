@@ -115,27 +115,41 @@ plus one line per traced request. That is all the agent does on its own: it star
 phargus serve [options] [file|-]
 ```
 
-| Option                 | Default     | Meaning                                                                    |
-| ---------------------- | ----------- | -------------------------------------------------------------------------- |
-| `--port <n>`           | `7070`      | Port to listen on, `0` to `65535`. `0` picks a free port.                  |
-| `--host <address>`     | `127.0.0.1` | Address to bind. A non-loopback host needs a token.                        |
-| `--token <value>`      | none        | Require a token. Prefer `PHARGUS_TOKEN`: a flag shows in the process list. |
-| `--window-ms <n>`      | `1000`      | Aggregation window in milliseconds.                                        |
-| `--max-line-bytes <n>` | `1048576`   | Longest accepted input line in bytes.                                      |
-| `-h`, `--help`         |             | Print the usage text.                                                      |
-| `-v`, `--version`      |             | Print the version.                                                         |
+| Option                  | Default     | Meaning                                                                    |
+| ----------------------- | ----------- | -------------------------------------------------------------------------- |
+| `--port <n>`            | `7070`      | Port to listen on, `0` to `65535`. `0` picks a free port.                  |
+| `--host <address>`      | `127.0.0.1` | Address to bind. A non-loopback host needs a token.                        |
+| `--token <value>`       | none        | Require a token. Prefer `PHARGUS_TOKEN`: a flag shows in the process list. |
+| `--allowed-host <host>` | none        | Also answer this `Host` name. Repeatable; `host:port` matches exactly.     |
+| `--window-ms <n>`       | `1000`      | Aggregation window in milliseconds.                                        |
+| `--max-line-bytes <n>`  | `1048576`   | Longest accepted input line in bytes.                                      |
+| `-h`, `--help`          |             | Print the usage text.                                                      |
+| `-v`, `--version`       |             | Print the version.                                                         |
 
 - **Input.** stdin by default (or `-`). Give a file path to replay a capture: redirect the app's
   stdout to a file, then run `npx phargus serve capture.ndjson`. The server keeps running after
   the input ends, serving what it collected, until you stop it.
 - **Token.** On loopback no token is needed. For any other `--host` set one, with
   `PHARGUS_TOKEN=... npx phargus serve --host 0.0.0.0`; without it the command exits with code 2
-  before binding. Set `PHARGUS_TOKEN` and `PHARGUS_DEBUG` on the `phargus serve` side of the pipe
-  only: the agent warns about unknown `PHARGUS_*` variables in the app's own environment. See
-  **Dashboard access** under [Using the library APIs](#using-the-library-apis) for how browsers
-  and scripts present the token. The server answers only the `Host` names listed there and the CLI
-  has no `allowedHosts` flag, so to reach it from another machine bind the address you will use
-  (`--host 192.0.2.10`), or keep it on loopback behind an SSH tunnel.
+  before binding. `PHARGUS_TOKEN` and `PHARGUS_DEBUG` belong to `phargus serve`; the agent
+  ignores both, so they can sit in an environment shared with the app. See **Dashboard access**
+  under [Using the library APIs](#using-the-library-apis) for how browsers and scripts present the
+  token.
+- **Reaching it from another machine.** The server answers only the `Host` names listed under
+  **Dashboard access**; any other gets `421`. When the browser uses a different IP or hostname,
+  for example with `--host 0.0.0.0` in a container, name it with `--allowed-host` and repeat the
+  flag for several names:
+
+  ```bash
+  PHARGUS_TOKEN=... npx phargus serve --host 0.0.0.0 \
+    --allowed-host dash.internal --allowed-host 192.0.2.10
+  ```
+
+  A bare name matches on any port, so it also works behind a port mapping; `host:port` matches
+  only that port. The value is a host, not a URL: an empty value, whitespace or `/` is a usage
+  error (exit `2`). `--allowed-host` does not replace the token. The dashboard is plain HTTP, so
+  across an untrusted network still use an SSH tunnel or a TLS-terminating proxy.
+
 - **Diagnostics go to stderr only.** The dashboard URL, a line when the input ends, and a
   `counts:` line (`decoder.invalid`, `decoder.oversized`, `collector.ignored`,
   `dashboard.droppedEvents`) when the input ends and again at exit. Errors print without a stack;
@@ -184,7 +198,8 @@ The recording above is that example.
 - The server answers only requests whose `Host` is the bound address on the bound port (plus
   `localhost`, `127.0.0.1` and `[::1]` for a loopback or `0.0.0.0`/`::` bind); anything else gets
   `421`. A cross-origin `Origin` on `/events` gets `403`. Behind a reverse proxy, or when you
-  reach the dashboard by another name, list that name in `allowedHosts`.
+  reach the dashboard by another name, list that name in `allowedHosts` (`--allowed-host` for
+  `phargus serve`).
 - The dashboard is plain HTTP. For remote access use an SSH tunnel or a TLS-terminating proxy.
 
 ---
@@ -202,8 +217,9 @@ Choose where the agent writes with `PHARGUS_OUTPUT`:
 
 The same keys (`output`, `intervalMs`, `queueBound`, `enabled`) can go in `phargus.config.json` or
 `phargus.config.js` in the working directory. An unknown `PHARGUS_*` variable prints one warning on
-stderr and is ignored. An invalid value disables the agent with one `[phargus] agent disabled: ...`
-line on stderr; your app keeps running.
+stderr and is ignored; `PHARGUS_TOKEN` and `PHARGUS_DEBUG`, which belong to `phargus serve`, are
+ignored without a warning. An invalid value disables the agent with one
+`[phargus] agent disabled: ...` line on stderr; your app keeps running.
 
 ---
 

@@ -9,6 +9,13 @@ const VARIABLES: Readonly<Record<string, AgentConfigKey>> = {
   PHARGUS_ENABLED: 'enabled',
 };
 
+/**
+ * `PHARGUS_*` names that belong to the `phargus serve` CLI, not the agent. A shell or container
+ * that runs both sides of the pipe shares one environment, so the agent ignores these silently
+ * instead of warning about them. Kept here as plain names: the agent imports nothing from the CLI.
+ */
+const CLI_VARIABLES: ReadonlySet<string> = new Set(['PHARGUS_TOKEN', 'PHARGUS_DEBUG']);
+
 function parse(name: string, key: AgentConfigKey, text: string): unknown {
   switch (key) {
     case 'intervalMs':
@@ -81,8 +88,9 @@ export function unknownVariableWarning(name: string): string {
 }
 
 /**
- * Map PHARGUS_* variables to config keys. Other variables are ignored. An unknown PHARGUS_ name is
- * reported once through `warn` and ignored; an invalid value for a known name throws.
+ * Map PHARGUS_* variables to config keys. Other variables, and the CLI's own `PHARGUS_TOKEN` and
+ * `PHARGUS_DEBUG`, are ignored. An unknown PHARGUS_ name is reported once through `warn` and
+ * ignored; an invalid value for a known name throws.
  */
 export function readConfigEnv(
   env: Readonly<Record<string, string | undefined>>,
@@ -91,7 +99,7 @@ export function readConfigEnv(
 ): Partial<AgentConfig> {
   const result: Record<string, unknown> = {};
   for (const [name, text] of Object.entries(env)) {
-    if (!name.startsWith('PHARGUS_') || text === undefined) {
+    if (!name.startsWith('PHARGUS_') || text === undefined || CLI_VARIABLES.has(name)) {
       continue;
     }
     if (!Object.hasOwn(VARIABLES, name)) {

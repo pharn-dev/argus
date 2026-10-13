@@ -20,7 +20,7 @@ Status legend:
 - ✅ Zero external dependencies in the agent (Node core only; enforced by ESLint).
 - ✅ Dual package: ESM + CJS, six subpath exports.
 - ✅ Config via env vars (`PHARGUS_OUTPUT`, `PHARGUS_INTERVAL_MS`, `PHARGUS_QUEUE_BOUND`,
-  `PHARGUS_ENABLED`) + `phargus.config.{js,json}`. Unknown `PHARGUS_*` variables warn and are ignored.
+  `PHARGUS_ENABLED`) + `phargus.config.{js,json}`. Unknown `PHARGUS_*` variables warn and are ignored (the CLI's `PHARGUS_TOKEN` and `PHARGUS_DEBUG` are ignored silently).
 - ✅ CLI: `phargus serve` reads the agent's NDJSON from stdin or a file and serves the dashboard,
   so `node --import @pharn-dev/phargus/agent app.mjs | npx phargus serve` is the whole setup.
   Loopback by default; a non-loopback `--host` requires a token. ESM-only, not an `exports` subpath.

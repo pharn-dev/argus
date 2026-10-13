@@ -24,6 +24,11 @@ All notable changes to Phargus are recorded here. The format follows
   `PHARGUS_DEBUG` is set. The CLI is ESM-only and is not an `exports` subpath.
   `@pharn-dev/phargus/dashboard` now also exports `isLoopbackHost`. `npm run check:exports`,
   `check:package` and `check:install` verify the `bin`.
+- `phargus serve --allowed-host <host>`, repeatable, passed to the dashboard's `allowedHosts`.
+  It lets a browser reach a server bound with `--host 0.0.0.0` (for example in a container) by
+  IP or hostname instead of getting `421`. A bare name matches on any port; `host:port` matches
+  exactly. An empty value, or one with whitespace or `/`, is a usage error (exit code 2). It does
+  not lift the token requirement for a non-loopback `--host`.
 
 ### Fixed
 
@@ -53,6 +58,9 @@ All notable changes to Phargus are recorded here. The format follows
 
 ### Changed
 
+- The agent no longer warns about `PHARGUS_TOKEN` and `PHARGUS_DEBUG`. They belong to
+  `phargus serve`, and the agent now ignores them silently, so a shell or container that runs
+  both sides of the pipe can set them once. Other unknown `PHARGUS_*` variables still warn.
 - Releases now publish on merge: a PR that bumps the version (with its lockfile and a
   `## [X.Y.Z]` section here) is the release. Every push to `main` runs the jobs gate, build,
   publish and release, which release only when `package.json`'s version has no tag yet; the GitHub
