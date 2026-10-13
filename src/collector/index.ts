@@ -16,6 +16,14 @@ export {
 } from './collector.js';
 export { createWindowStore, type PersistOptions, type WindowStore } from './window-store.js';
 export { serializeWindow, parseWindowLine } from './window-codec.js';
+export {
+  createNdjsonDecoder,
+  DEFAULT_MAX_LINE_BYTES,
+  type NdjsonDecoder,
+  type NdjsonDecoderOptions,
+  type NdjsonSkip,
+} from './ndjson-decoder.js';
+export type { IgnoredReason, IgnoredRecordHandler } from './record-guard.js';
 export type { CollectorListener } from './collector-subscribers.js';
 export type { AggregatedWindow } from './window.js';
 export { createAlertEvaluator, type Alert, type AlertState } from './alert-evaluator.js';

@@ -2,8 +2,9 @@ import '@pharn-dev/phargus/agent';
 import { createServer } from 'node:http';
 import { performance } from 'node:perf_hooks';
 
-// The monitored app. The agent (loaded by the line above) writes NDJSON to this process's stdout,
-// so nothing else here may write to stdout. The parent (index.mjs) reads that stream.
+// The monitored app. The agent (loaded by the line above) writes NDJSON to this process's stdout.
+// The app may log to stdout as well: the parent (index.mjs) reads that stream with a decoder and a
+// collector that skip, and count, every line that is not agent data.
 
 const HOST = '127.0.0.1';
 const SLOW_BLOCK_MS = 200;
@@ -128,6 +129,7 @@ if (port === undefined) {
         shutdown();
         return;
       }
+      console.log(`express-app: listening on http://${HOST}:${address.port}`);
       process.send({ type: 'listening', port: address.port }, (err) => {
         if (err !== null) {
           logError(`could not report the port: ${err.message}`);

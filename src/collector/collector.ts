@@ -1,6 +1,7 @@
 import { Transform, type Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import type { AgentSample, SpanRecord } from '../agent/index.js';
+import type { SpanRecord } from '../agent/index.js';
+import { createRecordGuard, type IgnoredRecordHandler } from './record-guard.js';
 import { createSpanRouter } from './span-router.js';
 import { createAlertEvaluator, type Alert } from './alert-evaluator.js';
 import { validateAlertRules, type AlertRule } from './alert-rules.js';
@@ -23,6 +24,12 @@ export type CollectorOptions = {
   sinks?: readonly SinkInput[];
   onSinkError?: SinkErrorHandler;
   persist?: PersistOptions;
+  /**
+   * Called once per record `consume()` skips, after `ignored` is incremented. Foreign records
+   * (not agent data) and malformed ones (agent-shaped but unusable) are skipped and counted,
+   * never thrown. A hook that throws rejects `consume()` with that error.
+   */
+  onIgnored?: IgnoredRecordHandler;
 };
 
 /** Live view over the window store; counters are integers. */
@@ -40,8 +47,10 @@ export type Collector = {
   readonly spans: RingBuffer<SpanRecord>;
   readonly sinks: readonly AlertSink[];
   readonly persistence: WindowPersistence | undefined;
+  /** Records `consume()` skipped as foreign or malformed, across all runs (integer, saturating). */
+  readonly ignored: number;
   subscribe(listener: CollectorListener): () => void;
-  consume(source: Readable | AsyncIterable<AgentSample | SpanRecord>): Promise<void>;
+  consume(source: Readable | AsyncIterable<unknown>): Promise<void>;
   close(): Promise<void>;
 };
 
@@ -50,6 +59,11 @@ export function createCollector(options: CollectorOptions): Collector {
   const rules = options.alerts ?? [];
   // Validate eagerly; both factories throw RangeError on bad input.
   createWindowAggregator({ windowMs });
+  const { onIgnored } = options;
+  if (onIgnored !== undefined && typeof onIgnored !== 'function') {
+    throw new TypeError('onIgnored must be a function');
+  }
+  let ignored = 0;
   const windows = createRingBuffer<AggregatedWindow>(capacity);
   const alerts = createRingBuffer<Alert>(capacity);
   const spans = createRingBuffer<SpanRecord>(options.spanCapacity ?? DEFAULT_SPAN_CAPACITY);
@@ -78,10 +92,17 @@ export function createCollector(options: CollectorOptions): Collector {
     spans,
     sinks,
     persistence: store,
+    get ignored(): number {
+      return ignored;
+    },
     subscribe(listener: CollectorListener): () => void {
       return subscribers.add(listener);
     },
-    async consume(source: Readable | AsyncIterable<AgentSample | SpanRecord>): Promise<void> {
+    async consume(source: Readable | AsyncIterable<unknown>): Promise<void> {
+      const guard = createRecordGuard((record, reason) => {
+        ignored = ignored >= Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : ignored + 1;
+        onIgnored?.(record, reason);
+      });
       const spanRouter = createSpanRouter((span) => {
         spans.push(span);
         subscribers.emitSpan(span);
@@ -118,6 +139,7 @@ export function createCollector(options: CollectorOptions): Collector {
         await restoreOnce();
         await pipeline(
           source,
+          guard,
           spanRouter,
           aggregator,
           recordWindows,

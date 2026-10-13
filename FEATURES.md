@@ -56,6 +56,8 @@ Status legend:
 - ✅ Collector pipeline: raw samples → aggregated time windows → alerts (Transform streams via
   `stream/promises` `pipeline()`).
 - ✅ Integer-math aggregation (no float drift in counters).
+- ✅ Shared-stdout tolerance: `createNdjsonDecoder` (bounded line memory) and the collector's record
+  guard skip, and count, lines and records that are not agent data instead of failing.
 - ✅ OpenTelemetry export of windows (metrics) and spans (traces) as OTLP/HTTP JSON, in
   `@pharn-dev/phargus/otel`, outside the agent core. Batched sends, a bounded drop-oldest queue with
   counted and reported loss, timeouts, no redirects, bounded `close()`.

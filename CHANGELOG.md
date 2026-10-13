@@ -26,6 +26,12 @@ All notable changes to Phargus are recorded here. The format follows
   queue; with full buffers it previously got no alerts and a truncated window history. The replay
   is written in one call outside that queue, alerts first, then windows, then spans.
   `maxBufferedEvents` and `droppedEvents` now cover live events only.
+- The collector no longer dies on non-agent stdout lines. `collector.consume()` now accepts any
+  parsed records: foreign records (not agent data) and malformed ones (agent-shaped but unusable)
+  are skipped and counted in `collector.ignored`, with an optional `onIgnored` hook, instead of
+  rejecting `consume()`. Malformed agent records are skipped rather than thrown. The new
+  `createNdjsonDecoder` export turns the byte stream into objects with bounded line memory and
+  counts non-object (`invalid`) and over-long (`oversized`) lines.
 
 ### Changed
 

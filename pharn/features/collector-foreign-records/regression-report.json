@@ -1,0 +1,103 @@
+{
+  "base": "aad3a149e923b02fa1c22bd7b803bcdf64c5d437",
+  "inside": [
+    "ARCHITECTURE.md",
+    "CHANGELOG.md",
+    "FEATURES.md",
+    "README.md",
+    "docs/LIMITS.md",
+    "docs/THREAT-MODEL.md",
+    "examples/express-app/README.md",
+    "examples/express-app/app.mjs",
+    "examples/express-app/index.mjs",
+    "src/collector/collector.ts",
+    "src/collector/index.ts",
+    "pharn/features/collector-foreign-records/AC-TESTS.lock.json",
+    "pharn/features/collector-foreign-records/AC-TESTS.md",
+    "pharn/features/collector-foreign-records/BUILD.md",
+    "pharn/features/collector-foreign-records/GRILL.md",
+    "pharn/features/collector-foreign-records/LOOP.md",
+    "pharn/features/collector-foreign-records/PLAN.md",
+    "pharn/features/collector-foreign-records/SPEC.md",
+    "pharn/features/collector-foreign-records/VERIFY.md",
+    "pharn/features/collector-foreign-records/cost.json",
+    "pharn/features/collector-foreign-records/verify-report.json",
+    "src/collector/collector-foreign-records.ac1.test.ts",
+    "src/collector/collector-foreign-records.ac2.test.ts",
+    "src/collector/collector-foreign-records.ac3.integration.test.ts",
+    "src/collector/ndjson-decoder.ts",
+    "src/collector/record-guard.ts"
+  ],
+  "outside_gates": {
+    "build": {
+      "base": 0,
+      "head": 0
+    },
+    "test": {
+      "base": 1,
+      "head": 1
+    },
+    "typecheck": {
+      "base": 0,
+      "head": 0
+    }
+  },
+  "regressions": [],
+  "pre_existing": [
+    "test"
+  ],
+  "verdict": "no-regressions",
+  "gate_run": {
+    "base": {
+      "stamp_sha256": "66c7ca59c0233fb45795a93b07184637c8b0f9fefd182c001298a1703289238b",
+      "source": "discover",
+      "fingerprint": {
+        "algo": "worktree-fingerprint/2+sha256",
+        "final": "3638f50f1a84629fb1902979ded52f7585c3b760a771760bdee1948c63c6e28d"
+      }
+    },
+    "head": {
+      "stamp_sha256": "889596673cf150146c37caef8790e7a8d7780f794c69cdd5e258a0fb7cee7e5a",
+      "source": "discover",
+      "fingerprint": {
+        "algo": "worktree-fingerprint/2+sha256",
+        "final": "ea502e34ee99e30ec9fde4fc29f9ada8ff622d4b55c0b15ca55971ed249c253b"
+      }
+    }
+  },
+  "base_evidence": {
+    "reused": false,
+    "miss": "no-delivery-run",
+    "requirement_sha256": "f13f9992f66851dd8d2f1d7f79e8ee8eab3a773b18d615f7cebcaed6161a3c2b",
+    "recorded": false,
+    "source": "fresh",
+    "entry": {
+      "used": false,
+      "miss": "no-delivery-run",
+      "offer_sha256": null,
+      "entry_stamp_sha256": null,
+      "base": null,
+      "run": null,
+      "reused_ids": [],
+      "no_files_ids": [],
+      "ignored_ids": []
+    }
+  },
+  "pre_run_snapshot": {
+    "status": "no-delivery-run",
+    "unchanged": []
+  },
+  "head_install": {
+    "state": "clean",
+    "why": null,
+    "family": "npm",
+    "lockfile": "package-lock.json",
+    "counts": {
+      "changed": 0,
+      "missing": 0,
+      "extraneous": 0,
+      "missing_unchecked": 24
+    }
+  },
+  "base_source": "explicit"
+}

@@ -24,6 +24,10 @@ the app's stdout. `index.mjs` reads that stream into an `@pharn-dev/phargus/coll
 an alert when the event loop lag reaches 50 ms) and serves `@pharn-dev/phargus/dashboard`. Both servers bind to
 `127.0.0.1` only.
 
+The app logs to its own stdout too (one plain-text line when it starts listening). The parent reads
+the stream through `createNdjsonDecoder` and the collector, which skip and count every line that is
+not agent data, so the app's own output does not break the collector.
+
 ## Configuration
 
 | Variable         | Default | Meaning                                       |
