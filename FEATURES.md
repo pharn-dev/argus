@@ -57,7 +57,8 @@ Status legend:
   `stream/promises` `pipeline()`).
 - ✅ Integer-math aggregation (no float drift in counters).
 - ✅ OpenTelemetry export of windows (metrics) and spans (traces) as OTLP/HTTP JSON, in
-  `@pharn-dev/phargus/otel`, outside the agent core. Bounded queue, timeouts, no redirects, bounded `close()`.
+  `@pharn-dev/phargus/otel`, outside the agent core. Batched sends, a bounded drop-oldest queue with
+  counted and reported loss, timeouts, no redirects, bounded `close()`.
 
 ## 5. Dashboard
 

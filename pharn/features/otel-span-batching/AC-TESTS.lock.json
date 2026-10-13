@@ -1,0 +1,153 @@
+{
+  "schema": "ac-tests-lock/5",
+  "feature": "otel-span-batching",
+  "mode": "test-first",
+  "spec": {
+    "spec_id": "otel-span-batching",
+    "spec_content_hash": "450a23f040e311cc157dd34506cd45b9832cd30acd0db65475d9808c52ed5c29"
+  },
+  "mapping": {
+    "path": "pharn/features/otel-span-batching/AC-TESTS.md",
+    "sha256": "3ecfedb55218b9be01e414453fe00167cf436f807b5a3cb1e5bf613556ac06e4"
+  },
+  "files": [
+    {
+      "path": "src/otel/otel-span-batching.ac1.integration.test.ts",
+      "sha256": "d21abbdecd86927e8b180493e86615deefb9bc24dac7a372eebb1d0ab6fd104f"
+    },
+    {
+      "path": "src/otel/otel-span-batching.ac10.test.ts",
+      "sha256": "16c165d90697afefa64b265ae19ea16b7ff88b0a011e5b120c634ea02b9e6fa1"
+    },
+    {
+      "path": "src/otel/otel-span-batching.ac2.integration.test.ts",
+      "sha256": "04b70271c6095659e535d870f9716596781503497610cc1f14181d1cb082311f"
+    },
+    {
+      "path": "src/otel/otel-span-batching.ac3.integration.test.ts",
+      "sha256": "334ea9d4d1424d4e92ce6adb2e92f0f950a9947cc66cba2c60fa86a6586dc7b0"
+    },
+    {
+      "path": "src/otel/otel-span-batching.ac4.integration.test.ts",
+      "sha256": "d84d91454fa4729613911b11e8d77c75500c1cbe49bb4e09d6bdd2201cf98a38"
+    },
+    {
+      "path": "src/otel/otel-span-batching.ac5.integration.test.ts",
+      "sha256": "4fc837a93793b15416002eb9747e302f023b2b0b7090e5e19faa7ffc875e2ac5"
+    },
+    {
+      "path": "src/otel/otel-span-batching.ac6.integration.test.ts",
+      "sha256": "02ea7e7c815154911cce623b3636fc3956a3145d34c7321ba90705e810029fc6"
+    },
+    {
+      "path": "src/otel/otel-span-batching.ac7.integration.test.ts",
+      "sha256": "fe467ad8504f0947a1ae286c7c708b449ccd53d17cabe3c0f9e6acb2dc9771d4"
+    },
+    {
+      "path": "src/otel/otel-span-batching.ac8.integration.test.ts",
+      "sha256": "f223b95f018c38584eb94d387db680f0ab972f94fa67b8f39d38dab16ad322be"
+    },
+    {
+      "path": "src/otel/otel-span-batching.ac9.integration.test.ts",
+      "sha256": "90cac105c66f5c04ae71ed0b8c08c6f0e52787f1d36a5ace1ec381c26514087c"
+    }
+  ],
+  "bootstrap": null,
+  "red_run": {
+    "stamp_sha256": "f2dea5bdc3917ce8dfd169e8b92e7a7653b9e568f0c5af84d34871392418a1c2",
+    "files_sha256": "d4f7df1eeed12519f6375ebef1c0627ed2d52fe962d67754e5206532f00501f4",
+    "gates": [
+      {
+        "gate": "test",
+        "results_sha256": "d2f85d4bd53acc45c945ebaa9cab13c9ba246c6120238286a63af201a4b56223"
+      }
+    ],
+    "acs": [
+      {
+        "id": "AC-1",
+        "tests": [
+          "src/otel/otel-span-batching.ac1.integration.test.ts::otel span batching — AC-1 › AC-1: 500 spans through the listener reach a 5 ms endpoint coalesced in at most 5 POSTs with no loss"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "tests": [
+          "src/otel/otel-span-batching.ac2.integration.test.ts::otel span batching — AC-2 › AC-2: a full batch is sent at once, in order, one request at a time, and the rest waits for flush"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "tests": [
+          "src/otel/otel-span-batching.ac3.integration.test.ts::otel span batching — AC-3 › AC-3: with neither flush nor close, the flush timer sends the pending spans in one POST within 2500 ms"
+        ]
+      },
+      {
+        "id": "AC-4",
+        "tests": [
+          "src/otel/otel-span-batching.ac4.integration.test.ts::otel span batching — AC-4 › AC-4: on overflow the oldest pending spans are dropped, counted, and reported a few times as \"dropped\""
+        ]
+      },
+      {
+        "id": "AC-5",
+        "tests": [
+          "src/otel/otel-span-batching.ac5.integration.test.ts::otel span batching — AC-5 › AC-5: the metrics exporter batches windows and drops the oldest ones on overflow"
+        ]
+      },
+      {
+        "id": "AC-6",
+        "tests": [
+          "src/otel/otel-span-batching.ac6.integration.test.ts::otel span batching — AC-6 › AC-6: close() sends what is pending in one POST, a later span is dropped and counted, and close is idempotent"
+        ]
+      },
+      {
+        "id": "AC-7",
+        "tests": [
+          "src/otel/otel-span-batching.ac7.integration.test.ts::otel span batching — AC-7 › AC-7: close() against a hung endpoint resolves within its bound, drops and reports what is pending"
+        ]
+      },
+      {
+        "id": "AC-8",
+        "tests": [
+          "src/otel/otel-span-batching.ac8.integration.test.ts::otel span batching — AC-8 › AC-8: a 500 answer and a refused connection are counted as one failed batch of 3 items and reported, never thrown"
+        ]
+      },
+      {
+        "id": "AC-9",
+        "tests": [
+          "src/otel/otel-span-batching.ac9.integration.test.ts::otel span batching — AC-9 › AC-9: a process that only creates both exporters exits by itself with code 0 within 5000 ms"
+        ]
+      },
+      {
+        "id": "AC-10",
+        "tests": [
+          "src/otel/otel-span-batching.ac10.test.ts::otel span batching — AC-10 › AC-10: the three new options reject invalid values with a RangeError naming them, and queueCapacity keeps its validation"
+        ]
+      }
+    ]
+  },
+  "test_infra": {
+    "levels": [
+      "integration",
+      "unit"
+    ],
+    "gates": [
+      {
+        "id": "test",
+        "script": "vitest run",
+        "pre": null,
+        "post": null,
+        "results": "vitest-json"
+      }
+    ],
+    "chained": [],
+    "configs": [
+      {
+        "path": "vitest.config.mts",
+        "sha256": "ae812b81b31f5320f8486226aeef87e3767e7851772d1a845cdeb5b881a17421"
+      }
+    ],
+    "script_files": [],
+    "jest": null,
+    "exclude": []
+  }
+}

@@ -7,6 +7,26 @@ All notable changes to Phargus are recorded here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- OTLP exporters (`@pharn-dev/phargus/otel`) no longer lose spans and windows under load (review
+  finding F2). They used to send one request per exported span or window, with one request in
+  flight, and silently dropped the newest batch once 64 were queued. They now batch: pending
+  items go out in one request when `maxBatchSize` (default 512) items are pending or after
+  `flushIntervalMs` (default 1000 ms), one request at a time. At most `maxQueueSize` (default 2048) items are held; when full, the OLDEST pending items are dropped, counted and reported
+  through `onError` as aggregated "dropped" reports. New counters `droppedItems`, `exportedItems`
+  and `failedItems` sit beside `droppedBatches` and `failedBatches`. The flush timer is
+  `unref()`ed and armed only while items are pending. A record that cannot be encoded fails only
+  itself. Behaviour change: one export call is no longer one request, and the first send waits up
+  to `flushIntervalMs` unless a full batch is pending; call `close()` or `flush()` before exit.
+  `queueCapacity` is deprecated: still accepted and validated, but it no longer bounds anything
+  (the queue holds items, not batches); use `maxQueueSize`.
+- Dashboard: a client that connects to `/events` now receives the collector's whole history
+  (every buffered alert, window and span) instead of losing part of it to the live-event drop
+  queue; with full buffers it previously got no alerts and a truncated window history. The replay
+  is written in one call outside that queue, alerts first, then windows, then spans.
+  `maxBufferedEvents` and `droppedEvents` now cover live events only.
+
 ### Changed
 
 - Releases now publish on merge: a PR that bumps the version (with its lockfile and a
@@ -15,14 +35,6 @@ All notable changes to Phargus are recorded here. The format follows
   Release notes are that version's section of this file. `NPM_PUBLISH_ENABLED` still has to be
   `true` for the publish and release jobs to run. Checks for the release notes, the version files
   and the workflow run under `npm test`.
-
-### Fixed
-
-- Dashboard: a client that connects to `/events` now receives the collector's whole history
-  (every buffered alert, window and span) instead of losing part of it to the live-event drop
-  queue; with full buffers it previously got no alerts and a truncated window history. The replay
-  is written in one call outside that queue, alerts first, then windows, then spans.
-  `maxBufferedEvents` and `droppedEvents` now cover live events only.
 
 ## [0.1.0] - 2026-10-12
 

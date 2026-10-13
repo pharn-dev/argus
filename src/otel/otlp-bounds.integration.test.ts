@@ -160,15 +160,22 @@ describe('OTLP bounded close (F-08)', () => {
       const elapsed = Date.now() - started;
       expect(elapsed).toBeLessThan(200 + EPSILON_MS);
       expect(exporter.droppedBatches).toBe(10);
+      expect(exporter.droppedItems).toBe(10);
       expect(exporter.failedBatches).toBe(1);
       expect(server.requests()).toBe(1);
       const messages = errors.map((error) => error.message);
-      expect(messages.some((message) => message.includes('dropped 10 queued batch'))).toBe(true);
+      expect(
+        messages.some(
+          (message) =>
+            message.includes('close() timed out') && message.includes('dropped 10 item(s)'),
+        ),
+      ).toBe(true);
       expect(messages.some((message) => message.includes('aborted by close()'))).toBe(true);
       // Idempotent, and a batch pushed after close is dropped.
       await exporter.close();
       exporter.export(makeWindow(99_000));
       expect(exporter.droppedBatches).toBe(11);
+      expect(exporter.droppedItems).toBe(11);
     } finally {
       await server.stop();
     }
@@ -202,8 +209,10 @@ describe('OTLP bounded close (F-08)', () => {
       const started = Date.now();
       await exporter.close();
       expect(Date.now() - started).toBeLessThan(400 + EPSILON_MS);
-      expect(exporter.droppedBatches + exporter.failedBatches).toBe(11);
-      expect(exporter.droppedBatches).toBeGreaterThanOrEqual(9);
+      // Every one of the 11 exported spans is accounted for as dropped or failed, whichever of the
+      // request timeout and the close deadline fires first.
+      expect(exporter.droppedItems + exporter.failedItems).toBe(11);
+      expect(exporter.exportedItems).toBe(0);
     } finally {
       await server.stop();
     }
@@ -218,9 +227,12 @@ describe('OTLP bounded close (F-08)', () => {
       const exporter = createOtlpMetricsExporter({ url: server.url, queueCapacity: 16 });
       for (let i = 0; i < 8; i += 1) exporter.export(makeWindow(i * 1000));
       await exporter.close();
-      expect(server.requests()).toBe(8);
+      // The 8 windows pending at close() travel in one coalesced request.
+      expect(server.requests()).toBe(1);
       expect(exporter.droppedBatches).toBe(0);
+      expect(exporter.droppedItems).toBe(0);
       expect(exporter.failedBatches).toBe(0);
+      expect(exporter.exportedItems).toBe(8);
     } finally {
       await server.stop();
     }

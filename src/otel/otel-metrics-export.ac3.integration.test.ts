@@ -19,6 +19,7 @@ type Exporter = {
   close(): Promise<void>;
   readonly droppedBatches: number;
   readonly failedBatches: number;
+  readonly droppedItems: number;
 };
 
 type OtelModule = {
@@ -28,6 +29,8 @@ type OtelModule = {
     serviceName?: string;
     timeoutMs?: number;
     queueCapacity?: number;
+    maxQueueSize?: number;
+    maxBatchSize?: number;
     onError?: (error: Error) => void;
   }) => Exporter;
 };
@@ -160,14 +163,15 @@ describe('otel metrics export — AC-3', () => {
     await exporter.close();
   }, 15_000);
 
-  it('AC-3: with queue capacity 1 and the first request held open, drops the third batch and sends two', async () => {
+  it('AC-3: with a one-window queue and the first request held open, drops the OLDEST pending window, reports it and sends two', async () => {
     const otel = (await import('./index.js')) as unknown as OtelModule;
     const server = await startServer(200, true);
     try {
       const errors: unknown[] = [];
       const exporter = otel.createOtlpMetricsExporter({
         url: server.url,
-        queueCapacity: 1,
+        maxQueueSize: 1,
+        maxBatchSize: 1,
         timeoutMs: 5000,
         onError: (error) => {
           errors.push(error);
@@ -183,7 +187,11 @@ describe('otel metrics export — AC-3', () => {
       expect(server.received()).toBe(2);
       expect(exporter.droppedBatches).toBe(1);
       expect(Number.isInteger(exporter.droppedBatches)).toBe(true);
-      expect(errors).toHaveLength(0);
+      expect(exporter.droppedItems).toBe(1);
+      // The drop is no longer silent: it is reported once, as a "dropped" error.
+      expect(errors).toHaveLength(1);
+      expect(errors[0]).toBeInstanceOf(Error);
+      expect((errors[0] as Error).message).toContain('dropped');
       await exporter.close();
     } finally {
       await server.stop();
